@@ -873,31 +873,36 @@ def get_social_keyboard():
     )
     return markup
 
-# ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ РЕДАКТИРОВАНИЯ ==========
+# ========== ГЛАВНАЯ ФУНКЦИЯ ДЛЯ РЕДАКТИРОВАНИЯ ==========
 def edit_or_send(chat_id, user_id, key, text, photo=None, reply_markup=None):
     """Редактирует существующее сообщение или отправляет новое"""
     message_id = get_user_message(user_id, key)
     
     try:
+        # Если есть сообщение - пытаемся отредактировать
         if message_id:
             try:
+                # Если есть фото - меняем медиа с текстом
                 if photo:
                     bot.edit_message_media(
                         types.InputMediaPhoto(photo, caption=text, parse_mode='HTML'),
                         chat_id, message_id, reply_markup=reply_markup
                     )
                 else:
+                    # Если нет фото - редактируем только текст
                     bot.edit_message_text(
                         text, chat_id, message_id, 
                         parse_mode='HTML', reply_markup=reply_markup
                     )
                 return message_id
-            except Exception as e:
-                print(f"Ошибка редактирования: {e}")
-                # Если не получилось - отправляем новое, но ID не чистим
-                pass
+            except telebot.apihelper.ApiTelegramException as e:
+                # Если сообщение не найдено или удалено
+                if "message to edit not found" in str(e) or "message can't be edited" in str(e):
+                    message_id = None
+                else:
+                    raise e
         
-        # Отправляем новое сообщение
+        # Если нет сообщения или не удалось отредактировать - отправляем новое
         if photo:
             msg = bot.send_photo(
                 chat_id, photo, caption=text, 
@@ -912,8 +917,8 @@ def edit_or_send(chat_id, user_id, key, text, photo=None, reply_markup=None):
         # Сохраняем ID нового сообщения
         set_user_message(user_id, key, msg.message_id)
         
-        # Удаляем старое сообщение если оно было
-        if message_id and message_id != msg.message_id:
+        # Удаляем старое сообщение если было
+        if message_id:
             try:
                 bot.delete_message(chat_id, message_id)
             except:
@@ -922,12 +927,14 @@ def edit_or_send(chat_id, user_id, key, text, photo=None, reply_markup=None):
         return msg.message_id
         
     except Exception as e:
-        print(f"Ошибка отправки: {e}")
+        print(f"Ошибка в edit_or_send: {e}")
+        # Последняя попытка - отправить новое сообщение
         try:
             msg = bot.send_message(chat_id, text, parse_mode='HTML', reply_markup=reply_markup)
             set_user_message(user_id, key, msg.message_id)
             return msg.message_id
-        except:
+        except Exception as e2:
+            print(f"Критическая ошибка: {e2}")
             return None
 
 # ========== ПОКАЗ ГЛАВНОГО МЕНЮ ==========
@@ -1164,6 +1171,9 @@ def admin_command(message):
         bot.reply_to(message, "❌ У вас нет прав администратора.")
 
 # ========== АДМИН-КОМАНДЫ ==========
+def is_master(user_id):
+    return user_id in MASTER_IDS
+
 @bot.message_handler(commands=['addcoins'])
 def addcoins_command(message):
     if message.from_user.id not in MASTER_IDS:
