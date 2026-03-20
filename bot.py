@@ -6,7 +6,6 @@ import time
 import random
 from datetime import datetime, timedelta
 import threading
-import re
 
 # ========== ТОКЕН ==========
 TOKEN = "8272462109:AAH2DjVD2cNhGb7aK9MTXZhkL3NCF1fQ6T0"
@@ -874,7 +873,7 @@ def get_social_keyboard():
     )
     return markup
 
-# ========== ФУНКЦИЯ ДЛЯ РЕДАКТИРОВАНИЯ СООБЩЕНИЙ ==========
+# ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ РЕДАКТИРОВАНИЯ ==========
 def edit_or_send(chat_id, user_id, key, text, photo=None, reply_markup=None):
     """Редактирует существующее сообщение или отправляет новое"""
     message_id = get_user_message(user_id, key)
@@ -895,9 +894,8 @@ def edit_or_send(chat_id, user_id, key, text, photo=None, reply_markup=None):
                 return message_id
             except Exception as e:
                 print(f"Ошибка редактирования: {e}")
-                # Если не получилось - удаляем старый ID
-                clear_user_message(user_id, key)
-                message_id = None
+                # Если не получилось - отправляем новое, но ID не чистим
+                pass
         
         # Отправляем новое сообщение
         if photo:
@@ -911,7 +909,16 @@ def edit_or_send(chat_id, user_id, key, text, photo=None, reply_markup=None):
                 parse_mode='HTML', reply_markup=reply_markup
             )
         
+        # Сохраняем ID нового сообщения
         set_user_message(user_id, key, msg.message_id)
+        
+        # Удаляем старое сообщение если оно было
+        if message_id and message_id != msg.message_id:
+            try:
+                bot.delete_message(chat_id, message_id)
+            except:
+                pass
+        
         return msg.message_id
         
     except Exception as e:
@@ -1012,9 +1019,7 @@ def start_command(message):
         except:
             pass
     
-    # Очищаем состояние
     clear_user_state(user_id)
-    
     show_main_menu(message)
 
 @bot.message_handler(commands=['profile'])
@@ -1454,7 +1459,7 @@ def mail_command(message):
     
     bot.reply_to(message, f"✅ Рассылка: {sent} отправлено, {failed} не доставлено")
 
-# ========== ОБРАБОТЧИК ТЕКСТОВЫХ СООБЩЕНИЙ (ДЛЯ СВОЕЙ СУММЫ) ==========
+# ========== ОБРАБОТЧИК ТЕКСТОВЫХ СООБЩЕНИЙ ==========
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def handle_text_messages(message):
     user_id = message.from_user.id
@@ -1464,27 +1469,22 @@ def handle_text_messages(message):
     
     if state == 'waiting_treasury_amount':
         try:
-            # Пробуем распарсить сумму
             amount = int(message.text.strip())
             
-            # Проверяем что сумма положительная
             if amount <= 0:
                 bot.reply_to(message, "❌ Сумма должна быть больше 0")
                 clear_user_state(user_id)
                 return
             
-            # Проверяем что сумма не слишком большая
             if amount > 1000000:
                 bot.reply_to(message, "❌ Сумма не может быть больше 1,000,000")
                 clear_user_state(user_id)
                 return
             
-            # Выполняем донат
             success, msg = donate_to_treasury(user_id, amount)
             bot.reply_to(message, msg, parse_mode='HTML')
             
             if success:
-                # Обновляем казну
                 text = get_treasury_text(user_id)
                 edit_or_send(
                     message.chat.id, user_id, 'treasury',
@@ -1496,7 +1496,6 @@ def handle_text_messages(message):
         except Exception as e:
             bot.reply_to(message, f"❌ Ошибка: {e}")
         
-        # Очищаем состояние
         clear_user_state(user_id)
         return
     
@@ -1689,10 +1688,8 @@ def callback_handler(call):
     
     elif data.startswith("treasury_donate_"):
         if data == "treasury_donate_custom":
-            # Устанавливаем состояние ожидания суммы
             set_user_state(uid, 'waiting_treasury_amount')
             
-            # Отправляем сообщение с просьбой ввести сумму
             bot.send_message(
                 call.message.chat.id,
                 "💰 <b>Введи сумму пожертвования</b>\n\n"
@@ -1978,7 +1975,7 @@ if __name__ == "__main__":
     print("   • 💰 Кнопки пожертвований")
     print("   • ✏️ Своя сумма для казны")
     print("   • 📢 Рассылка с HTML")
-    print("   • ✏️ Все сообщения РЕДАКТИРУЮТСЯ")
+    print("   • ✏️ ВСЕ СООБЩЕНИЯ РЕДАКТИРУЮТСЯ")
     print("=" * 50)
     print(f"👑 Админ: {MASTER_IDS[0]}")
     print(f"📢 Чат: {CHAT_ID}")
