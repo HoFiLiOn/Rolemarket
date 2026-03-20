@@ -37,7 +37,6 @@ DEFAULT_IMAGES = {
     'bonus': 'https://s10.iimage.su/s/10/gZgvLHrxSDHtVmKCmRdModftES14WYWmlIjzd7GXY.jpg',
     'profile': 'https://s10.iimage.su/s/10/gJbgiK3xrTAlMsKRtcQbcMLyG4HmIf1wKdZAw0Rrh.png',
     'tasks': 'https://s10.iimage.su/s/10/gZn2uqTx50anL7fsd6109sdqG7kCpjJ6nDXfq52I2.jpg',
-    'promo': 'https://s10.iimage.su/s/10/gYWrbw5xDwnmmivCUWtOs5RBkIRShTWyZgL0vwLk9.jpg',
     'treasury': 'https://s10.iimage.su/s/19/gWzYmfwxTbeCN7dKFntWq7tLQBslcL70CfbeoHEja.jpg'
 }
 
@@ -49,21 +48,12 @@ DEFAULT_TEXTS = {
 Твой персональный магазин ролей
 
 📊 <b>Твой уровень:</b> {level}
+🔥 <b>Серия:</b> {streak} дней
 💰 <b>Баланс казны:</b> {treasury_balance:,}💰
 
 🛒 <b>Магазин ролей</b>
  • Покупай уникальные роли за монеты
  • Каждая роль дает свои бонусы
- • Чем выше роль — тем больше привилегий
-
-⚡️ <b>Что дают роли</b>
- • Увеличенный множитель монет (до x2)
- • Кешбэк с покупок (до 10%)
- • Бонус за приглашения (до +200💰)
-
-📊 <b>Соревнуйся</b>
- • Таблица лидеров показывает топ
- • Кто больше монет — тот выше
 
 ▸ <b>Твой баланс:</b> {coins:,}💰
 ▸ <b>Сообщений:</b> {messages:,}
@@ -92,13 +82,14 @@ DEFAULT_TEXTS = {
 <b>👤 ПРОФИЛЬ</b> {first_name}
 
 📊 <b>Уровень:</b> {level}
+⭐️ <b>Опыт:</b> {exp}/{exp_next}
 🔥 <b>Серия:</b> {streak} дней
 
 ▸ <b>Монеты:</b> {coins:,}💰
 ▸ <b>Сообщений:</b> {messages:,}
 ▸ <b>Ролей:</b> {roles_count}
 ▸ <b>Рефералов:</b> {referrals}
-💸 <b>Всего пожертвовано:</b> {donated:,}💰
+💸 <b>Пожертвовано:</b> {donated:,}💰
 """,
     'tasks': """
 <b>📅 ЕЖЕДНЕВНЫЕ ЗАДАНИЯ</b>
@@ -108,7 +99,7 @@ DEFAULT_TEXTS = {
 ▸ <b>Твой баланс:</b> {coins:,}💰
 """,
     'bonus': """
-<b>🎁 ЕЖЕДНЕВНЫЙ БОНУС</b>{boost_text}{tax_text}
+<b>🎁 ЕЖЕДНЕВНЫЙ БОНУС</b>{boost_text}
 
 🔥 <b>Текущая серия:</b> {streak} дней
 
@@ -122,7 +113,7 @@ DEFAULT_TEXTS = {
 
 👥 <b>Приглашено:</b> {invites_count} чел.
 💰 <b>Заработано:</b> {referrals_earned}💰
-💰 <b>За каждого друга:</b> +{bonus}💰{tax_text}
+💰 <b>За каждого друга:</b> +{bonus}💰
 
 <b>Твоя ссылка:</b>
 <code>{bot_link}</code>
@@ -140,12 +131,6 @@ DEFAULT_TEXTS = {
 ROLE SHOP BOT — бот для покупки ролей и получения привилегий.
 
 👨‍💻 <b>Создатель:</b> HoFiLiOn
-📬 <b>Контакт:</b> @HoFiLiOnclkc
-
-<b>🎯 Для чего:</b>
- • Покупай уникальные роли за монеты
- • Получай бонусы за активность
- • Участвуй в жизни сообщества
 
 <b>💰 Как получить монеты:</b>
  • 1 сообщение = {reward} монета
@@ -154,55 +139,33 @@ ROLE SHOP BOT — бот для покупки ролей и получения 
 
 <b>💸 Система казны:</b>
  • Жертвуй монеты на общую цель
- • Топ доноров в отдельной таблице
  • При достижении цели — розыгрыш в канале
 
 🔗 <b>Наши ресурсы:</b>
  👉 <a href="https://t.me/Chat_by_HoFiLiOn">Чат</a>
- 👉 <a href="https://t.me/mapsinssb2byhofilion">Канал</a>
-
-❓ Вопросы? Пиши @HoFiLiOnclkc
 """,
     'help': """
-<b>📚 ДОБРО ПОЖАЛОВАТЬ В ROLE SHOP BOT!</b>
+<b>📚 ПОМОЩЬ</b>
 
-👋 Ты только начал пользоваться ботом? Вот что нужно знать:
-
-<b>🛒 КАК КУПИТЬ РОЛЬ?</b>
+<b>🛒 КУПИТЬ РОЛЬ:</b>
  1. Зайди в магазин
  2. Выбери роль
  3. Нажми "Купить"
- 4. Роль появится в "Мои роли"
 
-<b>💰 КАК ПОЛУЧИТЬ МОНЕТЫ?</b>
- • Пиши в чат — {reward} монета за сообщение
- • Приглашай друзей — {invite_bonus} монет за каждого
- • Забирай ежедневный бонус — {bonus_min}-{bonus_max} монет
- • Активируй промокоды
+<b>💰 ПОЛУЧИТЬ МОНЕТЫ:</b>
+ • Пиши в чат — {reward} монета
+ • Приглашай друзей — {invite_bonus} монет
+ • Ежедневный бонус — {bonus_min}-{bonus_max} монет
 
-<b>💸 КАЗНА СООБЩЕСТВА</b>
- • Жертвуй монеты на общую цель
- • Топ доноров в отдельной таблице
- • При достижении цели — розыгрыш в канале
-
-<b>🎭 ЧТО ДАЮТ РОЛИ?</b>
- • Увеличенный множитель монет
- • Кешбэк с покупок
- • Бонус за приглашения
-
-<b>📋 ПОЛЕЗНЫЕ КОМАНДЫ</b>
- /profile — твой профиль
- /daily — ежедневный бонус
- /invite — реферальная ссылка
- /use КОД — активировать промокод
- /top — таблица лидеров
- /donate — пожертвовать в казну
- /info — информация о боте
+<b>📋 КОМАНДЫ:</b>
+ /profile — профиль
+ /daily — бонус
+ /invite — ссылка
+ /use КОД — промокод
+ /top — лидеры
+ /donate — казна
+ /info — информация
  /help — помощь
-
-🔗 <b>Наши ресурсы:</b>
- 👉 <a href="https://t.me/Chat_by_HoFiLiOn">Чат</a>
- 👉 <a href="https://t.me/mapsinssb2byhofilion">Канал</a>
 """,
     'treasury': """
 <b>💰 КАЗНА СООБЩЕСТВА</b>
@@ -259,70 +222,6 @@ def init_files():
         }
         save_json(BOT_ROLES_FILE, bot_roles)
 
-def get_bot_roles():
-    """Получить все бот-роли"""
-    return load_json(BOT_ROLES_FILE)
-
-def add_bot_role(name, price, multiplier, cashback, invite_bonus):
-    """Добавить новую бот-роль"""
-    roles = get_bot_roles()
-    roles[name] = {
-        'price': price,
-        'multiplier': multiplier,
-        'cashback': cashback,
-        'invite_bonus': invite_bonus
-    }
-    save_json(BOT_ROLES_FILE, roles)
-    return True
-
-def remove_bot_role(name):
-    """Удалить бот-роль"""
-    roles = get_bot_roles()
-    if name in roles:
-        del roles[name]
-        save_json(BOT_ROLES_FILE, roles)
-        return True
-    return False
-
-def edit_bot_role(name, field, value):
-    """Редактировать бот-роль"""
-    roles = get_bot_roles()
-    if name in roles and field in roles[name]:
-        roles[name][field] = value
-        save_json(BOT_ROLES_FILE, roles)
-        return True
-    return False
-
-def get_settings():
-    """Получить настройки"""
-    return load_json(SETTINGS_FILE)
-
-def get_text(key):
-    """Получить текст по ключу"""
-    settings = get_settings()
-    return settings.get('texts', {}).get(key, DEFAULT_TEXTS.get(key, ''))
-
-def get_image(key):
-    """Получить фото по ключу"""
-    settings = get_settings()
-    return settings.get('images', {}).get(key, DEFAULT_IMAGES.get(key, ''))
-
-def set_text(key, text):
-    """Установить текст"""
-    settings = get_settings()
-    if 'texts' not in settings:
-        settings['texts'] = {}
-    settings['texts'][key] = text
-    save_json(SETTINGS_FILE, settings)
-
-def set_image(key, url):
-    """Установить фото"""
-    settings = get_settings()
-    if 'images' not in settings:
-        settings['images'] = {}
-    settings['images'][key] = url
-    save_json(SETTINGS_FILE, settings)
-
 # ========== ЗАГРУЗКА/СОХРАНЕНИЕ ==========
 def load_json(file):
     try:
@@ -342,6 +241,63 @@ def save_json(file, data):
         print(f"❌ Ошибка сохранения {file}: {e}")
         return False
 
+# ========== НАСТРОЙКИ ==========
+def get_settings():
+    return load_json(SETTINGS_FILE)
+
+def get_text(key):
+    settings = get_settings()
+    return settings.get('texts', {}).get(key, DEFAULT_TEXTS.get(key, ''))
+
+def get_image(key):
+    settings = get_settings()
+    return settings.get('images', {}).get(key, DEFAULT_IMAGES.get(key, ''))
+
+def set_text(key, text):
+    settings = get_settings()
+    if 'texts' not in settings:
+        settings['texts'] = {}
+    settings['texts'][key] = text
+    save_json(SETTINGS_FILE, settings)
+
+def set_image(key, url):
+    settings = get_settings()
+    if 'images' not in settings:
+        settings['images'] = {}
+    settings['images'][key] = url
+    save_json(SETTINGS_FILE, settings)
+
+# ========== БОТ-РОЛИ ==========
+def get_bot_roles():
+    return load_json(BOT_ROLES_FILE)
+
+def add_bot_role(name, price, multiplier, cashback, invite_bonus):
+    roles = get_bot_roles()
+    roles[name] = {
+        'price': price,
+        'multiplier': multiplier,
+        'cashback': cashback,
+        'invite_bonus': invite_bonus
+    }
+    save_json(BOT_ROLES_FILE, roles)
+    return True
+
+def remove_bot_role(name):
+    roles = get_bot_roles()
+    if name in roles:
+        del roles[name]
+        save_json(BOT_ROLES_FILE, roles)
+        return True
+    return False
+
+def edit_bot_role(name, field, value):
+    roles = get_bot_roles()
+    if name in roles and field in roles[name]:
+        roles[name][field] = value
+        save_json(BOT_ROLES_FILE, roles)
+        return True
+    return False
+
 # ========== СИСТЕМА КАЗНЫ ==========
 def get_treasury():
     return load_json(TREASURY_FILE)
@@ -350,27 +306,22 @@ def save_treasury(data):
     save_json(TREASURY_FILE, data)
 
 def donate_to_treasury(user_id, amount):
-    """Пожертвование в казну"""
     treasury = get_treasury()
     user = get_user(user_id)
     
     if not user or user['coins'] < amount:
         return False, "❌ Недостаточно монет!"
     
-    # Списываем монеты у пользователя
     remove_coins(user_id, amount)
     
-    # Добавляем в казну
     treasury['balance'] += amount
     treasury['total_collected'] += amount
     
-    # Обновляем доноров
     user_id_str = str(user_id)
     if user_id_str not in treasury['donors']:
         treasury['donors'][user_id_str] = 0
     treasury['donors'][user_id_str] += amount
     
-    # Добавляем в историю
     treasury['history'].append({
         'timestamp': datetime.now().isoformat(),
         'user_id': user_id,
@@ -378,16 +329,17 @@ def donate_to_treasury(user_id, amount):
         'amount': amount
     })
     
-    # Ограничиваем историю
     if len(treasury['history']) > 100:
         treasury['history'] = treasury['history'][-100:]
     
-    # Обновляем переменную пользователя
-    set_user_variable(user_id, 'donated', get_user_variable(user_id, 'donated', 0) + amount)
+    # Обновляем переменную доната
+    user_vars = user.get('variables', {})
+    user_vars['donated'] = user_vars.get('donated', 0) + amount
+    user['variables'] = user_vars
+    save_json(USERS_FILE, load_json(USERS_FILE))
     
     save_treasury(treasury)
     
-    # Проверяем достижение цели
     if treasury['balance'] >= treasury['goal']:
         return True, f"✅ Пожертвовано {amount}💰\n\n🎉 ПОЗДРАВЛЯЕМ! ЦЕЛЬ ДОСТИГНУТА!\n{treasury['goal_description']}"
     
@@ -397,7 +349,6 @@ def get_treasury_stats():
     treasury = get_treasury()
     percent = int((treasury['balance'] / treasury['goal']) * 100) if treasury['goal'] > 0 else 0
     
-    # Топ доноров
     donors = []
     for user_id, amount in treasury['donors'].items():
         user = get_user(int(user_id))
@@ -414,8 +365,7 @@ def get_treasury_stats():
         'goal': treasury['goal'],
         'goal_description': treasury['goal_description'],
         'percent': percent,
-        'top_donors': top_donors,
-        'history': treasury['history'][-10:]
+        'top_donors': top_donors
     }
 
 def set_treasury_goal(goal, description=None):
@@ -434,7 +384,7 @@ def withdraw_from_treasury(amount):
         return True, treasury['balance']
     return False, treasury['balance']
 
-def add_to_treasury(amount, reason="Админ"):
+def add_to_treasury(amount):
     treasury = get_treasury()
     treasury['balance'] += amount
     treasury['total_collected'] += amount
@@ -442,7 +392,6 @@ def add_to_treasury(amount, reason="Админ"):
     return treasury['balance']
 
 def reset_treasury():
-    """Сбросить собранную сумму (после розыгрыша)"""
     treasury = get_treasury()
     treasury['balance'] = 0
     save_treasury(treasury)
@@ -473,7 +422,15 @@ def create_user(user_id, username, first_name):
             'is_banned': False,
             'ban_until': None,
             'ban_reason': None,
-            'variables': {}
+            'variables': {
+                'level': 1,
+                'exp': 0,
+                'exp_next': 100,
+                'streak_daily': 0,
+                'streak_max': 0,
+                'donated': 0,
+                'referrals_earned': 0
+            }
         }
         save_json(USERS_FILE, users)
     return users[user_id]
@@ -484,8 +441,6 @@ def add_coins(user_id, amount):
     if user_id in users:
         users[user_id]['coins'] += amount
         users[user_id]['total_earned'] = users[user_id].get('total_earned', 0) + amount
-        if 'variables' in users[user_id]:
-            users[user_id]['variables']['coins'] = users[user_id]['coins']
         save_json(USERS_FILE, users)
         return users[user_id]['coins']
     return 0
@@ -496,11 +451,36 @@ def remove_coins(user_id, amount):
     if user_id in users:
         users[user_id]['coins'] = max(0, users[user_id]['coins'] - amount)
         users[user_id]['total_spent'] = users[user_id].get('total_spent', 0) + amount
-        if 'variables' in users[user_id]:
-            users[user_id]['variables']['coins'] = users[user_id]['coins']
         save_json(USERS_FILE, users)
         return users[user_id]['coins']
     return 0
+
+def add_exp(user_id, exp):
+    """Добавить опыт и повысить уровень"""
+    users = load_json(USERS_FILE)
+    user_id = str(user_id)
+    if user_id in users:
+        vars = users[user_id]['variables']
+        vars['exp'] += exp
+        
+        # Повышение уровня
+        while vars['exp'] >= vars['exp_next']:
+            vars['exp'] -= vars['exp_next']
+            vars['level'] += 1
+            vars['exp_next'] = int(vars['exp_next'] * 1.2)
+            
+            # Бонус за уровень
+            bonus = vars['level'] * 100
+            users[user_id]['coins'] += bonus
+            
+            try:
+                bot.send_message(int(user_id), f"🎉 ПОВЫШЕНИЕ УРОВНЯ!\nТы достиг {vars['level']} уровня!\n+{bonus}💰")
+            except:
+                pass
+        
+        save_json(USERS_FILE, users)
+        return True
+    return False
 
 def get_user_multiplier(user_id):
     users = load_json(USERS_FILE)
@@ -532,24 +512,6 @@ def get_user_invite_bonus(user_id):
             return roles.get(active[0], {}).get('invite_bonus', 100)
     return 100
 
-def set_user_variable(user_id, var_name, value):
-    users = load_json(USERS_FILE)
-    user_id = str(user_id)
-    if user_id in users:
-        if 'variables' not in users[user_id]:
-            users[user_id]['variables'] = {}
-        users[user_id]['variables'][var_name] = value
-        save_json(USERS_FILE, users)
-        return True
-    return False
-
-def get_user_variable(user_id, var_name, default=0):
-    users = load_json(USERS_FILE)
-    user_id = str(user_id)
-    if user_id in users and 'variables' in users[user_id]:
-        return users[user_id]['variables'].get(var_name, default)
-    return default
-
 def add_message(user_id):
     if is_banned(user_id):
         return False
@@ -570,9 +532,8 @@ def add_message(user_id):
         users[user_id]['total_earned'] = users[user_id].get('total_earned', 0) + reward
         users[user_id]['last_active'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
-        if 'variables' in users[user_id]:
-            users[user_id]['variables']['messages'] = users[user_id]['messages']
-            users[user_id]['variables']['coins'] = users[user_id]['coins']
+        # Добавляем опыт
+        add_exp(user_id, reward)
         
         save_json(USERS_FILE, users)
         
@@ -617,13 +578,11 @@ def ban_user(user_id, days=None, reason=''):
         users[user_id]['ban_reason'] = reason
         save_json(USERS_FILE, users)
         try:
-            text = f"🚫 БЛОКИРОВКА\n\nВы заблокированы в боте!"
+            text = f"🚫 БЛОКИРОВКА\n\nВы заблокированы!"
             if reason:
                 text += f"\nПричина: {reason}"
             if days:
                 text += f"\nСрок: {days} дней"
-            else:
-                text += f"\nСрок: навсегда"
             bot.send_message(int(user_id), text)
         except:
             pass
@@ -702,8 +661,8 @@ def add_invite(inviter_id, invited_id):
         if invited_id not in users[inviter_id]['invites']:
             users[inviter_id]['invites'].append(invited_id)
         
-        if 'variables' in users[inviter_id]:
-            users[inviter_id]['variables']['referrals'] = len(users[inviter_id]['invites'])
+        # Обновляем переменную рефералов
+        users[inviter_id]['variables']['referrals_earned'] = users[inviter_id]['variables'].get('referrals_earned', 0) + get_user_invite_bonus(int(inviter_id))
         
         users[invited_id]['invited_by'] = inviter_id
         save_json(USERS_FILE, users)
@@ -747,11 +706,7 @@ def buy_role(user_id, role_name):
         users[user_id]['roles'] = []
     users[user_id]['roles'].append(role_name)
     
-    if 'variables' in users[user_id]:
-        users[user_id]['variables']['coins'] = users[user_id]['coins']
-    
     save_json(USERS_FILE, users)
-    
     set_active_role(int(user_id), role_name)
     
     return True, f"✅ Ты купил роль {role_name}!"
@@ -831,6 +786,7 @@ def update_daily_task(user_id, task_type, progress=1):
             if completed:
                 tasks[user_id][task_type]['completed'] = True
                 add_coins(int(user_id), reward)
+                add_exp(int(user_id), reward)
                 
                 try:
                     bot.send_message(int(user_id), f"✅ Задание выполнено! +{reward}💰")
@@ -873,13 +829,16 @@ def get_daily_bonus(user_id):
     users = load_json(USERS_FILE)
     users[str(user_id)]['last_daily'] = today
     
-    if 'variables' in users[str(user_id)]:
-        streak = users[str(user_id)]['variables'].get('streak_daily', 0) + 1
-        users[str(user_id)]['variables']['streak_daily'] = streak
+    # Обновляем серию
+    streak = users[str(user_id)]['variables'].get('streak_daily', 0) + 1
+    users[str(user_id)]['variables']['streak_daily'] = streak
+    if streak > users[str(user_id)]['variables'].get('streak_max', 0):
+        users[str(user_id)]['variables']['streak_max'] = streak
     
     save_json(USERS_FILE, users)
     
     add_coins(user_id, bonus)
+    add_exp(user_id, bonus)
     
     if bonus >= 200:
         msg = f"🎉 ДЖЕКПОТ! Ты выиграл {bonus}💰!"
@@ -934,27 +893,28 @@ def get_leaders(limit=10):
     leaders.sort(key=lambda x: x['coins'], reverse=True)
     return leaders[:limit]
 
-# ========== ФОРМАТИРОВАНИЕ ТЕКСТОВ ==========
+# ========== ФОРМАТИРОВАНИЕ ТЕКСТА ==========
 def format_text(text, user_id=None, **kwargs):
-    """Форматирует текст с HTML-тегами и подставляет переменные"""
     if not text:
         return text
     
     user = get_user(user_id) if user_id else None
+    user_vars = user.get('variables', {}) if user else {}
     
-    # Базовые переменные
     replacements = {
-        '{coins}': str(user.get('coins', 0)) if user else '0',
+        '{coins}': f"{user['coins']:,}" if user else '0',
         '{messages}': str(user.get('messages', 0)) if user else '0',
         '{first_name}': user.get('first_name', 'User') if user else 'User',
         '{username}': user.get('username', 'User') if user else 'User',
         '{user_id}': str(user_id) if user_id else '0',
         '{roles_count}': str(len(user.get('roles', []))) if user else '0',
         '{referrals}': str(len(user.get('invites', []))) if user else '0',
-        '{level}': str(user.get('variables', {}).get('level', 1)) if user else '1',
-        '{streak}': str(user.get('variables', {}).get('streak_daily', 0)) if user else '0',
-        '{donated}': str(get_user_variable(user_id, 'donated', 0)) if user_id else '0',
-        '{referrals_earned}': str(get_user_variable(user_id, 'referrals_earned', 0)) if user_id else '0',
+        '{level}': str(user_vars.get('level', 1)),
+        '{exp}': str(user_vars.get('exp', 0)),
+        '{exp_next}': str(user_vars.get('exp_next', 100)),
+        '{streak}': str(user_vars.get('streak_daily', 0)),
+        '{donated}': f"{user_vars.get('donated', 0):,}",
+        '{referrals_earned}': f"{user_vars.get('referrals_earned', 0):,}",
         '{invites_count}': str(len(user.get('invites', []))) if user else '0',
     }
     
@@ -969,7 +929,6 @@ def format_text(text, user_id=None, **kwargs):
     replacements['{bonus_max}'] = str(eco['base_bonus_max'])
     replacements['{invite_bonus}'] = str(eco['base_invite'])
     
-    # Добавляем кастомные из kwargs
     for key, value in kwargs.items():
         replacements[f'{{{key}}}'] = str(value)
     
@@ -982,7 +941,7 @@ def format_text(text, user_id=None, **kwargs):
 def get_main_keyboard(page=1):
     markup = types.InlineKeyboardMarkup(row_width=2)
     
-    main_buttons = [
+    buttons = [
         types.InlineKeyboardButton("🛒 Магазин", callback_data="shop"),
         types.InlineKeyboardButton("📋 Мои роли", callback_data="myroles"),
         types.InlineKeyboardButton("👤 Профиль", callback_data="profile"),
@@ -993,10 +952,8 @@ def get_main_keyboard(page=1):
         types.InlineKeyboardButton("📊 Лидеры", callback_data="leaders")
     ]
     
-    all_buttons = main_buttons
-    
     per_page = 4
-    total_pages = (len(all_buttons) + per_page - 1) // per_page
+    total_pages = (len(buttons) + per_page - 1) // per_page
     
     if page < 1:
         page = 1
@@ -1004,21 +961,20 @@ def get_main_keyboard(page=1):
         page = total_pages
     
     start = (page - 1) * per_page
-    end = min(start + per_page, len(all_buttons))
-    current_buttons = all_buttons[start:end]
+    end = min(start + per_page, len(buttons))
     
-    for i in range(0, len(current_buttons), 2):
-        row = current_buttons[i:i+2]
+    for i in range(start, end, 2):
+        row = buttons[i:i+2]
         markup.add(*row)
     
-    nav_buttons = []
-    if page > 1:
-        nav_buttons.append(types.InlineKeyboardButton("◀️", callback_data=f"main_page_{page-1}"))
-    if page < total_pages:
-        nav_buttons.append(types.InlineKeyboardButton("▶️", callback_data=f"main_page_{page+1}"))
-    
-    if nav_buttons:
-        markup.row(*nav_buttons)
+    if total_pages > 1:
+        nav = []
+        if page > 1:
+            nav.append(types.InlineKeyboardButton("◀️", callback_data=f"main_page_{page-1}"))
+        if page < total_pages:
+            nav.append(types.InlineKeyboardButton("▶️", callback_data=f"main_page_{page+1}"))
+        if nav:
+            markup.row(*nav)
     
     return markup
 
@@ -1042,22 +998,18 @@ def get_shop_keyboard(page=1):
     
     start = (page - 1) * per_page
     end = min(start + per_page, len(roles_list))
-    current_roles = roles_list[start:end]
     
-    for role in current_roles:
-        markup.add(types.InlineKeyboardButton(
-            f"{role} — {roles[role]['price']:,}💰", 
-            callback_data=f"perm_{role}"
-        ))
+    for role in roles_list[start:end]:
+        markup.add(types.InlineKeyboardButton(f"{role} — {roles[role]['price']:,}💰", callback_data=f"perm_{role}"))
     
-    nav_buttons = []
-    if page > 1:
-        nav_buttons.append(types.InlineKeyboardButton("◀️", callback_data=f"shop_page_{page-1}"))
-    if page < total_pages:
-        nav_buttons.append(types.InlineKeyboardButton("▶️", callback_data=f"shop_page_{page+1}"))
-    
-    if nav_buttons:
-        markup.row(*nav_buttons)
+    if total_pages > 1:
+        nav = []
+        if page > 1:
+            nav.append(types.InlineKeyboardButton("◀️", callback_data=f"shop_page_{page-1}"))
+        if page < total_pages:
+            nav.append(types.InlineKeyboardButton("▶️", callback_data=f"shop_page_{page+1}"))
+        if nav:
+            markup.row(*nav)
     
     markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main"))
     return markup
@@ -1074,7 +1026,7 @@ def get_myroles_keyboard(roles, active_roles, page=1):
     markup = types.InlineKeyboardMarkup(row_width=1)
     
     per_page = 3
-    total_pages = (len(roles) + per_page - 1) // per_page
+    total_pages = (len(roles) + per_page - 1) // per_page if roles else 1
     
     if page < 1:
         page = 1
@@ -1083,39 +1035,30 @@ def get_myroles_keyboard(roles, active_roles, page=1):
     
     start = (page - 1) * per_page
     end = min(start + per_page, len(roles))
-    current_roles = roles[start:end]
     
-    for role in current_roles:
+    for role in roles[start:end]:
         if role in active_roles:
             markup.add(types.InlineKeyboardButton(f"🔴 Выключить {role}", callback_data=f"toggle_{role}"))
         else:
             markup.add(types.InlineKeyboardButton(f"🟢 Включить {role}", callback_data=f"toggle_{role}"))
     
-    nav_buttons = []
-    if page > 1:
-        nav_buttons.append(types.InlineKeyboardButton("◀️", callback_data=f"myroles_page_{page-1}"))
-    if page < total_pages:
-        nav_buttons.append(types.InlineKeyboardButton("▶️", callback_data=f"myroles_page_{page+1}"))
-    
-    if nav_buttons:
-        markup.row(*nav_buttons)
+    if total_pages > 1:
+        nav = []
+        if page > 1:
+            nav.append(types.InlineKeyboardButton("◀️", callback_data=f"myroles_page_{page-1}"))
+        if page < total_pages:
+            nav.append(types.InlineKeyboardButton("▶️", callback_data=f"myroles_page_{page+1}"))
+        if nav:
+            markup.row(*nav)
     
     markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main"))
     return markup
 
 def get_bonus_keyboard():
-    markup = types.InlineKeyboardMarkup(row_width=1)
+    markup = types.InlineKeyboardMarkup()
     markup.add(
         types.InlineKeyboardButton("🎁 Забрать бонус", callback_data="daily"),
         types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main")
-    )
-    return markup
-
-def get_social_keyboard():
-    markup = types.InlineKeyboardMarkup(row_width=2)
-    markup.add(
-        types.InlineKeyboardButton("📢 Чат", url="https://t.me/Chat_by_HoFiLiOn"),
-        types.InlineKeyboardButton("📣 Канал", url="https://t.me/mapsinssb2byhofilion")
     )
     return markup
 
@@ -1132,6 +1075,11 @@ def get_treasury_keyboard():
         types.InlineKeyboardButton("✏️ Своя", callback_data="donate_custom")
     )
     markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main"))
+    return markup
+
+def get_social_keyboard():
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("📢 Наш чат", url="https://t.me/Chat_by_HoFiLiOn"))
     return markup
 
 def get_admin_main_keyboard():
@@ -1177,7 +1125,7 @@ def get_admin_roles_keyboard():
 
 def get_admin_texts_keyboard():
     markup = types.InlineKeyboardMarkup(row_width=1)
-    texts_list = [
+    texts = [
         ("🏠 Главное меню", "main"),
         ("🛒 Магазин", "shop"),
         ("📋 Мои роли", "myroles"),
@@ -1190,14 +1138,14 @@ def get_admin_texts_keyboard():
         ("❓ Помощь", "help"),
         ("💰 Казна", "treasury")
     ]
-    for name, key in texts_list:
+    for name, key in texts:
         markup.add(types.InlineKeyboardButton(name, callback_data=f"text_edit_{key}"))
     markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data="admin_back"))
     return markup
 
 def get_admin_images_keyboard():
     markup = types.InlineKeyboardMarkup(row_width=1)
-    images_list = [
+    images = [
         ("🏠 Главное меню", "main"),
         ("🛒 Магазин", "shop"),
         ("📋 Мои роли", "myroles"),
@@ -1207,7 +1155,7 @@ def get_admin_images_keyboard():
         ("📊 Лидеры", "leaders"),
         ("💰 Казна", "treasury")
     ]
-    for name, key in images_list:
+    for name, key in images:
         markup.add(types.InlineKeyboardButton(name, callback_data=f"image_edit_{key}"))
     markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data="admin_back"))
     return markup
@@ -1227,122 +1175,114 @@ def show_main_menu(call_or_msg, page=1):
         user = create_user(user_id, username, first_name)
     
     text = get_text('main')
-    formatted_text = format_text(text, user_id, level=user.get('variables', {}).get('level', 1))
+    formatted = format_text(text, user_id)
     
     if hasattr(call_or_msg, 'message'):
-        # Это callback
         try:
             bot.edit_message_media(
-                types.InputMediaPhoto(get_image('main'), caption=formatted_text, parse_mode='HTML'),
+                types.InputMediaPhoto(get_image('main'), caption=formatted, parse_mode='HTML'),
                 call_or_msg.message.chat.id,
                 call_or_msg.message.message_id,
                 reply_markup=get_main_keyboard(page)
             )
         except:
-            bot.send_photo(user_id, get_image('main'), caption=formatted_text, parse_mode='HTML', reply_markup=get_main_keyboard(page))
+            bot.send_photo(user_id, get_image('main'), caption=formatted, parse_mode='HTML', reply_markup=get_main_keyboard(page))
     else:
-        bot.send_photo(user_id, get_image('main'), caption=formatted_text, parse_mode='HTML', reply_markup=get_main_keyboard(page))
+        bot.send_photo(user_id, get_image('main'), caption=formatted, parse_mode='HTML', reply_markup=get_main_keyboard(page))
 
 def show_shop(call, page=1):
-    user_id = call.from_user.id
-    user = get_user(user_id)
+    user = get_user(call.from_user.id)
     roles = get_bot_roles()
     roles_list = list(roles.keys())
     total_pages = (len(roles_list) + 2) // 3
     
     start = (page - 1) * 3
     end = start + 3
-    current_roles = roles_list[start:end]
     
     roles_text = ""
-    for role in current_roles:
+    for role in roles_list[start:end]:
         roles_text += f"• <b>{role}</b> — {roles[role]['price']:,}💰 | x{roles[role]['multiplier']} | {roles[role]['cashback']}% кешбэк\n"
     
     text = get_text('shop')
-    formatted_text = format_text(text, user_id, 
-                                 page=page, 
-                                 total_pages=total_pages,
-                                 roles_text=roles_text,
-                                 cashback=get_user_cashback(user_id),
-                                 coins=user['coins'])
+    formatted = format_text(text, call.from_user.id,
+                           page=page, total_pages=total_pages,
+                           roles_text=roles_text,
+                           cashback=get_user_cashback(call.from_user.id),
+                           coins=user['coins'])
     
     try:
         bot.edit_message_media(
-            types.InputMediaPhoto(get_image('shop'), caption=formatted_text, parse_mode='HTML'),
+            types.InputMediaPhoto(get_image('shop'), caption=formatted, parse_mode='HTML'),
             call.message.chat.id,
             call.message.message_id,
             reply_markup=get_shop_keyboard(page)
         )
     except:
-        bot.send_photo(user_id, get_image('shop'), caption=formatted_text, parse_mode='HTML', reply_markup=get_shop_keyboard(page))
+        pass
 
 def show_myroles(call, page=1):
-    user_id = call.from_user.id
-    user = get_user(user_id)
+    user = get_user(call.from_user.id)
     roles = user.get('roles', [])
     active = user.get('active_roles', [])
-    
     total_pages = (len(roles) + 2) // 3 if roles else 1
     
     start = (page - 1) * 3
     end = start + 3
-    current_roles = roles[start:end]
     
     if not roles:
         roles_text = "😕 У тебя пока нет ролей!"
     else:
         roles_text = ""
-        for role in current_roles:
+        for role in roles[start:end]:
             status = "✅" if role in active else "❌"
             roles_text += f"{status} <b>{role}</b>\n"
     
     text = get_text('myroles')
-    formatted_text = format_text(text, user_id,
-                                 page=page,
-                                 total_pages=total_pages,
-                                 roles_text=roles_text,
-                                 coins=user['coins'])
+    formatted = format_text(text, call.from_user.id,
+                           page=page, total_pages=total_pages,
+                           roles_text=roles_text,
+                           coins=user['coins'])
     
     try:
         bot.edit_message_media(
-            types.InputMediaPhoto(get_image('myroles'), caption=formatted_text, parse_mode='HTML'),
+            types.InputMediaPhoto(get_image('myroles'), caption=formatted, parse_mode='HTML'),
             call.message.chat.id,
             call.message.message_id,
             reply_markup=get_myroles_keyboard(roles, active, page) if roles else get_back_keyboard()
         )
     except:
-        bot.send_photo(user_id, get_image('myroles'), caption=formatted_text, parse_mode='HTML', 
-                      reply_markup=get_myroles_keyboard(roles, active, page) if roles else get_back_keyboard())
+        pass
 
 def show_profile(call):
-    user_id = call.from_user.id
-    user = get_user(user_id)
+    user = get_user(call.from_user.id)
+    user_vars = user.get('variables', {})
     
     text = get_text('profile')
-    formatted_text = format_text(text, user_id,
-                                 first_name=call.from_user.first_name,
-                                 level=user.get('variables', {}).get('level', 1),
-                                 streak=user.get('variables', {}).get('streak_daily', 0),
-                                 coins=user['coins'],
-                                 messages=user['messages'],
-                                 roles_count=len(user.get('roles', [])),
-                                 referrals=len(user.get('invites', [])),
-                                 donated=get_user_variable(user_id, 'donated', 0))
+    formatted = format_text(text, call.from_user.id,
+                           first_name=call.from_user.first_name,
+                           level=user_vars.get('level', 1),
+                           exp=user_vars.get('exp', 0),
+                           exp_next=user_vars.get('exp_next', 100),
+                           streak=user_vars.get('streak_daily', 0),
+                           coins=user['coins'],
+                           messages=user['messages'],
+                           roles_count=len(user.get('roles', [])),
+                           referrals=len(user.get('invites', [])),
+                           donated=user_vars.get('donated', 0))
     
     try:
         bot.edit_message_media(
-            types.InputMediaPhoto(get_image('profile'), caption=formatted_text, parse_mode='HTML'),
+            types.InputMediaPhoto(get_image('profile'), caption=formatted, parse_mode='HTML'),
             call.message.chat.id,
             call.message.message_id,
             reply_markup=get_back_keyboard()
         )
     except:
-        bot.send_photo(user_id, get_image('profile'), caption=formatted_text, parse_mode='HTML', reply_markup=get_back_keyboard())
+        pass
 
 def show_tasks(call):
-    user_id = call.from_user.id
-    user = get_user(user_id)
-    tasks = get_daily_tasks(user_id)
+    user = get_user(call.from_user.id)
+    tasks = get_daily_tasks(call.from_user.id)
     
     tasks_text = ""
     task_config = {
@@ -1360,21 +1300,20 @@ def show_tasks(call):
             tasks_text += f"\n{status} <b>{desc}</b>\n   Прогресс: {prog}/{target} | Награда: {reward}💰\n"
     
     text = get_text('tasks')
-    formatted_text = format_text(text, user_id, tasks_text=tasks_text, coins=user['coins'])
+    formatted = format_text(text, call.from_user.id, tasks_text=tasks_text, coins=user['coins'])
     
     try:
         bot.edit_message_media(
-            types.InputMediaPhoto(get_image('tasks'), caption=formatted_text, parse_mode='HTML'),
+            types.InputMediaPhoto(get_image('tasks'), caption=formatted, parse_mode='HTML'),
             call.message.chat.id,
             call.message.message_id,
             reply_markup=get_back_keyboard()
         )
     except:
-        bot.send_photo(user_id, get_image('tasks'), caption=formatted_text, parse_mode='HTML', reply_markup=get_back_keyboard())
+        pass
 
 def show_bonus(call):
-    user_id = call.from_user.id
-    user = get_user(user_id)
+    user = get_user(call.from_user.id)
     
     eco = get_economy_settings()
     base_min = eco['base_bonus_min']
@@ -1399,46 +1338,43 @@ def show_bonus(call):
         boost_text = f"\n⚡️ ВРЕМЕННЫЙ БУСТ x{boost['multiplier']}"
     
     text = get_text('bonus')
-    formatted_text = format_text(text, user_id,
-                                 boost_text=boost_text,
-                                 tax_text="",
-                                 streak=user.get('variables', {}).get('streak_daily', 0),
-                                 bonus_min=bonus_min,
-                                 bonus_max=bonus_max)
+    formatted = format_text(text, call.from_user.id,
+                           boost_text=boost_text,
+                           streak=user.get('variables', {}).get('streak_daily', 0),
+                           bonus_min=bonus_min,
+                           bonus_max=bonus_max)
     
     try:
         bot.edit_message_media(
-            types.InputMediaPhoto(get_image('bonus'), caption=formatted_text, parse_mode='HTML'),
+            types.InputMediaPhoto(get_image('bonus'), caption=formatted, parse_mode='HTML'),
             call.message.chat.id,
             call.message.message_id,
             reply_markup=get_bonus_keyboard()
         )
     except:
-        bot.send_photo(user_id, get_image('bonus'), caption=formatted_text, parse_mode='HTML', reply_markup=get_bonus_keyboard())
+        pass
 
 def show_invite(call):
-    user_id = call.from_user.id
-    user = get_user(user_id)
-    bot_link = f"https://t.me/{(bot.get_me()).username}?start={user_id}"
+    user = get_user(call.from_user.id)
+    bot_link = f"https://t.me/{(bot.get_me()).username}?start={call.from_user.id}"
     
     text = get_text('invite')
-    formatted_text = format_text(text, user_id,
-                                 invites_count=len(user.get('invites', [])),
-                                 referrals_earned=get_user_variable(user_id, 'referrals_earned', 0),
-                                 bonus=get_user_invite_bonus(user_id),
-                                 tax_text="",
-                                 bot_link=bot_link)
+    formatted = format_text(text, call.from_user.id,
+                           invites_count=len(user.get('invites', [])),
+                           referrals_earned=user.get('variables', {}).get('referrals_earned', 0),
+                           bonus=get_user_invite_bonus(call.from_user.id),
+                           bot_link=bot_link)
     
     try:
         bot.edit_message_text(
-            formatted_text,
+            formatted,
             call.message.chat.id,
             call.message.message_id,
             parse_mode='HTML',
             reply_markup=get_back_keyboard()
         )
     except:
-        bot.send_message(user_id, formatted_text, parse_mode='HTML', reply_markup=get_back_keyboard())
+        pass
 
 def show_leaders(call):
     leaders = get_leaders(10)
@@ -1449,23 +1385,21 @@ def show_leaders(call):
         leaders_text += f"{medal} {user['name']} — <b>{user['coins']:,}💰</b>\n"
     
     text = get_text('leaders')
-    formatted_text = format_text(text, None, leaders_text=leaders_text)
+    formatted = format_text(text, None, leaders_text=leaders_text)
     
     try:
         bot.edit_message_media(
-            types.InputMediaPhoto(get_image('leaders'), caption=formatted_text, parse_mode='HTML'),
+            types.InputMediaPhoto(get_image('leaders'), caption=formatted, parse_mode='HTML'),
             call.message.chat.id,
             call.message.message_id,
             reply_markup=get_back_keyboard()
         )
     except:
-        bot.send_photo(call.from_user.id, get_image('leaders'), caption=formatted_text, parse_mode='HTML', reply_markup=get_back_keyboard())
+        pass
 
 def show_treasury(call):
-    user_id = call.from_user.id
     stats = get_treasury_stats()
     
-    # Топ доноров
     donors_text = ""
     for i, donor in enumerate(stats['top_donors'][:5], 1):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
@@ -1475,61 +1409,53 @@ def show_treasury(call):
         donors_text = "Пока нет донатов 😢"
     
     text = get_text('treasury')
-    formatted_text = format_text(text, user_id,
-                                 collected=stats['balance'],
-                                 goal=stats['goal'],
-                                 percent=stats['percent'],
-                                 goal_description=stats['goal_description'],
-                                 donors_text=donors_text,
-                                 user_donated=get_user_variable(user_id, 'donated', 0))
+    formatted = format_text(text, call.from_user.id,
+                           collected=stats['balance'],
+                           goal=stats['goal'],
+                           percent=stats['percent'],
+                           goal_description=stats['goal_description'],
+                           donors_text=donors_text,
+                           user_donated=call.from_user.id)
     
     try:
         bot.edit_message_media(
-            types.InputMediaPhoto(get_image('treasury'), caption=formatted_text, parse_mode='HTML'),
+            types.InputMediaPhoto(get_image('treasury'), caption=formatted, parse_mode='HTML'),
             call.message.chat.id,
             call.message.message_id,
             reply_markup=get_treasury_keyboard()
         )
     except:
-        bot.send_photo(user_id, get_image('treasury'), caption=formatted_text, parse_mode='HTML', reply_markup=get_treasury_keyboard())
+        pass
 
 def show_info(call):
-    user_id = call.from_user.id
     eco = get_economy_settings()
-    
     text = get_text('info')
-    formatted_text = format_text(text, user_id,
-                                 reward=eco['base_reward'],
-                                 invite_bonus=eco['base_invite'],
-                                 bonus_min=eco['base_bonus_min'],
-                                 bonus_max=eco['base_bonus_max'])
-    
-    bot.send_message(user_id, formatted_text, parse_mode='HTML', reply_markup=get_social_keyboard())
-    
+    formatted = format_text(text, call.from_user.id,
+                           reward=eco['base_reward'],
+                           invite_bonus=eco['base_invite'],
+                           bonus_min=eco['base_bonus_min'],
+                           bonus_max=eco['base_bonus_max'])
+    bot.send_message(call.from_user.id, formatted, parse_mode='HTML', reply_markup=get_social_keyboard())
     try:
         bot.delete_message(call.message.chat.id, call.message.message_id)
     except:
         pass
 
 def show_help(call):
-    user_id = call.from_user.id
     eco = get_economy_settings()
-    
     text = get_text('help')
-    formatted_text = format_text(text, user_id,
-                                 reward=eco['base_reward'],
-                                 invite_bonus=eco['base_invite'],
-                                 bonus_min=eco['base_bonus_min'],
-                                 bonus_max=eco['base_bonus_max'])
-    
-    bot.send_message(user_id, formatted_text, parse_mode='HTML', reply_markup=get_social_keyboard())
-    
+    formatted = format_text(text, call.from_user.id,
+                           reward=eco['base_reward'],
+                           invite_bonus=eco['base_invite'],
+                           bonus_min=eco['base_bonus_min'],
+                           bonus_max=eco['base_bonus_max'])
+    bot.send_message(call.from_user.id, formatted, parse_mode='HTML', reply_markup=get_social_keyboard())
     try:
         bot.delete_message(call.message.chat.id, call.message.message_id)
     except:
         pass
 
-# ========== ОБРАБОТЧИКИ КОМАНД ==========
+# ========== КОМАНДЫ ==========
 @bot.message_handler(commands=['start'])
 def start_command(message):
     user_id = message.from_user.id
@@ -1551,7 +1477,6 @@ def start_command(message):
             if inviter_id != user_id and not is_master(inviter_id):
                 if get_user(inviter_id):
                     add_invite(inviter_id, user_id)
-                    add_coins(inviter_id, 100)
         except:
             pass
     
@@ -1569,18 +1494,20 @@ def profile_command(message):
         bot.reply_to(message, "❌ Ты не зарегистрирован! Напиши /start")
         return
     
+    user_vars = user.get('variables', {})
     text = get_text('profile')
-    formatted_text = format_text(text, user_id,
-                                 first_name=message.from_user.first_name,
-                                 level=user.get('variables', {}).get('level', 1),
-                                 streak=user.get('variables', {}).get('streak_daily', 0),
-                                 coins=user['coins'],
-                                 messages=user['messages'],
-                                 roles_count=len(user.get('roles', [])),
-                                 referrals=len(user.get('invites', [])),
-                                 donated=get_user_variable(user_id, 'donated', 0))
-    
-    bot.send_photo(user_id, get_image('profile'), caption=formatted_text, parse_mode='HTML', reply_markup=get_back_keyboard())
+    formatted = format_text(text, user_id,
+                           first_name=message.from_user.first_name,
+                           level=user_vars.get('level', 1),
+                           exp=user_vars.get('exp', 0),
+                           exp_next=user_vars.get('exp_next', 100),
+                           streak=user_vars.get('streak_daily', 0),
+                           coins=user['coins'],
+                           messages=user['messages'],
+                           roles_count=len(user.get('roles', [])),
+                           referrals=len(user.get('invites', [])),
+                           donated=user_vars.get('donated', 0))
+    bot.send_photo(user_id, get_image('profile'), caption=formatted, parse_mode='HTML', reply_markup=get_back_keyboard())
 
 @bot.message_handler(commands=['daily'])
 def daily_command(message):
@@ -1611,13 +1538,12 @@ def invite_command(message):
     
     bot_link = f"https://t.me/{(bot.get_me()).username}?start={user_id}"
     text = get_text('invite')
-    formatted_text = format_text(text, user_id,
-                                 invites_count=len(user.get('invites', [])),
-                                 referrals_earned=get_user_variable(user_id, 'referrals_earned', 0),
-                                 bonus=get_user_invite_bonus(user_id),
-                                 tax_text="",
-                                 bot_link=bot_link)
-    bot.reply_to(message, formatted_text, parse_mode='HTML')
+    formatted = format_text(text, user_id,
+                           invites_count=len(user.get('invites', [])),
+                           referrals_earned=user.get('variables', {}).get('referrals_earned', 0),
+                           bonus=get_user_invite_bonus(user_id),
+                           bot_link=bot_link)
+    bot.reply_to(message, formatted, parse_mode='HTML')
 
 @bot.message_handler(commands=['use'])
 def use_promo_command(message):
@@ -1640,12 +1566,9 @@ def use_promo_command(message):
         
         promo = promos[code]
         
-        try:
-            if datetime.fromisoformat(promo['expires_at']) < datetime.now():
-                bot.reply_to(message, "❌ Промокод истек")
-                return
-        except:
-            pass
+        if datetime.fromisoformat(promo['expires_at']) < datetime.now():
+            bot.reply_to(message, "❌ Промокод истек")
+            return
         
         if promo['used'] >= promo['max_uses']:
             bot.reply_to(message, "❌ Промокод уже использован")
@@ -1680,8 +1603,8 @@ def top_command(message):
         leaders_text += f"{medal} {user['name']} — <b>{user['coins']:,}💰</b>\n"
     
     text = get_text('leaders')
-    formatted_text = format_text(text, None, leaders_text=leaders_text)
-    bot.send_photo(message.chat.id, get_image('leaders'), caption=formatted_text, parse_mode='HTML', reply_markup=get_back_keyboard())
+    formatted = format_text(text, None, leaders_text=leaders_text)
+    bot.send_photo(message.chat.id, get_image('leaders'), caption=formatted, parse_mode='HTML', reply_markup=get_back_keyboard())
 
 @bot.message_handler(commands=['donate'])
 def donate_command(message):
@@ -1689,34 +1612,29 @@ def donate_command(message):
     if is_banned(user_id):
         bot.reply_to(message, "🚫 Вы забанены")
         return
-    
     show_treasury(message)
 
 @bot.message_handler(commands=['info'])
 def info_command(message):
-    user_id = message.from_user.id
     eco = get_economy_settings()
-    
     text = get_text('info')
-    formatted_text = format_text(text, user_id,
-                                 reward=eco['base_reward'],
-                                 invite_bonus=eco['base_invite'],
-                                 bonus_min=eco['base_bonus_min'],
-                                 bonus_max=eco['base_bonus_max'])
-    bot.send_message(message.chat.id, formatted_text, parse_mode='HTML', reply_markup=get_social_keyboard())
+    formatted = format_text(text, message.from_user.id,
+                           reward=eco['base_reward'],
+                           invite_bonus=eco['base_invite'],
+                           bonus_min=eco['base_bonus_min'],
+                           bonus_max=eco['base_bonus_max'])
+    bot.send_message(message.chat.id, formatted, parse_mode='HTML', reply_markup=get_social_keyboard())
 
 @bot.message_handler(commands=['help'])
 def help_command(message):
-    user_id = message.from_user.id
     eco = get_economy_settings()
-    
     text = get_text('help')
-    formatted_text = format_text(text, user_id,
-                                 reward=eco['base_reward'],
-                                 invite_bonus=eco['base_invite'],
-                                 bonus_min=eco['base_bonus_min'],
-                                 bonus_max=eco['base_bonus_max'])
-    bot.send_message(message.chat.id, formatted_text, parse_mode='HTML', reply_markup=get_social_keyboard())
+    formatted = format_text(text, message.from_user.id,
+                           reward=eco['base_reward'],
+                           invite_bonus=eco['base_invite'],
+                           bonus_min=eco['base_bonus_min'],
+                           bonus_max=eco['base_bonus_max'])
+    bot.send_message(message.chat.id, formatted, parse_mode='HTML', reply_markup=get_social_keyboard())
 
 @bot.message_handler(commands=['admin'])
 def admin_command(message):
@@ -1728,19 +1646,6 @@ def admin_command(message):
 <b>🔧 АДМИН-ПАНЕЛЬ</b>
 
 Выберите раздел для управления:
-
-📊 <b>Статистика</b> — общая статистика бота
-👥 <b>Пользователи</b> — управление пользователями
-💰 <b>Монеты</b> — выдача/списание монет
-🎭 <b>Роли</b> — создание/редактирование ролей
-🚫 <b>Баны</b> — блокировка пользователей
-🎁 <b>Промокоды</b> — создание промокодов
-⚙️ <b>Экономика</b> — настройка наград
-💰 <b>Казна</b> — управление казной
-✏️ <b>Тексты</b> — изменение текстов бота
-🖼️ <b>Фото</b> — изменение фото бота
-📢 <b>Рассылка</b> — массовая рассылка
-📦 <b>Бэкап</b> — создание резервной копии
 """
     bot.send_message(message.chat.id, text, parse_mode='HTML', reply_markup=get_admin_main_keyboard())
 
@@ -1751,15 +1656,12 @@ def settreasurygoal_command(message):
         return
     try:
         parts = message.text.split()
-        if len(parts) < 2:
-            bot.reply_to(message, "❌ Использование: /settreasurygoal СУММА [ОПИСАНИЕ]")
-            return
         goal = int(parts[1])
-        description = ' '.join(parts[2:]) if len(parts) > 2 else None
-        set_treasury_goal(goal, description)
-        bot.reply_to(message, f"✅ Цель казны установлена: {goal}💰")
+        desc = ' '.join(parts[2:]) if len(parts) > 2 else None
+        set_treasury_goal(goal, desc)
+        bot.reply_to(message, f"✅ Цель установлена: {goal}💰")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        bot.reply_to(message, "❌ Использование: /settreasurygoal СУММА [ОПИСАНИЕ]")
 
 @bot.message_handler(commands=['treasuryadd'])
 def treasuryadd_command(message):
@@ -1767,7 +1669,7 @@ def treasuryadd_command(message):
         return
     try:
         amount = int(message.text.split()[1])
-        add_to_treasury(amount, "Админ")
+        add_to_treasury(amount)
         bot.reply_to(message, f"✅ Добавлено {amount}💰 в казну")
     except:
         bot.reply_to(message, "❌ Использование: /treasuryadd СУММА")
@@ -1780,9 +1682,9 @@ def treasurywithdraw_command(message):
         amount = int(message.text.split()[1])
         success, balance = withdraw_from_treasury(amount)
         if success:
-            bot.reply_to(message, f"✅ Выведено {amount}💰 из казны. Остаток: {balance}💰")
+            bot.reply_to(message, f"✅ Выведено {amount}💰. Остаток: {balance}💰")
         else:
-            bot.reply_to(message, f"❌ Недостаточно средств! В казне: {balance}💰")
+            bot.reply_to(message, f"❌ Недостаточно! В казне: {balance}💰")
     except:
         bot.reply_to(message, "❌ Использование: /treasurywithdraw СУММА")
 
@@ -1802,8 +1704,8 @@ def treasurystats_command(message):
 <b>💰 СТАТИСТИКА КАЗНЫ</b>
 
 📊 <b>Баланс:</b> {stats['balance']:,}💰
-📈 <b>Всего собрано:</b> {stats['total_collected']:,}💰
-📉 <b>Всего выведено:</b> {stats['total_withdrawn']:,}💰
+📈 <b>Собрано:</b> {stats['total_collected']:,}💰
+📉 <b>Выведено:</b> {stats['total_withdrawn']:,}💰
 🎯 <b>Цель:</b> {stats['goal']:,}💰 ({stats['percent']}%)
 📝 <b>Описание:</b> {stats['goal_description']}
 
@@ -1812,7 +1714,6 @@ def treasurystats_command(message):
     for i, donor in enumerate(stats['top_donors'][:10], 1):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
         text += f"{medal} {donor['name']} — {donor['amount']:,}💰\n"
-    
     bot.reply_to(message, text, parse_mode='HTML')
 
 @bot.message_handler(commands=['addbotrole'])
@@ -1822,7 +1723,7 @@ def addbotrole_command(message):
     try:
         parts = message.text.split()
         if len(parts) < 5:
-            bot.reply_to(message, "❌ Использование: /addbotrole НАЗВАНИЕ ЦЕНА МНОЖИТЕЛЬ КЕШБЭК [БОНУС_ИНВАЙТ]")
+            bot.reply_to(message, "❌ Использование: /addbotrole НАЗВАНИЕ ЦЕНА МНОЖИТЕЛЬ КЕШБЭК [БОНУС]")
             return
         name = parts[1].capitalize()
         price = int(parts[2])
@@ -1831,9 +1732,9 @@ def addbotrole_command(message):
         invite_bonus = int(parts[5]) if len(parts) > 5 else 100 + cashback * 10
         
         add_bot_role(name, price, multiplier, cashback, invite_bonus)
-        bot.reply_to(message, f"✅ Роль {name} создана!\n💰 Цена: {price}\n📈 Множитель: x{multiplier}\n💸 Кешбэк: {cashback}%\n🎁 Бонус инвайт: +{invite_bonus}💰")
-    except Exception as e:
-        bot.reply_to(message, f"❌ Ошибка: {e}")
+        bot.reply_to(message, f"✅ Роль {name} создана!")
+    except:
+        bot.reply_to(message, "❌ Ошибка")
 
 @bot.message_handler(commands=['delbotrole'])
 def delbotrole_command(message):
@@ -1854,9 +1755,6 @@ def editbotrole_command(message):
         return
     try:
         parts = message.text.split()
-        if len(parts) < 4:
-            bot.reply_to(message, "❌ Использование: /editbotrole НАЗВАНИЕ поле значение\nДоступные поля: price, multiplier, cashback, invite_bonus")
-            return
         name = parts[1].capitalize()
         field = parts[2]
         value = parts[3]
@@ -1869,16 +1767,16 @@ def editbotrole_command(message):
         if edit_bot_role(name, field, value):
             bot.reply_to(message, f"✅ Роль {name}: {field} = {value}")
         else:
-            bot.reply_to(message, f"❌ Роль {name} или поле {field} не найдены")
-    except Exception as e:
-        bot.reply_to(message, f"❌ Ошибка: {e}")
+            bot.reply_to(message, f"❌ Ошибка")
+    except:
+        bot.reply_to(message, "❌ Использование: /editbotrole НАЗВАНИЕ поле значение")
 
 @bot.message_handler(commands=['listbotroles'])
 def listbotroles_command(message):
     if not is_master(message.from_user.id):
         return
     roles = get_bot_roles()
-    text = "<b>📋 СПИСОК БОТ-РОЛЕЙ</b>\n\n"
+    text = "<b>📋 БОТ-РОЛИ</b>\n\n"
     for name, data in roles.items():
         text += f"<b>{name}</b>\n"
         text += f"  💰 Цена: {data['price']:,}\n"
@@ -1893,40 +1791,27 @@ def settext_command(message):
         return
     try:
         parts = message.text.split('\n', 1)
-        first_line = parts[0].split()
-        if len(first_line) < 2:
-            bot.reply_to(message, "❌ Использование:\n/settext main\nТекст с HTML тегами")
-            return
-        key = first_line[1]
+        key = parts[0].split()[1]
         text = parts[1] if len(parts) > 1 else ""
         set_text(key, text)
         bot.reply_to(message, f"✅ Текст для {key} обновлен")
-    except Exception as e:
-        bot.reply_to(message, f"❌ Ошибка: {e}")
+    except:
+        bot.reply_to(message, "❌ Использование:\n/settext main\nТекст с HTML")
 
 @bot.message_handler(commands=['setphoto'])
 def setphoto_command(message):
     if not is_master(message.from_user.id):
         return
     try:
-        parts = message.text.split()
-        if len(parts) < 2:
-            bot.reply_to(message, "❌ Использование: /setphoto main\n[ссылка на фото] или ответ на фото")
-            return
-        key = parts[1]
-        
+        key = message.text.split()[1]
         if message.reply_to_message and message.reply_to_message.photo:
             photo = message.reply_to_message.photo[-1].file_id
             set_image(key, photo)
             bot.reply_to(message, f"✅ Фото для {key} обновлено")
-        elif len(parts) > 2:
-            url = parts[2]
-            set_image(key, url)
-            bot.reply_to(message, f"✅ Фото для {key} обновлено")
         else:
-            bot.reply_to(message, "❌ Ответь на фото или укажи ссылку")
-    except Exception as e:
-        bot.reply_to(message, f"❌ Ошибка: {e}")
+            bot.reply_to(message, "❌ Ответь на фото")
+    except:
+        bot.reply_to(message, "❌ Использование: /setphoto КЛЮЧ (ответ на фото)")
 
 @bot.message_handler(commands=['addcoins'])
 def addcoins_command(message):
@@ -1934,15 +1819,12 @@ def addcoins_command(message):
         return
     try:
         parts = message.text.split()
-        if len(parts) < 3:
-            bot.reply_to(message, "❌ Использование: /addcoins ID СУММА")
-            return
         target_id = int(parts[1])
         amount = int(parts[2])
-        new_balance = add_coins(target_id, amount)
-        bot.reply_to(message, f"✅ Выдано {amount} монет. Баланс: {new_balance}")
+        add_coins(target_id, amount)
+        bot.reply_to(message, f"✅ Выдано {amount}💰 пользователю {target_id}")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        bot.reply_to(message, "❌ Использование: /addcoins ID СУММА")
 
 @bot.message_handler(commands=['removecoins'])
 def removecoins_command(message):
@@ -1950,15 +1832,12 @@ def removecoins_command(message):
         return
     try:
         parts = message.text.split()
-        if len(parts) < 3:
-            bot.reply_to(message, "❌ Использование: /removecoins ID СУММА")
-            return
         target_id = int(parts[1])
         amount = int(parts[2])
-        new_balance = remove_coins(target_id, amount)
-        bot.reply_to(message, f"💰 Списано {amount} монет. Баланс: {new_balance}")
+        remove_coins(target_id, amount)
+        bot.reply_to(message, f"💰 Списано {amount}💰 у пользователя {target_id}")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        bot.reply_to(message, "❌ Использование: /removecoins ID СУММА")
 
 @bot.message_handler(commands=['giverole'])
 def giverole_command(message):
@@ -1966,21 +1845,12 @@ def giverole_command(message):
         return
     try:
         parts = message.text.split()
-        if len(parts) < 3:
-            bot.reply_to(message, "❌ Использование: /giverole ID РОЛЬ")
-            return
         target_id = int(parts[1])
         role_name = parts[2].capitalize()
-        
-        roles = get_bot_roles()
-        if role_name not in roles:
-            bot.reply_to(message, f"❌ Роль {role_name} не существует")
-            return
-        
         add_role(target_id, role_name)
         bot.reply_to(message, f"✅ Роль {role_name} выдана пользователю {target_id}")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        bot.reply_to(message, "❌ Использование: /giverole ID РОЛЬ")
 
 @bot.message_handler(commands=['removerole'])
 def removerole_command(message):
@@ -1988,18 +1858,12 @@ def removerole_command(message):
         return
     try:
         parts = message.text.split()
-        if len(parts) < 3:
-            bot.reply_to(message, "❌ Использование: /removerole ID РОЛЬ")
-            return
         target_id = int(parts[1])
         role_name = parts[2].capitalize()
-        
-        if remove_role(target_id, role_name):
-            bot.reply_to(message, f"✅ Роль {role_name} снята у пользователя {target_id}")
-        else:
-            bot.reply_to(message, f"❌ У пользователя нет роли {role_name}")
+        remove_role(target_id, role_name)
+        bot.reply_to(message, f"✅ Роль {role_name} снята у пользователя {target_id}")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        bot.reply_to(message, "❌ Использование: /removerole ID РОЛЬ")
 
 @bot.message_handler(commands=['tempgive'])
 def tempgive_command(message):
@@ -2007,23 +1871,14 @@ def tempgive_command(message):
         return
     try:
         parts = message.text.split()
-        if len(parts) < 4:
-            bot.reply_to(message, "❌ Использование: /tempgive ID РОЛЬ ДНИ")
-            return
         target_id = int(parts[1])
         role_name = parts[2].capitalize()
         days = int(parts[3])
-        
-        roles = get_bot_roles()
-        if role_name not in roles:
-            bot.reply_to(message, f"❌ Роль {role_name} не существует")
-            return
-        
         expires_at = (datetime.now() + timedelta(days=days)).isoformat()
         add_role(target_id, role_name, expires_at)
-        bot.reply_to(message, f"✅ Временная роль {role_name} на {days} дней выдана пользователю {target_id}")
+        bot.reply_to(message, f"✅ Временная роль {role_name} на {days} дней выдана")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        bot.reply_to(message, "❌ Использование: /tempgive ID РОЛЬ ДНИ")
 
 @bot.message_handler(commands=['ban'])
 def ban_command(message):
@@ -2031,19 +1886,13 @@ def ban_command(message):
         return
     try:
         parts = message.text.split()
-        if len(parts) < 2:
-            bot.reply_to(message, "❌ Использование: /ban ID [дни] [причина]")
-            return
         target_id = int(parts[1])
         days = int(parts[2]) if len(parts) > 2 else None
         reason = ' '.join(parts[3:]) if len(parts) > 3 else ""
-        
-        if ban_user(target_id, days, reason):
-            bot.reply_to(message, f"✅ Пользователь {target_id} забанен")
-        else:
-            bot.reply_to(message, f"❌ Пользователь {target_id} не найден")
+        ban_user(target_id, days, reason)
+        bot.reply_to(message, f"✅ Пользователь {target_id} забанен")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        bot.reply_to(message, "❌ Использование: /ban ID [дни] [причина]")
 
 @bot.message_handler(commands=['unban'])
 def unban_command(message):
@@ -2051,10 +1900,8 @@ def unban_command(message):
         return
     try:
         target_id = int(message.text.split()[1])
-        if unban_user(target_id):
-            bot.reply_to(message, f"✅ Пользователь {target_id} разбанен")
-        else:
-            bot.reply_to(message, f"❌ Пользователь {target_id} не найден или не в бане")
+        unban_user(target_id)
+        bot.reply_to(message, f"✅ Пользователь {target_id} разбанен")
     except:
         bot.reply_to(message, "❌ Использование: /unban ID")
 
@@ -2064,9 +1911,6 @@ def createpromo_command(message):
         return
     try:
         parts = message.text.split()
-        if len(parts) < 4:
-            bot.reply_to(message, "❌ Использование: /createpromo КОД МОНЕТЫ ИСПОЛЬЗОВАНИЯ [ДНИ]")
-            return
         code = parts[1].upper()
         coins = int(parts[2])
         max_uses = int(parts[3])
@@ -2079,13 +1923,12 @@ def createpromo_command(message):
             'max_uses': max_uses,
             'used': 0,
             'expires_at': (datetime.now() + timedelta(days=days)).isoformat(),
-            'created_at': datetime.now().isoformat(),
             'used_by': []
         }
         save_json(PROMO_FILE, promos)
-        bot.reply_to(message, f"✅ Промокод {code} создан!\n{coins} монет, {max_uses} использований, {days} дней")
+        bot.reply_to(message, f"✅ Промокод {code} создан!")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        bot.reply_to(message, "❌ Использование: /createpromo КОД МОНЕТЫ ИСП ДНИ")
 
 @bot.message_handler(commands=['createrolepromo'])
 def createrolepromo_command(message):
@@ -2093,18 +1936,10 @@ def createrolepromo_command(message):
         return
     try:
         parts = message.text.split()
-        if len(parts) < 5:
-            bot.reply_to(message, "❌ Использование: /createrolepromo КОД РОЛЬ ДНИ ЛИМИТ")
-            return
         code = parts[1].upper()
         role = parts[2].capitalize()
         days = int(parts[3])
         max_uses = int(parts[4])
-        
-        roles = get_bot_roles()
-        if role not in roles:
-            bot.reply_to(message, f"❌ Роль {role} не найдена")
-            return
         
         promos = load_json(PROMO_FILE)
         promos[code] = {
@@ -2114,13 +1949,12 @@ def createrolepromo_command(message):
             'max_uses': max_uses,
             'used': 0,
             'expires_at': (datetime.now() + timedelta(days=30)).isoformat(),
-            'created_at': datetime.now().isoformat(),
             'used_by': []
         }
         save_json(PROMO_FILE, promos)
-        bot.reply_to(message, f"✅ Промокод {code} создан! Роль {role} на {days} дней, {max_uses} использований")
+        bot.reply_to(message, f"✅ Промокод {code} на роль {role} создан!")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        bot.reply_to(message, "❌ Использование: /createrolepromo КОД РОЛЬ ДНИ ЛИМИТ")
 
 @bot.message_handler(commands=['setreward'])
 def setreward_command(message):
@@ -2131,7 +1965,7 @@ def setreward_command(message):
         eco = get_economy_settings()
         eco['base_reward'] = reward
         save_economy_settings(eco)
-        bot.reply_to(message, f"✅ Награда за сообщение: {reward} монет")
+        bot.reply_to(message, f"✅ Награда за сообщение: {reward}💰")
     except:
         bot.reply_to(message, "❌ Использование: /setreward КОЛ-ВО")
 
@@ -2144,7 +1978,7 @@ def setbonusmin_command(message):
         eco = get_economy_settings()
         eco['base_bonus_min'] = bonus
         save_economy_settings(eco)
-        bot.reply_to(message, f"✅ Мин. бонус: {bonus} монет")
+        bot.reply_to(message, f"✅ Мин. бонус: {bonus}💰")
     except:
         bot.reply_to(message, "❌ Использование: /setbonusmin СУММА")
 
@@ -2157,7 +1991,7 @@ def setbonusmax_command(message):
         eco = get_economy_settings()
         eco['base_bonus_max'] = bonus
         save_economy_settings(eco)
-        bot.reply_to(message, f"✅ Макс. бонус: {bonus} монет")
+        bot.reply_to(message, f"✅ Макс. бонус: {bonus}💰")
     except:
         bot.reply_to(message, "❌ Использование: /setbonusmax СУММА")
 
@@ -2170,7 +2004,7 @@ def setinvite_command(message):
         eco = get_economy_settings()
         eco['base_invite'] = invite
         save_economy_settings(eco)
-        bot.reply_to(message, f"✅ Награда за инвайт: {invite} монет")
+        bot.reply_to(message, f"✅ Награда за инвайт: {invite}💰")
     except:
         bot.reply_to(message, "❌ Использование: /setinvite СУММА")
 
@@ -2183,7 +2017,7 @@ def setboost_command(message):
         multiplier = float(parts[1])
         hours = int(parts[2])
         set_temp_boost(multiplier, hours)
-        bot.reply_to(message, f"✅ Временный буст x{multiplier} на {hours} часов")
+        bot.reply_to(message, f"✅ Буст x{multiplier} на {hours} часов")
     except:
         bot.reply_to(message, "❌ Использование: /setboost МНОЖИТЕЛЬ ЧАСЫ")
 
@@ -2197,7 +2031,7 @@ def stats_command(message):
 
 👥 <b>Пользователей:</b> {stats['total_users']}
 💰 <b>Всего монет:</b> {stats['total_coins']:,}
-📊 <b>Всего сообщений:</b> {stats['total_messages']:,}
+📊 <b>Сообщений:</b> {stats['total_messages']:,}
 ✅ <b>Активных сегодня:</b> {stats['active_today']}
 🆕 <b>Новых сегодня:</b> {stats['new_today']}
 🟢 <b>Онлайн сейчас:</b> {stats['online_now']}
@@ -2223,32 +2057,30 @@ def mail_command(message):
             if message.reply_to_message.text:
                 bot.send_message(int(uid), message.reply_to_message.text)
             elif message.reply_to_message.photo:
-                bot.send_photo(int(uid), message.reply_to_message.photo[-1].file_id, 
-                              caption=message.reply_to_message.caption)
+                bot.send_photo(int(uid), message.reply_to_message.photo[-1].file_id)
             sent += 1
             time.sleep(0.05)
         except:
             failed += 1
     
-    bot.reply_to(message, f"✅ Рассылка завершена!\nОтправлено: {sent}\nНе доставлено: {failed}")
+    bot.reply_to(message, f"✅ Рассылка: {sent} отправлено, {failed} ошибок")
 
 @bot.message_handler(commands=['backup'])
 def backup_command(message):
     if not is_master(message.from_user.id):
         return
-    
+    import shutil
     backup_dir = f"backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     os.makedirs(backup_dir, exist_ok=True)
     
-    files = [USERS_FILE, PROMO_FILE, TEMP_ROLES_FILE, ECONOMY_FILE, DAILY_TASKS_FILE, 
+    files = [USERS_FILE, PROMO_FILE, TEMP_ROLES_FILE, ECONOMY_FILE, DAILY_TASKS_FILE,
              TEMP_BOOST_FILE, TREASURY_FILE, SETTINGS_FILE, BOT_ROLES_FILE]
     
     for file in files:
         if os.path.exists(file):
-            import shutil
             shutil.copy(file, os.path.join(backup_dir, file))
     
-    bot.reply_to(message, f"✅ Бэкап создан в папке {backup_dir}")
+    bot.reply_to(message, f"✅ Бэкап создан в {backup_dir}")
 
 # ========== ОБРАБОТЧИК КНОПОК ==========
 @bot.callback_query_handler(func=lambda call: True)
@@ -2266,7 +2098,7 @@ def callback_handler(call):
         first_name = call.from_user.first_name
         user = create_user(uid, username, first_name)
     
-    # ========== НАВИГАЦИЯ ==========
+    # Навигация
     if data == "back_to_main":
         show_main_menu(call)
         bot.answer_callback_query(call.id)
@@ -2340,12 +2172,13 @@ def callback_handler(call):
         bot.answer_callback_query(call.id)
         return
     
-    # ========== ПОКУПКА РОЛИ ==========
+    # Покупка роли
     elif data.startswith("perm_"):
         role = data.replace("perm_", "")
         roles = get_bot_roles()
         price = roles[role]['price']
         cashback = get_user_cashback(uid)
+        
         text = f"""
 <b>🎭 {role}</b>
 
@@ -2355,8 +2188,6 @@ def callback_handler(call):
 
 ▸ <b>Твой баланс:</b> {user['coins']:,}💰
 ▸ <b>Твой кешбэк:</b> {cashback}%
-
-{'' if user['coins'] >= price else '❌ Не хватает монет!'}
 """
         try:
             bot.edit_message_caption(
@@ -2379,7 +2210,7 @@ def callback_handler(call):
             show_main_menu(call)
         return
     
-    # ========== ПЕРЕКЛЮЧЕНИЕ РОЛИ ==========
+    # Переключение роли
     elif data.startswith("toggle_"):
         role = data.replace("toggle_", "")
         active = user.get('active_roles', [])
@@ -2392,56 +2223,13 @@ def callback_handler(call):
             msg = f"✅ Роль {role} включена"
         
         bot.answer_callback_query(call.id, msg)
-        
-        # Обновляем страницу
-        user = get_user(uid)
-        roles = user.get('roles', [])
-        active = user.get('active_roles', [])
-        
-        page = 1
-        if call.message.reply_markup:
-            for row in call.message.reply_markup.keyboard:
-                for btn in row:
-                    if btn.callback_data and btn.callback_data.startswith("myroles_page_"):
-                        page = int(btn.callback_data.replace("myroles_page_", ""))
-                        break
-        
-        text = get_text('myroles')
-        total_pages = (len(roles) + 2) // 3 if roles else 1
-        start = (page - 1) * 3
-        end = start + 3
-        current_roles = roles[start:end]
-        
-        if not roles:
-            roles_text = "😕 У тебя пока нет ролей!"
-        else:
-            roles_text = ""
-            for r in current_roles:
-                status = "✅" if r in active else "❌"
-                roles_text += f"{status} <b>{r}</b>\n"
-        
-        formatted_text = format_text(text, uid,
-                                     page=page,
-                                     total_pages=total_pages,
-                                     roles_text=roles_text,
-                                     coins=user['coins'])
-        
-        try:
-            bot.edit_message_caption(
-                call.message.chat.id,
-                call.message.message_id,
-                caption=formatted_text,
-                parse_mode='HTML',
-                reply_markup=get_myroles_keyboard(roles, active, page) if roles else get_back_keyboard()
-            )
-        except:
-            pass
+        show_myroles(call)
         return
     
-    # ========== ДОНАТ В КАЗНУ ==========
+    # Донат
     elif data.startswith("donate_"):
         if data == "donate_custom":
-            msg = bot.send_message(uid, "💰 Введи сумму пожертвования (число):")
+            msg = bot.send_message(uid, "💰 Введи сумму пожертвования:")
             bot.register_next_step_handler(msg, process_custom_donate, call.message)
             bot.answer_callback_query(call.id)
             return
@@ -2460,13 +2248,9 @@ def callback_handler(call):
             show_bonus(call)
         return
     
-    # ========== АДМИН-ПАНЕЛЬ ==========
+    # Админ-панель
     elif data == "admin_back":
-        text = """
-<b>🔧 АДМИН-ПАНЕЛЬ</b>
-
-Выберите раздел для управления:
-"""
+        text = "<b>🔧 АДМИН-ПАНЕЛЬ</b>\n\nВыберите раздел:"
         try:
             bot.edit_message_text(
                 text,
@@ -2488,12 +2272,12 @@ def callback_handler(call):
         text = f"""
 <b>📊 СТАТИСТИКА</b>
 
-👥 <b>Пользователей:</b> {stats['total_users']}
-💰 <b>Всего монет:</b> {stats['total_coins']:,}
-📊 <b>Всего сообщений:</b> {stats['total_messages']:,}
-✅ <b>Активных сегодня:</b> {stats['active_today']}
-🆕 <b>Новых сегодня:</b> {stats['new_today']}
-🟢 <b>Онлайн сейчас:</b> {stats['online_now']}
+👥 Пользователей: {stats['total_users']}
+💰 Всего монет: {stats['total_coins']:,}
+📊 Сообщений: {stats['total_messages']:,}
+✅ Активных сегодня: {stats['active_today']}
+🆕 Новых сегодня: {stats['new_today']}
+🟢 Онлайн сейчас: {stats['online_now']}
 """
         try:
             bot.edit_message_text(
@@ -2516,13 +2300,13 @@ def callback_handler(call):
 <b>👥 УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ</b>
 
 Команды:
-/addcoins ID СУММА — выдать монеты
-/removecoins ID СУММА — снять монеты
-/giverole ID РОЛЬ — выдать роль
-/removerole ID РОЛЬ — снять роль
-/tempgive ID РОЛЬ ДНИ — временная роль
-/ban ID [дни] — забанить
-/unban ID — разбанить
+/addcoins ID СУММА
+/removecoins ID СУММА
+/giverole ID РОЛЬ
+/removerole ID РОЛЬ
+/tempgive ID РОЛЬ ДНИ
+/ban ID [дни]
+/unban ID
 """
         try:
             bot.edit_message_text(
@@ -2545,8 +2329,8 @@ def callback_handler(call):
 <b>💰 УПРАВЛЕНИЕ МОНЕТАМИ</b>
 
 Команды:
-/addcoins ID СУММА — выдать монеты
-/removecoins ID СУММА — снять монеты
+/addcoins ID СУММА
+/removecoins ID СУММА
 """
         try:
             bot.edit_message_text(
@@ -2565,17 +2349,12 @@ def callback_handler(call):
         if not is_master(uid):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
-        
         roles = get_bot_roles()
         text = "<b>🎭 УПРАВЛЕНИЕ БОТ-РОЛЯМИ</b>\n\n"
-        text += "<b>Текущие роли:</b>\n"
-        for name, data in roles.items():
-            text += f"• {name} — {data['price']:,}💰 | x{data['multiplier']} | {data['cashback']}% кешбэк\n"
-        text += "\n<b>Команды:</b>\n"
-        text += "/addbotrole НАЗВАНИЕ ЦЕНА МНОЖИТЕЛЬ КЕШБЭК\n"
-        text += "/delbotrole НАЗВАНИЕ\n"
-        text += "/editbotrole НАЗВАНИЕ поле значение\n"
-        text += "/listbotroles — список ролей\n"
+        for name, r in list(roles.items())[:5]:
+            text += f"• {name} — {r['price']:,}💰\n"
+        text += f"\nВсего ролей: {len(roles)}\n\n"
+        text += "Команды:\n/addbotrole НАЗВАНИЕ ЦЕНА МНОЖИТЕЛЬ КЕШБЭК\n/delbotrole НАЗВАНИЕ\n/editbotrole НАЗВАНИЕ поле значение\n/listbotroles"
         
         try:
             bot.edit_message_text(
@@ -2623,14 +2402,10 @@ def callback_handler(call):
         text = """
 <b>✏️ РЕДАКТИРОВАНИЕ РОЛИ</b>
 
-Используй команду:
+Команда:
 /editbotrole НАЗВАНИЕ поле значение
 
-Доступные поля:
-• price — цена
-• multiplier — множитель
-• cashback — кешбэк в %
-• invite_bonus — бонус за инвайт
+Поля: price, multiplier, cashback, invite_bonus
 
 Пример:
 /editbotrole Legend price 60000
@@ -2656,7 +2431,7 @@ def callback_handler(call):
         text = """
 <b>🗑 УДАЛЕНИЕ РОЛИ</b>
 
-Используй команду:
+Команда:
 /delbotrole НАЗВАНИЕ
 
 Пример:
@@ -2681,12 +2456,12 @@ def callback_handler(call):
             return
         roles = get_bot_roles()
         text = "<b>📋 СПИСОК БОТ-РОЛЕЙ</b>\n\n"
-        for name, data in roles.items():
+        for name, r in roles.items():
             text += f"<b>{name}</b>\n"
-            text += f"  💰 Цена: {data['price']:,}\n"
-            text += f"  📈 Множитель: x{data['multiplier']}\n"
-            text += f"  💸 Кешбэк: {data['cashback']}%\n"
-            text += f"  🎁 Бонус инвайт: +{data['invite_bonus']}💰\n\n"
+            text += f"  💰 Цена: {r['price']:,}\n"
+            text += f"  📈 Множитель: x{r['multiplier']}\n"
+            text += f"  💸 Кешбэк: {r['cashback']}%\n"
+            text += f"  🎁 Бонус: +{r['invite_bonus']}💰\n\n"
         try:
             bot.edit_message_text(
                 text,
@@ -2708,8 +2483,8 @@ def callback_handler(call):
 <b>🚫 УПРАВЛЕНИЕ БАНАМИ</b>
 
 Команды:
-/ban ID [дни] [причина] — забанить
-/unban ID — разбанить
+/ban ID [дни] [причина]
+/unban ID
 """
         try:
             bot.edit_message_text(
@@ -2732,8 +2507,8 @@ def callback_handler(call):
 <b>🎁 УПРАВЛЕНИЕ ПРОМОКОДАМИ</b>
 
 Команды:
-/createpromo КОД МОНЕТЫ ИСП ДНИ — создать промокод на монеты
-/createrolepromo КОД РОЛЬ ДНИ ЛИМИТ — промокод на роль
+/createpromo КОД МОНЕТЫ ИСП ДНИ
+/createrolepromo КОД РОЛЬ ДНИ ЛИМИТ
 """
         try:
             bot.edit_message_text(
@@ -2754,22 +2529,21 @@ def callback_handler(call):
             return
         eco = get_economy_settings()
         boost = get_temp_boost()
-        boost_text = f"x{boost['multiplier']} до {boost['expires'][:16]}" if boost else "Нет"
+        boost_text = f"x{boost['multiplier']}" if boost else "Нет"
         text = f"""
 <b>⚙️ НАСТРОЙКИ ЭКОНОМИКИ</b>
 
-📊 <b>За сообщение:</b> {eco['base_reward']} монет
-🎁 <b>Бонус:</b> {eco['base_bonus_min']}-{eco['base_bonus_max']} монет
-👥 <b>Инвайт:</b> {eco['base_invite']} монет
+📊 За сообщение: {eco['base_reward']}💰
+🎁 Бонус: {eco['base_bonus_min']}-{eco['base_bonus_max']}💰
+👥 Инвайт: {eco['base_invite']}💰
+⚡️ Буст: {boost_text}
 
-⚡️ <b>Временный буст:</b> {boost_text}
-
-<b>Команды:</b>
-/setreward КОЛ-ВО — изменить награду
-/setbonusmin СУММА — мин. бонус
-/setbonusmax СУММА — макс. бонус
-/setinvite СУММА — награда за инвайт
-/setboost МНОЖИТЕЛЬ ЧАСЫ — временный буст
+Команды:
+/setreward КОЛ-ВО
+/setbonusmin СУММА
+/setbonusmax СУММА
+/setinvite СУММА
+/setboost МНОЖИТЕЛЬ ЧАСЫ
 """
         try:
             bot.edit_message_text(
@@ -2792,16 +2566,11 @@ def callback_handler(call):
         text = f"""
 <b>💰 КАЗНА</b>
 
-📊 <b>Баланс:</b> {stats['balance']:,}💰
-🎯 <b>Цель:</b> {stats['goal']:,}💰 ({stats['percent']}%)
-📝 <b>Описание:</b> {stats['goal_description']}
-🏆 <b>Топ доноров:</b>
-
+📊 Баланс: {stats['balance']:,}💰
+🎯 Цель: {stats['goal']:,}💰 ({stats['percent']}%)
+📝 {stats['goal_description']}
+🏆 Доноров: {len(stats['top_donors'])}
 """
-        for i, donor in enumerate(stats['top_donors'][:5], 1):
-            medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
-            text += f"{medal} {donor['name']} — {donor['amount']:,}💰\n"
-        
         try:
             bot.edit_message_text(
                 text,
@@ -2819,7 +2588,7 @@ def callback_handler(call):
         if not is_master(uid):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
-        msg = bot.send_message(uid, "🎯 Введи новую цель для казны (число):\nПример: 100000")
+        msg = bot.send_message(uid, "🎯 Введи новую цель (число):")
         bot.register_next_step_handler(msg, process_set_treasury_goal)
         bot.answer_callback_query(call.id)
         return
@@ -2828,7 +2597,7 @@ def callback_handler(call):
         if not is_master(uid):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
-        msg = bot.send_message(uid, "💸 Введи сумму для вывода из казны:")
+        msg = bot.send_message(uid, "💸 Введи сумму для вывода:")
         bot.register_next_step_handler(msg, process_treasury_withdraw)
         bot.answer_callback_query(call.id)
         return
@@ -2837,7 +2606,7 @@ def callback_handler(call):
         if not is_master(uid):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
-        msg = bot.send_message(uid, "➕ Введи сумму для добавления в казну:")
+        msg = bot.send_message(uid, "➕ Введи сумму для добавления:")
         bot.register_next_step_handler(msg, process_treasury_add)
         bot.answer_callback_query(call.id)
         return
@@ -2847,7 +2616,7 @@ def callback_handler(call):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         reset_treasury()
-        bot.answer_callback_query(call.id, "✅ Прогресс казны сброшен", show_alert=True)
+        bot.answer_callback_query(call.id, "✅ Прогресс сброшен", show_alert=True)
         show_admin_treasury(call)
         return
     
@@ -2859,11 +2628,11 @@ def callback_handler(call):
         text = f"""
 <b>💰 СТАТИСТИКА КАЗНЫ</b>
 
-📊 <b>Баланс:</b> {stats['balance']:,}💰
-📈 <b>Всего собрано:</b> {stats['total_collected']:,}💰
-📉 <b>Всего выведено:</b> {stats['total_withdrawn']:,}💰
-🎯 <b>Цель:</b> {stats['goal']:,}💰 ({stats['percent']}%)
-📝 <b>Описание:</b> {stats['goal_description']}
+📊 Баланс: {stats['balance']:,}💰
+📈 Собрано: {stats['total_collected']:,}💰
+📉 Выведено: {stats['total_withdrawn']:,}💰
+🎯 Цель: {stats['goal']:,}💰 ({stats['percent']}%)
+📝 {stats['goal_description']}
 
 <b>🏆 Топ доноров:</b>
 """
@@ -2891,15 +2660,14 @@ def callback_handler(call):
         text = """
 <b>✏️ УПРАВЛЕНИЕ ТЕКСТАМИ</b>
 
-Выбери раздел для изменения текста:
+Выбери раздел для редактирования:
 
 Используй команду:
 /settext КЛЮЧ
-Текст с HTML тегами
+Текст с HTML
 
-Пример:
-/settext main
-<b>Привет!</b> Твой баланс: {coins}💰
+Доступные ключи:
+main, shop, myroles, profile, tasks, bonus, invite, leaders, info, help, treasury
 """
         try:
             bot.edit_message_text(
@@ -2919,8 +2687,8 @@ def callback_handler(call):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         key = data.replace("text_edit_", "")
-        current_text = get_text(key)
-        msg = bot.send_message(uid, f"✏️ Редактирование текста: <b>{key}</b>\n\nТекущий текст:\n<code>{current_text[:200]}...</code>\n\nВведи новый текст (можно с HTML тегами):", parse_mode='HTML')
+        current = get_text(key)[:200]
+        msg = bot.send_message(uid, f"✏️ Редактирование: {key}\n\nТекущий текст:\n{current}...\n\nВведи новый текст (с HTML):")
         bot.register_next_step_handler(msg, process_set_text, key)
         bot.answer_callback_query(call.id)
         return
@@ -2935,10 +2703,10 @@ def callback_handler(call):
 Выбери раздел для изменения фото:
 
 Используй команду:
-/setphoto КЛЮЧ [ссылка] или ответь на фото
+/setphoto КЛЮЧ (ответ на фото)
 
-Пример:
-/setphoto main https://example.com/image.jpg
+Доступные ключи:
+main, shop, myroles, profile, tasks, bonus, leaders, treasury
 """
         try:
             bot.edit_message_text(
@@ -2958,8 +2726,7 @@ def callback_handler(call):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         key = data.replace("image_edit_", "")
-        current_image = get_image(key)
-        msg = bot.send_message(uid, f"🖼️ Редактирование фото: <b>{key}</b>\n\nТекущее фото:\n{current_image}\n\nОтправь новое фото или ссылку:", parse_mode='HTML')
+        msg = bot.send_message(uid, f"🖼️ Редактирование фото: {key}\n\nОтправь новое фото (ответом на это сообщение):")
         bot.register_next_step_handler(msg, process_set_image, key)
         bot.answer_callback_query(call.id)
         return
@@ -2996,8 +2763,8 @@ def callback_handler(call):
         text = """
 <b>📦 БЭКАП</b>
 
-Используй команду:
-/backup — создать бэкап всех данных
+Команда:
+/backup
 
 Бэкап создаётся в папке backup_дата_время
 """
@@ -3025,38 +2792,34 @@ def process_custom_donate(message, original_message):
         if amount <= 0:
             bot.send_message(user_id, "❌ Сумма должна быть положительной")
             return
-        
         success, msg = donate_to_treasury(user_id, amount)
         bot.send_message(user_id, msg)
         if success:
-            # Обновляем сообщение с казной
             show_treasury_by_message(user_id, original_message)
-    except ValueError:
+    except:
         bot.send_message(user_id, "❌ Введи число!")
 
 def show_treasury_by_message(user_id, original_message):
     stats = get_treasury_stats()
-    
     donors_text = ""
     for i, donor in enumerate(stats['top_donors'][:5], 1):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
         donors_text += f"{medal} {donor['name']} — <b>{donor['amount']:,}💰</b>\n"
-    
     if not donors_text:
         donors_text = "Пока нет донатов 😢"
     
     text = get_text('treasury')
-    formatted_text = format_text(text, user_id,
-                                 collected=stats['balance'],
-                                 goal=stats['goal'],
-                                 percent=stats['percent'],
-                                 goal_description=stats['goal_description'],
-                                 donors_text=donors_text,
-                                 user_donated=get_user_variable(user_id, 'donated', 0))
+    formatted = format_text(text, user_id,
+                           collected=stats['balance'],
+                           goal=stats['goal'],
+                           percent=stats['percent'],
+                           goal_description=stats['goal_description'],
+                           donors_text=donors_text,
+                           user_donated=get_user_variable(user_id, 'donated', 0))
     
     try:
         bot.edit_message_media(
-            types.InputMediaPhoto(get_image('treasury'), caption=formatted_text, parse_mode='HTML'),
+            types.InputMediaPhoto(get_image('treasury'), caption=formatted, parse_mode='HTML'),
             original_message.chat.id,
             original_message.message_id,
             reply_markup=get_treasury_keyboard()
@@ -3071,8 +2834,8 @@ def process_set_treasury_goal(message):
     try:
         goal = int(message.text.strip())
         set_treasury_goal(goal)
-        bot.send_message(user_id, f"✅ Цель казны установлена: {goal}💰")
-    except ValueError:
+        bot.send_message(user_id, f"✅ Цель установлена: {goal}💰")
+    except:
         bot.send_message(user_id, "❌ Введи число!")
 
 def process_treasury_withdraw(message):
@@ -3083,10 +2846,10 @@ def process_treasury_withdraw(message):
         amount = int(message.text.strip())
         success, balance = withdraw_from_treasury(amount)
         if success:
-            bot.send_message(user_id, f"✅ Выведено {amount}💰 из казны. Остаток: {balance}💰")
+            bot.send_message(user_id, f"✅ Выведено {amount}💰. Остаток: {balance}💰")
         else:
-            bot.send_message(user_id, f"❌ Недостаточно средств! В казне: {balance}💰")
-    except ValueError:
+            bot.send_message(user_id, f"❌ Недостаточно! В казне: {balance}💰")
+    except:
         bot.send_message(user_id, "❌ Введи число!")
 
 def process_treasury_add(message):
@@ -3095,42 +2858,36 @@ def process_treasury_add(message):
         return
     try:
         amount = int(message.text.strip())
-        add_to_treasury(amount, "Админ")
+        add_to_treasury(amount)
         bot.send_message(user_id, f"✅ Добавлено {amount}💰 в казну")
-    except ValueError:
+    except:
         bot.send_message(user_id, "❌ Введи число!")
 
 def process_set_text(message, key):
     user_id = message.from_user.id
     if not is_master(user_id):
         return
-    text = message.text
-    set_text(key, text)
+    set_text(key, message.text)
     bot.send_message(user_id, f"✅ Текст для {key} обновлен")
 
 def process_set_image(message, key):
     user_id = message.from_user.id
     if not is_master(user_id):
         return
-    
     if message.photo:
-        photo = message.photo[-1].file_id
-        set_image(key, photo)
-        bot.send_message(user_id, f"✅ Фото для {key} обновлено")
-    elif message.text and message.text.startswith('http'):
-        set_image(key, message.text)
+        set_image(key, message.photo[-1].file_id)
         bot.send_message(user_id, f"✅ Фото для {key} обновлено")
     else:
-        bot.send_message(user_id, "❌ Отправь фото или ссылку на изображение")
+        bot.send_message(user_id, "❌ Отправь фото!")
 
 def show_admin_treasury(call):
     stats = get_treasury_stats()
     text = f"""
 <b>💰 КАЗНА</b>
 
-📊 <b>Баланс:</b> {stats['balance']:,}💰
-🎯 <b>Цель:</b> {stats['goal']:,}💰 ({stats['percent']}%)
-📝 <b>Описание:</b> {stats['goal_description']}
+📊 Баланс: {stats['balance']:,}💰
+🎯 Цель: {stats['goal']:,}💰 ({stats['percent']}%)
+📝 {stats['goal_description']}
 """
     try:
         bot.edit_message_text(
@@ -3158,7 +2915,6 @@ def background_tasks():
     while True:
         time.sleep(3600)
         try:
-            # Проверка временных ролей
             temp_roles = load_json(TEMP_ROLES_FILE)
             now = datetime.now()
             changed = False
@@ -3166,57 +2922,40 @@ def background_tasks():
             for user_id, roles in list(temp_roles.items()):
                 for role in roles[:]:
                     try:
-                        expires = datetime.fromisoformat(role['expires'])
-                        if expires < now:
+                        if datetime.fromisoformat(role['expires']) < now:
                             remove_role(int(user_id), role['role'])
                             roles.remove(role)
                             changed = True
                     except:
                         pass
-                
                 if not roles:
                     del temp_roles[user_id]
                     changed = True
             
             if changed:
                 save_json(TEMP_ROLES_FILE, temp_roles)
-            
-            # Обновляем статистику по времени
-            current_hour = datetime.now().hour
-            users = load_json(USERS_FILE)
-            for uid, data in users.items():
-                if 'variables' in data:
-                    data['variables'][f'stats_hour_{current_hour}'] = data['variables'].get(f'stats_hour_{current_hour}', 0) + 1
-            save_json(USERS_FILE, users)
-            
         except Exception as e:
-            print(f"❌ Ошибка в фоне: {e}")
+            print(f"❌ Ошибка: {e}")
 
 # ========== ЗАПУСК ==========
 if __name__ == "__main__":
-    # Инициализация
     init_files()
     
     print("=" * 50)
     print("🚀 ROLE SHOP BOT V4.0")
     print("=" * 50)
-    print(f"👑 Админ ID: {MASTER_IDS[0]}")
-    print(f"📢 Чат ID: {CHAT_ID}")
-    print(f"🎭 Бот-ролей: {len(get_bot_roles())}")
+    print(f"👑 Админ: {MASTER_IDS[0]}")
+    print(f"📢 Чат: {CHAT_ID}")
+    print(f"🎭 Ролей: {len(get_bot_roles())}")
     print(f"💰 Казна: {get_treasury()['balance']}💰")
     print("=" * 50)
-    print("✅ Бот успешно запущен!")
-    print("⏰ Фоновые задачи активны")
-    print("=" * 50)
+    print("✅ Бот запущен!")
     
-    # Запуск фоновых задач
     threading.Thread(target=background_tasks, daemon=True).start()
     
-    # Запуск бота
     while True:
         try:
             bot.infinity_polling(timeout=10, long_polling_timeout=5)
         except Exception as e:
             print(f"❌ Ошибка: {e}")
-            print("🔄 Перезапуск через 5 секунд...")
             time.sleep(5)
