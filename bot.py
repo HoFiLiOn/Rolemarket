@@ -6,6 +6,7 @@ import time
 import random
 from datetime import datetime, timedelta
 import threading
+import re
 
 # ========== ТОКЕН ==========
 TOKEN = "8272462109:AAH2DjVD2cNhGb7aK9MTXZhkL3NCF1fQ6T0"
@@ -26,7 +27,8 @@ DAILY_TASKS_FILE = "daily_tasks.json"
 TEMP_BOOST_FILE = "temp_boost.json"
 CUSTOM_SECTIONS_FILE = "custom_sections.json"
 TREASURY_FILE = "treasury.json"
-MESSAGES_FILE = "messages.json"  # Файл для хранения ID сообщений
+MESSAGES_FILE = "messages.json"
+USER_STATES_FILE = "user_states.json"
 
 # ========== КАРТИНКИ ==========
 IMAGES = {
@@ -100,7 +102,6 @@ def save_json(file, data):
 
 # ========== ХРАНЕНИЕ ID СООБЩЕНИЙ ==========
 def get_user_message(user_id, key):
-    """Получить ID сообщения пользователя"""
     messages = load_json(MESSAGES_FILE)
     user_id = str(user_id)
     if user_id in messages:
@@ -108,7 +109,6 @@ def get_user_message(user_id, key):
     return None
 
 def set_user_message(user_id, key, message_id):
-    """Сохранить ID сообщения пользователя"""
     messages = load_json(MESSAGES_FILE)
     user_id = str(user_id)
     if user_id not in messages:
@@ -117,12 +117,36 @@ def set_user_message(user_id, key, message_id):
     save_json(MESSAGES_FILE, messages)
 
 def clear_user_message(user_id, key):
-    """Очистить ID сообщения"""
     messages = load_json(MESSAGES_FILE)
     user_id = str(user_id)
     if user_id in messages and key in messages[user_id]:
         del messages[user_id][key]
         save_json(MESSAGES_FILE, messages)
+
+# ========== СОСТОЯНИЯ ПОЛЬЗОВАТЕЛЕЙ ==========
+def set_user_state(user_id, state, data=None):
+    states = load_json(USER_STATES_FILE)
+    user_id = str(user_id)
+    if user_id not in states:
+        states[user_id] = {}
+    states[user_id]['state'] = state
+    if data:
+        states[user_id]['data'] = data
+    save_json(USER_STATES_FILE, states)
+
+def get_user_state(user_id):
+    states = load_json(USER_STATES_FILE)
+    user_id = str(user_id)
+    if user_id in states:
+        return states[user_id].get('state'), states[user_id].get('data')
+    return None, None
+
+def clear_user_state(user_id):
+    states = load_json(USER_STATES_FILE)
+    user_id = str(user_id)
+    if user_id in states:
+        del states[user_id]
+        save_json(USER_STATES_FILE, states)
 
 # ========== КАСТОМНЫЕ РАЗДЕЛЫ ==========
 def get_custom_sections():
@@ -159,8 +183,11 @@ def donate_to_treasury(user_id, amount):
     if user_id not in users:
         return False, "❌ Ты не зарегистрирован"
     
+    if amount < 1:
+        return False, "❌ Сумма должна быть больше 0"
+    
     if users[user_id]['coins'] < amount:
-        return False, f"❌ Недостаточно монет! Нужно {amount}💰"
+        return False, f"❌ Недостаточно монет! У тебя {users[user_id]['coins']}💰, нужно {amount}💰"
     
     users[user_id]['coins'] -= amount
     users[user_id]['total_spent'] += amount
@@ -849,7 +876,7 @@ def get_social_keyboard():
 
 # ========== ФУНКЦИЯ ДЛЯ РЕДАКТИРОВАНИЯ СООБЩЕНИЙ ==========
 def edit_or_send(chat_id, user_id, key, text, photo=None, reply_markup=None):
-    """Редактирует существующее сообщение или отправляет новое если нет"""
+    """Редактирует существующее сообщение или отправляет новое"""
     message_id = get_user_message(user_id, key)
     
     try:
@@ -868,8 +895,9 @@ def edit_or_send(chat_id, user_id, key, text, photo=None, reply_markup=None):
                 return message_id
             except Exception as e:
                 print(f"Ошибка редактирования: {e}")
-                # Если не получилось отредактировать - удаляем старый ID
+                # Если не получилось - удаляем старый ID
                 clear_user_message(user_id, key)
+                message_id = None
         
         # Отправляем новое сообщение
         if photo:
@@ -984,15 +1012,8 @@ def start_command(message):
         except:
             pass
     
-    # Очищаем старые сообщения при новом старте
-    clear_user_message(user_id, 'main_menu')
-    clear_user_message(user_id, 'shop')
-    clear_user_message(user_id, 'myroles')
-    clear_user_message(user_id, 'profile')
-    clear_user_message(user_id, 'tasks')
-    clear_user_message(user_id, 'bonus')
-    clear_user_message(user_id, 'treasury')
-    clear_user_message(user_id, 'leaders')
+    # Очищаем состояние
+    clear_user_state(user_id)
     
     show_main_menu(message)
 
@@ -1433,6 +1454,61 @@ def mail_command(message):
     
     bot.reply_to(message, f"✅ Рассылка: {sent} отправлено, {failed} не доставлено")
 
+# ========== ОБРАБОТЧИК ТЕКСТОВЫХ СООБЩЕНИЙ (ДЛЯ СВОЕЙ СУММЫ) ==========
+@bot.message_handler(func=lambda message: True, content_types=['text'])
+def handle_text_messages(message):
+    user_id = message.from_user.id
+    
+    # Проверяем состояние пользователя
+    state, data = get_user_state(user_id)
+    
+    if state == 'waiting_treasury_amount':
+        try:
+            # Пробуем распарсить сумму
+            amount = int(message.text.strip())
+            
+            # Проверяем что сумма положительная
+            if amount <= 0:
+                bot.reply_to(message, "❌ Сумма должна быть больше 0")
+                clear_user_state(user_id)
+                return
+            
+            # Проверяем что сумма не слишком большая
+            if amount > 1000000:
+                bot.reply_to(message, "❌ Сумма не может быть больше 1,000,000")
+                clear_user_state(user_id)
+                return
+            
+            # Выполняем донат
+            success, msg = donate_to_treasury(user_id, amount)
+            bot.reply_to(message, msg, parse_mode='HTML')
+            
+            if success:
+                # Обновляем казну
+                text = get_treasury_text(user_id)
+                edit_or_send(
+                    message.chat.id, user_id, 'treasury',
+                    text, IMAGES['treasury'], get_treasury_keyboard()
+                )
+            
+        except ValueError:
+            bot.reply_to(message, "❌ Введи число (например: 2000)")
+        except Exception as e:
+            bot.reply_to(message, f"❌ Ошибка: {e}")
+        
+        # Очищаем состояние
+        clear_user_state(user_id)
+        return
+    
+    # Если не в состоянии - обрабатываем как обычное сообщение в чате
+    if message.chat.id == CHAT_ID and not message.from_user.is_bot:
+        if not is_banned(user_id):
+            add_message(user_id)
+            update_daily_task(user_id, 'messages_50')
+            update_daily_task(user_id, 'messages_100')
+            update_daily_task(user_id, 'messages_200')
+            update_daily_task(user_id, 'messages_500')
+
 # ========== ОБРАБОТЧИК КНОПОК ==========
 @bot.callback_query_handler(func=lambda call: True)
 def callback_handler(call):
@@ -1453,6 +1529,7 @@ def callback_handler(call):
     if data == "back_to_main":
         show_main_menu(call)
         bot.answer_callback_query(call.id)
+        return
     
     # ===== МАГАЗИН =====
     elif data == "shop":
@@ -1462,6 +1539,7 @@ def callback_handler(call):
             text, IMAGES['shop'], get_shop_keyboard(1)
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data.startswith("shop_page_"):
         page = int(data.replace("shop_page_", ""))
@@ -1471,6 +1549,7 @@ def callback_handler(call):
             text, IMAGES['shop'], get_shop_keyboard(page)
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data.startswith("perm_"):
         role = data.replace("perm_", "")
@@ -1488,6 +1567,7 @@ def callback_handler(call):
             text, None, get_role_keyboard(role)
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data.startswith("buy_"):
         role = data.replace("buy_", "")
@@ -1495,6 +1575,7 @@ def callback_handler(call):
         bot.answer_callback_query(call.id, msg, show_alert=True)
         if success:
             show_main_menu(call)
+        return
     
     # ===== МОИ РОЛИ =====
     elif data == "myroles":
@@ -1507,6 +1588,7 @@ def callback_handler(call):
             text, IMAGES['myroles'], keyboard
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data.startswith("myroles_page_"):
         page = int(data.replace("myroles_page_", ""))
@@ -1518,6 +1600,7 @@ def callback_handler(call):
             text, IMAGES['myroles'], get_myroles_keyboard(roles, active, page)
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data.startswith("toggle_"):
         role = data.replace("toggle_", "")
@@ -1549,6 +1632,7 @@ def callback_handler(call):
             call.message.chat.id, uid, 'myroles',
             text, IMAGES['myroles'], get_myroles_keyboard(roles, active, page)
         )
+        return
     
     # ===== ПРОФИЛЬ =====
     elif data == "profile":
@@ -1558,6 +1642,7 @@ def callback_handler(call):
             text, IMAGES['profile'], get_back_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     # ===== ЗАДАНИЯ =====
     elif data == "tasks":
@@ -1568,6 +1653,7 @@ def callback_handler(call):
             text, IMAGES['tasks'], get_back_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     # ===== БОНУС =====
     elif data == "bonus":
@@ -1577,6 +1663,7 @@ def callback_handler(call):
             text, IMAGES['bonus'], get_bonus_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data == "daily":
         bonus, msg = get_daily_bonus(uid)
@@ -1588,6 +1675,7 @@ def callback_handler(call):
                 call.message.chat.id, uid, 'bonus',
                 text, IMAGES['bonus'], get_bonus_keyboard()
             )
+        return
     
     # ===== КАЗНА =====
     elif data == "treasury":
@@ -1597,22 +1685,38 @@ def callback_handler(call):
             text, IMAGES['treasury'], get_treasury_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data.startswith("treasury_donate_"):
         if data == "treasury_donate_custom":
-            bot.answer_callback_query(call.id, "Введи сумму в чат (только число)")
+            # Устанавливаем состояние ожидания суммы
+            set_user_state(uid, 'waiting_treasury_amount')
+            
+            # Отправляем сообщение с просьбой ввести сумму
+            bot.send_message(
+                call.message.chat.id,
+                "💰 <b>Введи сумму пожертвования</b>\n\n"
+                "Напиши число (например: 2000)\n"
+                "Отправь 0 чтобы отменить",
+                parse_mode='HTML'
+            )
+            bot.answer_callback_query(call.id)
             return
         
-        amount = int(data.replace("treasury_donate_", ""))
-        success, msg = donate_to_treasury(uid, amount)
-        bot.answer_callback_query(call.id, msg, show_alert=True)
-        
-        if success:
-            text = get_treasury_text(uid)
-            edit_or_send(
-                call.message.chat.id, uid, 'treasury',
-                text, IMAGES['treasury'], get_treasury_keyboard()
-            )
+        try:
+            amount = int(data.replace("treasury_donate_", ""))
+            success, msg = donate_to_treasury(uid, amount)
+            bot.answer_callback_query(call.id, msg, show_alert=True)
+            
+            if success:
+                text = get_treasury_text(uid)
+                edit_or_send(
+                    call.message.chat.id, uid, 'treasury',
+                    text, IMAGES['treasury'], get_treasury_keyboard()
+                )
+        except:
+            bot.answer_callback_query(call.id, "❌ Ошибка", show_alert=True)
+        return
     
     elif data == "treasury_top":
         treasury = init_treasury()
@@ -1628,6 +1732,7 @@ def callback_handler(call):
             text, None, get_treasury_top_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data == "treasury_history":
         treasury = init_treasury()
@@ -1640,6 +1745,7 @@ def callback_handler(call):
             text, None, get_treasury_history_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     # ===== ПРИГЛАСИТЬ =====
     elif data == "invite":
@@ -1650,6 +1756,7 @@ def callback_handler(call):
             text, None, get_back_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     # ===== ЛИДЕРЫ =====
     elif data == "leaders":
@@ -1660,6 +1767,7 @@ def callback_handler(call):
             text, IMAGES['leaders'], get_back_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     # ===== АДМИНКА =====
     elif data == "admin_back":
@@ -1672,6 +1780,7 @@ def callback_handler(call):
             text, None, get_admin_main_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data == "admin_stats":
         if uid not in MASTER_IDS:
@@ -1692,6 +1801,7 @@ def callback_handler(call):
             text, None, get_admin_main_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data == "admin_coins":
         if uid not in MASTER_IDS:
@@ -1703,6 +1813,7 @@ def callback_handler(call):
             text, None, get_admin_main_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data == "admin_roles":
         if uid not in MASTER_IDS:
@@ -1714,6 +1825,7 @@ def callback_handler(call):
             text, None, get_admin_main_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data == "admin_bans":
         if uid not in MASTER_IDS:
@@ -1725,6 +1837,7 @@ def callback_handler(call):
             text, None, get_admin_main_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data == "admin_promo":
         if uid not in MASTER_IDS:
@@ -1736,6 +1849,7 @@ def callback_handler(call):
             text, None, get_admin_main_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data == "admin_economy":
         if uid not in MASTER_IDS:
@@ -1759,6 +1873,7 @@ def callback_handler(call):
             text, None, get_admin_main_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data == "admin_treasury":
         if uid not in MASTER_IDS:
@@ -1780,18 +1895,21 @@ def callback_handler(call):
             text, None, get_admin_treasury_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data == "admin_treasury_news":
         if uid not in MASTER_IDS:
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         bot.answer_callback_query(call.id, "Используй /setkaznatext ТЕКСТ")
+        return
     
     elif data == "admin_treasury_goal":
         if uid not in MASTER_IDS:
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         bot.answer_callback_query(call.id, "Используй /setkaznagoal СУММА")
+        return
     
     elif data == "admin_treasury_stats":
         if uid not in MASTER_IDS:
@@ -1811,26 +1929,14 @@ def callback_handler(call):
             text, None, get_admin_treasury_keyboard()
         )
         bot.answer_callback_query(call.id)
+        return
     
     elif data == "admin_mailing":
         if uid not in MASTER_IDS:
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         bot.answer_callback_query(call.id, "Ответь на сообщение командой /mail")
-
-# ========== ОБРАБОТЧИК СООБЩЕНИЙ ==========
-@bot.message_handler(func=lambda message: True, content_types=['text'])
-def handle_messages(message):
-    if message.chat.id != CHAT_ID or message.from_user.is_bot:
         return
-    
-    user_id = message.from_user.id
-    if not is_banned(user_id):
-        add_message(user_id)
-        update_daily_task(user_id, 'messages_50')
-        update_daily_task(user_id, 'messages_100')
-        update_daily_task(user_id, 'messages_200')
-        update_daily_task(user_id, 'messages_500')
 
 # ========== ФОН ==========
 def background_tasks():
@@ -1870,6 +1976,7 @@ if __name__ == "__main__":
     print("   • 🏦 Казна сообщества")
     print("   • 🌐 HTML теги везде")
     print("   • 💰 Кнопки пожертвований")
+    print("   • ✏️ Своя сумма для казны")
     print("   • 📢 Рассылка с HTML")
     print("   • ✏️ Все сообщения РЕДАКТИРУЮТСЯ")
     print("=" * 50)
