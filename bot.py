@@ -147,16 +147,6 @@ def clear_user_state(user_id):
         del states[user_id]
         save_json(USER_STATES_FILE, states)
 
-# ========== КАСТОМНЫЕ РАЗДЕЛЫ ==========
-def get_custom_sections():
-    data = load_json(CUSTOM_SECTIONS_FILE)
-    if 'sections' not in data:
-        data['sections'] = []
-    return data
-
-def save_custom_sections(data):
-    save_json(CUSTOM_SECTIONS_FILE, data)
-
 # ========== КАЗНА ==========
 def init_treasury():
     data = load_json(TREASURY_FILE)
@@ -873,40 +863,34 @@ def get_social_keyboard():
     )
     return markup
 
-# ========== ОПТИМИЗИРОВАННАЯ ФУНКЦИЯ ДЛЯ РЕДАКТИРОВАНИЯ ==========
-def edit_or_send(chat_id, user_id, key, text, photo=None, reply_markup=None):
-    """Редактирует существующее сообщение или отправляет новое"""
+# ========== ГЛАВНАЯ ФУНКЦИЯ ДЛЯ РЕДАКТИРОВАНИЯ ==========
+def edit_message(chat_id, user_id, key, text, photo=None, reply_markup=None):
+    """Только редактирует существующее сообщение, не отправляет новое"""
     message_id = get_user_message(user_id, key)
     
+    if not message_id:
+        return None
+    
     try:
-        # Пытаемся отредактировать существующее сообщение
-        if message_id:
-            try:
-                if photo:
-                    # Редактируем фото с подписью
-                    bot.edit_message_media(
-                        types.InputMediaPhoto(photo, caption=text, parse_mode='HTML'),
-                        chat_id, message_id, reply_markup=reply_markup
-                    )
-                else:
-                    # Редактируем текст
-                    bot.edit_message_text(
-                        text, chat_id, message_id, 
-                        parse_mode='HTML', reply_markup=reply_markup
-                    )
-                return message_id
-            except telebot.apihelper.ApiTelegramException as e:
-                # Если сообщение не найдено или не может быть отредактировано
-                if "message to edit not found" in str(e) or "message can't be edited" in str(e):
-                    # Удаляем старый ID и отправим новое
-                    clear_user_message(user_id, key)
-                    message_id = None
-                else:
-                    # Другая ошибка - пробуем отправить новое
-                    print(f"Ошибка редактирования: {e}")
-                    message_id = None
-        
-        # Отправляем новое сообщение
+        if photo:
+            bot.edit_message_media(
+                types.InputMediaPhoto(photo, caption=text, parse_mode='HTML'),
+                chat_id, message_id, reply_markup=reply_markup
+            )
+        else:
+            bot.edit_message_text(
+                text, chat_id, message_id, 
+                parse_mode='HTML', reply_markup=reply_markup
+            )
+        return message_id
+    except Exception as e:
+        print(f"Ошибка редактирования: {e}")
+        return None
+
+# ========== ФУНКЦИЯ ДЛЯ ОТПРАВКИ НОВОГО СООБЩЕНИЯ (ТОЛЬКО ДЛЯ РЕФКИ) ==========
+def send_new_message(chat_id, user_id, key, text, photo=None, reply_markup=None):
+    """Отправляет новое сообщение и сохраняет ID"""
+    try:
         if photo:
             msg = bot.send_photo(
                 chat_id, photo, caption=text, 
@@ -918,31 +902,11 @@ def edit_or_send(chat_id, user_id, key, text, photo=None, reply_markup=None):
                 parse_mode='HTML', reply_markup=reply_markup
             )
         
-        # Сохраняем ID нового сообщения
         set_user_message(user_id, key, msg.message_id)
-        
-        # Удаляем старое сообщение если оно было и отличается от нового
-        if message_id and message_id != msg.message_id:
-            try:
-                bot.delete_message(chat_id, message_id)
-            except:
-                pass
-        
         return msg.message_id
-        
     except Exception as e:
-        print(f"Ошибка в edit_or_send: {e}")
-        # Последняя попытка - отправить новое сообщение без сохранения
-        try:
-            if photo:
-                msg = bot.send_photo(chat_id, photo, caption=text, parse_mode='HTML', reply_markup=reply_markup)
-            else:
-                msg = bot.send_message(chat_id, text, parse_mode='HTML', reply_markup=reply_markup)
-            set_user_message(user_id, key, msg.message_id)
-            return msg.message_id
-        except Exception as e2:
-            print(f"Критическая ошибка: {e2}")
-            return None
+        print(f"Ошибка отправки: {e}")
+        return None
 
 # ========== ПОКАЗ ГЛАВНОГО МЕНЮ ==========
 def show_main_menu(call_or_message):
@@ -954,7 +918,7 @@ def show_main_menu(call_or_message):
         chat_id = call_or_message.chat.id
     
     if is_banned(user_id):
-        bot.send_message(user_id, "🚫 Вы забанены")
+        send_new_message(user_id, user_id, 'ban', "🚫 Вы забанены")
         return
     
     user = get_user(user_id)
@@ -965,10 +929,9 @@ def show_main_menu(call_or_message):
     
     text = get_main_menu_text(user)
     
-    edit_or_send(
-        chat_id, user_id, 'main_menu',
-        text, IMAGES['main'], get_main_keyboard()
-    )
+    # Пытаемся отредактировать, если нет - отправляем новое
+    if not edit_message(chat_id, user_id, 'main_menu', text, IMAGES['main'], get_main_keyboard()):
+        send_new_message(chat_id, user_id, 'main_menu', text, IMAGES['main'], get_main_keyboard())
 
 # ========== ПОЛУЧЕНИЕ ЕЖЕДНЕВНЫХ ЗАДАНИЙ ==========
 def get_daily_tasks(user_id):
@@ -1014,7 +977,7 @@ def start_command(message):
     user_id = message.from_user.id
     
     if is_banned(user_id):
-        bot.reply_to(message, "🚫 Вы забанены")
+        send_new_message(user_id, user_id, 'ban', "🚫 Вы забанены")
         return
     
     user = get_user(user_id)
@@ -1030,8 +993,8 @@ def start_command(message):
             if inviter_id != user_id and not is_master(inviter_id):
                 if get_user(inviter_id):
                     add_invite(inviter_id, user_id)
-                    # Это исключение - отправляем новое сообщение
-                    bot.reply_to(message, f"✅ Ты был приглашен пользователем!")
+                    # ТОЛЬКО ЗДЕСЬ - ОТПРАВКА НОВОГО СООБЩЕНИЯ (рефка)
+                    send_new_message(user_id, user_id, 'ref', f"✅ Ты был приглашен пользователем!")
         except:
             pass
     
@@ -1042,85 +1005,80 @@ def start_command(message):
 def profile_command(message):
     user_id = message.from_user.id
     if is_banned(user_id):
-        bot.reply_to(message, "🚫 Вы забанены")
+        send_new_message(user_id, user_id, 'ban', "🚫 Вы забанены")
         return
     
     user = get_user(user_id)
     if not user:
-        bot.reply_to(message, "❌ Ты не зарегистрирован! Напиши /start")
+        send_new_message(user_id, user_id, 'error', "❌ Ты не зарегистрирован! Напиши /start")
         return
     
     text = get_profile_text(user)
-    edit_or_send(
-        message.chat.id, user_id, 'profile',
-        text, IMAGES['profile'], get_back_keyboard()
-    )
+    if not edit_message(message.chat.id, user_id, 'profile', text, IMAGES['profile'], get_back_keyboard()):
+        send_new_message(message.chat.id, user_id, 'profile', text, IMAGES['profile'], get_back_keyboard())
 
 @bot.message_handler(commands=['daily'])
 def daily_command(message):
     user_id = message.from_user.id
     if is_banned(user_id):
-        bot.reply_to(message, "🚫 Вы забанены")
+        send_new_message(user_id, user_id, 'ban', "🚫 Вы забанены")
         return
     
     user = get_user(user_id)
     if not user:
-        bot.reply_to(message, "❌ Ты не зарегистрирован! Напиши /start")
+        send_new_message(user_id, user_id, 'error', "❌ Ты не зарегистрирован! Напиши /start")
         return
     
     bonus, msg = get_daily_bonus(user_id)
-    bot.reply_to(message, msg, parse_mode='HTML')
+    # Это уведомление - отправляем новое сообщение
+    send_new_message(message.chat.id, user_id, 'daily_notify', msg)
 
 @bot.message_handler(commands=['invite'])
 def invite_command(message):
     user_id = message.from_user.id
     if is_banned(user_id):
-        bot.reply_to(message, "🚫 Вы забанены")
+        send_new_message(user_id, user_id, 'ban', "🚫 Вы забанены")
         return
     
     user = get_user(user_id)
     if not user:
-        bot.reply_to(message, "❌ Ты не зарегистрирован! Напиши /start")
+        send_new_message(user_id, user_id, 'error', "❌ Ты не зарегистрирован! Напиши /start")
         return
     
     bot_link = f"https://t.me/{(bot.get_me()).username}?start={user_id}"
     text = get_invite_text(user, bot_link)
-    edit_or_send(
-        message.chat.id, user_id, 'invite',
-        text, None, get_back_keyboard()
-    )
+    if not edit_message(message.chat.id, user_id, 'invite', text, None, get_back_keyboard()):
+        send_new_message(message.chat.id, user_id, 'invite', text, None, get_back_keyboard())
 
 @bot.message_handler(commands=['use'])
 def use_promo_command(message):
     user_id = message.from_user.id
     if is_banned(user_id):
-        bot.reply_to(message, "🚫 Вы забанены")
+        send_new_message(user_id, user_id, 'ban', "🚫 Вы забанены")
         return
     
     user = get_user(user_id)
     if not user:
-        bot.reply_to(message, "❌ Ты не зарегистрирован! Напиши /start")
+        send_new_message(user_id, user_id, 'error', "❌ Ты не зарегистрирован! Напиши /start")
         return
     
     try:
         parts = message.text.split()
         if len(parts) < 2:
-            bot.reply_to(message, "❌ Использование: /use КОД")
+            send_new_message(message.chat.id, user_id, 'promo_error', "❌ Использование: /use КОД")
             return
         code = parts[1].upper()
         success, msg = use_promo(user_id, code)
-        bot.reply_to(message, msg, parse_mode='HTML')
+        send_new_message(message.chat.id, user_id, 'promo_result', msg)
     except Exception as e:
-        bot.reply_to(message, f"❌ Ошибка: {e}")
+        send_new_message(message.chat.id, user_id, 'promo_error', f"❌ Ошибка: {e}")
 
 @bot.message_handler(commands=['top'])
 def top_command(message):
     leaders = get_leaders(10)
     text = get_leaders_text(leaders)
-    edit_or_send(
-        message.chat.id, message.from_user.id, 'leaders',
-        text, IMAGES['leaders'], get_back_keyboard()
-    )
+    if not edit_message(message.chat.id, message.from_user.id, 'leaders', text, IMAGES['leaders'], get_back_keyboard()):
+        send_new_message(message.chat.id, message.from_user.id, 'leaders', text, IMAGES['leaders'], get_back_keyboard())
 
 @bot.message_handler(commands=['info'])
 def info_command(message):
@@ -1140,7 +1098,7 @@ def info_command(message):
 • 10 уникальных ролей
 • От VIP до QUANTUM
 """
-    bot.send_message(message.chat.id, text, parse_mode='HTML', reply_markup=get_social_keyboard())
+    send_new_message(message.chat.id, message.from_user.id, 'info', text, None, get_social_keyboard())
 
 @bot.message_handler(commands=['help'])
 def help_command(message):
@@ -1164,7 +1122,7 @@ def help_command(message):
 /use КОД — промокод
 /top — лидеры
 """
-    bot.send_message(message.chat.id, text, parse_mode='HTML', reply_markup=get_social_keyboard())
+    send_new_message(message.chat.id, message.from_user.id, 'help', text, None, get_social_keyboard())
 
 @bot.message_handler(commands=['admin'])
 def admin_command(message):
@@ -1172,14 +1130,12 @@ def admin_command(message):
     
     if user_id in MASTER_IDS:
         text = get_admin_panel_text()
-        edit_or_send(
-            message.chat.id, user_id, 'admin',
-            text, None, get_admin_main_keyboard()
-        )
+        if not edit_message(message.chat.id, user_id, 'admin', text, None, get_admin_main_keyboard()):
+            send_new_message(message.chat.id, user_id, 'admin', text, None, get_admin_main_keyboard())
     else:
-        bot.reply_to(message, "❌ У вас нет прав администратора.")
+        send_new_message(message.chat.id, user_id, 'admin_error', "❌ У вас нет прав администратора.")
 
-# ========== АДМИН-КОМАНДЫ ==========
+# ========== АДМИН-КОМАНДЫ (все через send_new_message) ==========
 def is_master(user_id):
     return user_id in MASTER_IDS
 
@@ -1190,19 +1146,19 @@ def addcoins_command(message):
     try:
         parts = message.text.split()
         if len(parts) < 3:
-            bot.reply_to(message, "❌ Использование: /addcoins ID СУММА")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_coins', "❌ Использование: /addcoins ID СУММА")
             return
         target_id = int(parts[1])
         amount = int(parts[2])
         
         if not get_user(target_id):
-            bot.reply_to(message, f"❌ Пользователь {target_id} не найден")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_coins', f"❌ Пользователь {target_id} не найден")
             return
         
         new_balance = add_coins(target_id, amount)
-        bot.reply_to(message, f"✅ Выдано {amount} монет. Баланс: {new_balance}")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_coins', f"✅ Выдано {amount} монет. Баланс: {new_balance}")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_coins', "❌ Ошибка")
 
 @bot.message_handler(commands=['removecoins'])
 def removecoins_command(message):
@@ -1211,19 +1167,19 @@ def removecoins_command(message):
     try:
         parts = message.text.split()
         if len(parts) < 3:
-            bot.reply_to(message, "❌ Использование: /removecoins ID СУММА")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_coins', "❌ Использование: /removecoins ID СУММА")
             return
         target_id = int(parts[1])
         amount = int(parts[2])
         
         if not get_user(target_id):
-            bot.reply_to(message, f"❌ Пользователь {target_id} не найден")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_coins', f"❌ Пользователь {target_id} не найден")
             return
         
         new_balance = remove_coins(target_id, amount)
-        bot.reply_to(message, f"💰 Списано {amount} монет. Баланс: {new_balance}")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_coins', f"💰 Списано {amount} монет. Баланс: {new_balance}")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_coins', "❌ Ошибка")
 
 @bot.message_handler(commands=['createpromo'])
 def createpromo_command(message):
@@ -1232,7 +1188,7 @@ def createpromo_command(message):
     try:
         parts = message.text.split()
         if len(parts) < 4:
-            bot.reply_to(message, "❌ Использование: /createpromo КОД МОНЕТЫ ИСП [ДНИ]")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_promo', "❌ Использование: /createpromo КОД МОНЕТЫ ИСП [ДНИ]")
             return
         code = parts[1].upper()
         coins = int(parts[2])
@@ -1240,9 +1196,9 @@ def createpromo_command(message):
         days = int(parts[4]) if len(parts) > 4 else 7
         
         create_promo(code, coins, max_uses, days)
-        bot.reply_to(message, f"✅ Промокод {code} создан!")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_promo', f"✅ Промокод {code} создан!")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_promo', "❌ Ошибка")
 
 @bot.message_handler(commands=['createrolepromo'])
 def createrolepromo_command(message):
@@ -1251,7 +1207,7 @@ def createrolepromo_command(message):
     try:
         parts = message.text.split()
         if len(parts) < 5:
-            bot.reply_to(message, "❌ Использование: /createrolepromo КОД РОЛЬ ДНИ ЛИМИТ")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_promo', "❌ Использование: /createrolepromo КОД РОЛЬ ДНИ ЛИМИТ")
             return
         code = parts[1].upper()
         role = parts[2].capitalize()
@@ -1259,13 +1215,13 @@ def createrolepromo_command(message):
         max_uses = int(parts[4])
         
         if role not in PERMANENT_ROLES:
-            bot.reply_to(message, f"❌ Роль {role} не найдена")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_promo', f"❌ Роль {role} не найдена")
             return
         
         create_role_promo(code, role, days, max_uses)
-        bot.reply_to(message, f"✅ Промокод {code} на роль {role} создан!")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_promo', f"✅ Промокод {code} на роль {role} создан!")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_promo', "❌ Ошибка")
 
 @bot.message_handler(commands=['giverole'])
 def giverole_command(message):
@@ -1274,28 +1230,28 @@ def giverole_command(message):
     try:
         parts = message.text.split()
         if len(parts) < 3:
-            bot.reply_to(message, "❌ Использование: /giverole ID РОЛЬ")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_roles', "❌ Использование: /giverole ID РОЛЬ")
             return
         target_id = int(parts[1])
         role_name = parts[2].capitalize()
         
         if role_name not in PERMANENT_ROLES:
-            bot.reply_to(message, f"❌ Роль {role_name} не существует")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_roles', f"❌ Роль {role_name} не существует")
             return
         
         user = get_user(target_id)
         if not user:
-            bot.reply_to(message, f"❌ Пользователь {target_id} не найден")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_roles', f"❌ Пользователь {target_id} не найден")
             return
         
         if role_name in user.get('roles', []):
-            bot.reply_to(message, f"❌ У пользователя уже есть роль {role_name}")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_roles', f"❌ У пользователя уже есть роль {role_name}")
             return
         
         add_role(target_id, role_name)
-        bot.reply_to(message, f"✅ Роль {role_name} выдана")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_roles', f"✅ Роль {role_name} выдана")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_roles', "❌ Ошибка")
 
 @bot.message_handler(commands=['removerole'])
 def removerole_command(message):
@@ -1304,24 +1260,24 @@ def removerole_command(message):
     try:
         parts = message.text.split()
         if len(parts) < 3:
-            bot.reply_to(message, "❌ Использование: /removerole ID РОЛЬ")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_roles', "❌ Использование: /removerole ID РОЛЬ")
             return
         target_id = int(parts[1])
         role_name = parts[2].capitalize()
         
         user = get_user(target_id)
         if not user:
-            bot.reply_to(message, f"❌ Пользователь {target_id} не найден")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_roles', f"❌ Пользователь {target_id} не найден")
             return
         
         if role_name not in user.get('roles', []):
-            bot.reply_to(message, f"❌ У пользователя нет роли {role_name}")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_roles', f"❌ У пользователя нет роли {role_name}")
             return
         
         remove_role(target_id, role_name)
-        bot.reply_to(message, f"✅ Роль {role_name} снята")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_roles', f"✅ Роль {role_name} снята")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_roles', "❌ Ошибка")
 
 @bot.message_handler(commands=['ban'])
 def ban_command(message):
@@ -1330,7 +1286,7 @@ def ban_command(message):
     try:
         parts = message.text.split()
         if len(parts) < 2:
-            bot.reply_to(message, "❌ Использование: /ban ID [дни] [причина]")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_bans', "❌ Использование: /ban ID [дни] [причина]")
             return
         target_id = int(parts[1])
         days = int(parts[2]) if len(parts) > 2 else None
@@ -1341,11 +1297,11 @@ def ban_command(message):
             users[str(target_id)]['is_banned'] = True
             users[str(target_id)]['ban_reason'] = reason
             save_json(USERS_FILE, users)
-            bot.reply_to(message, f"✅ Пользователь {target_id} забанен")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_bans', f"✅ Пользователь {target_id} забанен")
         else:
-            bot.reply_to(message, f"❌ Пользователь {target_id} не найден")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_bans', f"❌ Пользователь {target_id} не найден")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_bans', "❌ Ошибка")
 
 @bot.message_handler(commands=['unban'])
 def unban_command(message):
@@ -1358,11 +1314,11 @@ def unban_command(message):
             users[str(target_id)]['is_banned'] = False
             users[str(target_id)]['ban_reason'] = None
             save_json(USERS_FILE, users)
-            bot.reply_to(message, f"✅ Пользователь {target_id} разбанен")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_bans', f"✅ Пользователь {target_id} разбанен")
         else:
-            bot.reply_to(message, f"❌ Пользователь {target_id} не найден")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_bans', f"❌ Пользователь {target_id} не найден")
     except:
-        bot.reply_to(message, "❌ Использование: /unban ID")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_bans', "❌ Использование: /unban ID")
 
 @bot.message_handler(commands=['setreward'])
 def setreward_command(message):
@@ -1373,9 +1329,9 @@ def setreward_command(message):
         eco = get_economy_settings()
         eco['base_reward'] = reward
         save_economy_settings(eco)
-        bot.reply_to(message, f"✅ Награда за сообщение: {reward}💰")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_economy', f"✅ Награда за сообщение: {reward}💰")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_economy', "❌ Ошибка")
 
 @bot.message_handler(commands=['setbonusmin'])
 def setbonusmin_command(message):
@@ -1386,9 +1342,9 @@ def setbonusmin_command(message):
         eco = get_economy_settings()
         eco['base_bonus_min'] = amount
         save_economy_settings(eco)
-        bot.reply_to(message, f"✅ Мин бонус: {amount}💰")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_economy', f"✅ Мин бонус: {amount}💰")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_economy', "❌ Ошибка")
 
 @bot.message_handler(commands=['setbonusmax'])
 def setbonusmax_command(message):
@@ -1399,9 +1355,9 @@ def setbonusmax_command(message):
         eco = get_economy_settings()
         eco['base_bonus_max'] = amount
         save_economy_settings(eco)
-        bot.reply_to(message, f"✅ Макс бонус: {amount}💰")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_economy', f"✅ Макс бонус: {amount}💰")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_economy', "❌ Ошибка")
 
 @bot.message_handler(commands=['setinvite'])
 def setinvite_command(message):
@@ -1412,9 +1368,9 @@ def setinvite_command(message):
         eco = get_economy_settings()
         eco['base_invite'] = amount
         save_economy_settings(eco)
-        bot.reply_to(message, f"✅ Награда за инвайт: {amount}💰")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_economy', f"✅ Награда за инвайт: {amount}💰")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_economy', "❌ Ошибка")
 
 @bot.message_handler(commands=['setkaznatext'])
 def setkaznatext_command(message):
@@ -1425,9 +1381,9 @@ def setkaznatext_command(message):
         treasury = init_treasury()
         treasury['news'] = text
         save_json(TREASURY_FILE, treasury)
-        bot.reply_to(message, "✅ Текст казны обновлен")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_treasury', "✅ Текст казны обновлен")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_treasury', "❌ Ошибка")
 
 @bot.message_handler(commands=['setkaznagoal'])
 def setkaznagoal_command(message):
@@ -1438,21 +1394,21 @@ def setkaznagoal_command(message):
         treasury = init_treasury()
         
         if goal < treasury['total']:
-            bot.reply_to(message, f"❌ Нельзя поставить цель меньше текущей суммы ({treasury['total']}💰)")
+            send_new_message(message.chat.id, message.from_user.id, 'admin_treasury', f"❌ Нельзя поставить цель меньше текущей суммы ({treasury['total']}💰)")
             return
         
         treasury['goal'] = goal
         save_json(TREASURY_FILE, treasury)
-        bot.reply_to(message, f"✅ Цель казны: {goal}💰")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_treasury', f"✅ Цель казны: {goal}💰")
     except:
-        bot.reply_to(message, "❌ Ошибка")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_treasury', "❌ Ошибка")
 
 @bot.message_handler(commands=['mail'])
 def mail_command(message):
     if message.from_user.id not in MASTER_IDS:
         return
     if not message.reply_to_message:
-        bot.reply_to(message, "❌ Ответь на сообщение для рассылки")
+        send_new_message(message.chat.id, message.from_user.id, 'admin_mail', "❌ Ответь на сообщение для рассылки")
         return
     
     users = load_json(USERS_FILE)
@@ -1476,14 +1432,13 @@ def mail_command(message):
         except:
             failed += 1
     
-    bot.reply_to(message, f"✅ Рассылка: {sent} отправлено, {failed} не доставлено")
+    send_new_message(message.chat.id, message.from_user.id, 'admin_mail', f"✅ Рассылка: {sent} отправлено, {failed} не доставлено")
 
 # ========== ОБРАБОТЧИК ТЕКСТОВЫХ СООБЩЕНИЙ ==========
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def handle_text_messages(message):
     user_id = message.from_user.id
     
-    # Проверяем состояние пользователя
     state, data = get_user_state(user_id)
     
     if state == 'waiting_treasury_amount':
@@ -1491,34 +1446,31 @@ def handle_text_messages(message):
             amount = int(message.text.strip())
             
             if amount <= 0:
-                bot.reply_to(message, "❌ Сумма должна быть больше 0")
+                send_new_message(message.chat.id, user_id, 'treasury_amount', "❌ Сумма должна быть больше 0")
                 clear_user_state(user_id)
                 return
             
             if amount > 1000000:
-                bot.reply_to(message, "❌ Сумма не может быть больше 1,000,000")
+                send_new_message(message.chat.id, user_id, 'treasury_amount', "❌ Сумма не может быть больше 1,000,000")
                 clear_user_state(user_id)
                 return
             
             success, msg = donate_to_treasury(user_id, amount)
-            bot.reply_to(message, msg, parse_mode='HTML')
+            send_new_message(message.chat.id, user_id, 'treasury_amount', msg)
             
             if success:
                 text = get_treasury_text(user_id)
-                edit_or_send(
-                    message.chat.id, user_id, 'treasury',
-                    text, IMAGES['treasury'], get_treasury_keyboard()
-                )
+                if not edit_message(message.chat.id, user_id, 'treasury', text, IMAGES['treasury'], get_treasury_keyboard()):
+                    send_new_message(message.chat.id, user_id, 'treasury', text, IMAGES['treasury'], get_treasury_keyboard())
             
         except ValueError:
-            bot.reply_to(message, "❌ Введи число (например: 2000)")
+            send_new_message(message.chat.id, user_id, 'treasury_amount', "❌ Введи число (например: 2000)")
         except Exception as e:
-            bot.reply_to(message, f"❌ Ошибка: {e}")
+            send_new_message(message.chat.id, user_id, 'treasury_amount', f"❌ Ошибка: {e}")
         
         clear_user_state(user_id)
         return
     
-    # Если не в состоянии - обрабатываем как обычное сообщение в чате
     if message.chat.id == CHAT_ID and not message.from_user.is_bot:
         if not is_banned(user_id):
             add_message(user_id)
@@ -1552,20 +1504,16 @@ def callback_handler(call):
     # ===== МАГАЗИН =====
     elif data == "shop":
         text = get_shop_text(user, 1)
-        edit_or_send(
-            call.message.chat.id, uid, 'shop',
-            text, IMAGES['shop'], get_shop_keyboard(1)
-        )
+        if not edit_message(call.message.chat.id, uid, 'shop', text, IMAGES['shop'], get_shop_keyboard(1)):
+            send_new_message(call.message.chat.id, uid, 'shop', text, IMAGES['shop'], get_shop_keyboard(1))
         bot.answer_callback_query(call.id)
         return
     
     elif data.startswith("shop_page_"):
         page = int(data.replace("shop_page_", ""))
         text = get_shop_text(user, page)
-        edit_or_send(
-            call.message.chat.id, uid, 'shop',
-            text, IMAGES['shop'], get_shop_keyboard(page)
-        )
+        if not edit_message(call.message.chat.id, uid, 'shop', text, IMAGES['shop'], get_shop_keyboard(page)):
+            send_new_message(call.message.chat.id, uid, 'shop', text, IMAGES['shop'], get_shop_keyboard(page))
         bot.answer_callback_query(call.id)
         return
     
@@ -1580,10 +1528,8 @@ def callback_handler(call):
 
 💰 <b>Твой баланс:</b> <code>{user['coins']:,}💰</code>
 """
-        edit_or_send(
-            call.message.chat.id, uid, f'role_{role}',
-            text, None, get_role_keyboard(role)
-        )
+        if not edit_message(call.message.chat.id, uid, f'role_{role}', text, None, get_role_keyboard(role)):
+            send_new_message(call.message.chat.id, uid, f'role_{role}', text, None, get_role_keyboard(role))
         bot.answer_callback_query(call.id)
         return
     
@@ -1601,10 +1547,8 @@ def callback_handler(call):
         active = user.get('active_roles', [])
         text = get_myroles_text(user, 1)
         keyboard = get_myroles_keyboard(roles, active, 1) if roles else get_back_keyboard()
-        edit_or_send(
-            call.message.chat.id, uid, 'myroles',
-            text, IMAGES['myroles'], keyboard
-        )
+        if not edit_message(call.message.chat.id, uid, 'myroles', text, IMAGES['myroles'], keyboard):
+            send_new_message(call.message.chat.id, uid, 'myroles', text, IMAGES['myroles'], keyboard)
         bot.answer_callback_query(call.id)
         return
     
@@ -1613,10 +1557,8 @@ def callback_handler(call):
         roles = user.get('roles', [])
         active = user.get('active_roles', [])
         text = get_myroles_text(user, page)
-        edit_or_send(
-            call.message.chat.id, uid, 'myroles',
-            text, IMAGES['myroles'], get_myroles_keyboard(roles, active, page)
-        )
+        if not edit_message(call.message.chat.id, uid, 'myroles', text, IMAGES['myroles'], get_myroles_keyboard(roles, active, page)):
+            send_new_message(call.message.chat.id, uid, 'myroles', text, IMAGES['myroles'], get_myroles_keyboard(roles, active, page))
         bot.answer_callback_query(call.id)
         return
     
@@ -1646,19 +1588,15 @@ def callback_handler(call):
                         break
         
         text = get_myroles_text(user, page)
-        edit_or_send(
-            call.message.chat.id, uid, 'myroles',
-            text, IMAGES['myroles'], get_myroles_keyboard(roles, active, page)
-        )
+        if not edit_message(call.message.chat.id, uid, 'myroles', text, IMAGES['myroles'], get_myroles_keyboard(roles, active, page)):
+            send_new_message(call.message.chat.id, uid, 'myroles', text, IMAGES['myroles'], get_myroles_keyboard(roles, active, page))
         return
     
     # ===== ПРОФИЛЬ =====
     elif data == "profile":
         text = get_profile_text(user)
-        edit_or_send(
-            call.message.chat.id, uid, 'profile',
-            text, IMAGES['profile'], get_back_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'profile', text, IMAGES['profile'], get_back_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'profile', text, IMAGES['profile'], get_back_keyboard())
         bot.answer_callback_query(call.id)
         return
     
@@ -1666,20 +1604,16 @@ def callback_handler(call):
     elif data == "tasks":
         tasks = get_daily_tasks(uid)
         text = get_tasks_text(user, tasks)
-        edit_or_send(
-            call.message.chat.id, uid, 'tasks',
-            text, IMAGES['tasks'], get_back_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'tasks', text, IMAGES['tasks'], get_back_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'tasks', text, IMAGES['tasks'], get_back_keyboard())
         bot.answer_callback_query(call.id)
         return
     
     # ===== БОНУС =====
     elif data == "bonus":
         text = get_bonus_text(user)
-        edit_or_send(
-            call.message.chat.id, uid, 'bonus',
-            text, IMAGES['bonus'], get_bonus_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'bonus', text, IMAGES['bonus'], get_bonus_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'bonus', text, IMAGES['bonus'], get_bonus_keyboard())
         bot.answer_callback_query(call.id)
         return
     
@@ -1689,32 +1623,27 @@ def callback_handler(call):
         if bonus > 0:
             user = get_user(uid)
             text = get_bonus_text(user)
-            edit_or_send(
-                call.message.chat.id, uid, 'bonus',
-                text, IMAGES['bonus'], get_bonus_keyboard()
-            )
+            if not edit_message(call.message.chat.id, uid, 'bonus', text, IMAGES['bonus'], get_bonus_keyboard()):
+                send_new_message(call.message.chat.id, uid, 'bonus', text, IMAGES['bonus'], get_bonus_keyboard())
         return
     
     # ===== КАЗНА =====
     elif data == "treasury":
         text = get_treasury_text(uid)
-        edit_or_send(
-            call.message.chat.id, uid, 'treasury',
-            text, IMAGES['treasury'], get_treasury_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'treasury', text, IMAGES['treasury'], get_treasury_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'treasury', text, IMAGES['treasury'], get_treasury_keyboard())
         bot.answer_callback_query(call.id)
         return
     
     elif data.startswith("treasury_donate_"):
         if data == "treasury_donate_custom":
             set_user_state(uid, 'waiting_treasury_amount')
-            
-            bot.send_message(
-                call.message.chat.id,
+            send_new_message(
+                call.message.chat.id, uid, 'treasury_custom',
                 "💰 <b>Введи сумму пожертвования</b>\n\n"
                 "Напиши число (например: 2000)\n"
                 "Отправь 0 чтобы отменить",
-                parse_mode='HTML'
+                None, None
             )
             bot.answer_callback_query(call.id)
             return
@@ -1726,10 +1655,8 @@ def callback_handler(call):
             
             if success:
                 text = get_treasury_text(uid)
-                edit_or_send(
-                    call.message.chat.id, uid, 'treasury',
-                    text, IMAGES['treasury'], get_treasury_keyboard()
-                )
+                if not edit_message(call.message.chat.id, uid, 'treasury', text, IMAGES['treasury'], get_treasury_keyboard()):
+                    send_new_message(call.message.chat.id, uid, 'treasury', text, IMAGES['treasury'], get_treasury_keyboard())
         except:
             bot.answer_callback_query(call.id, "❌ Ошибка", show_alert=True)
         return
@@ -1743,10 +1670,8 @@ def callback_handler(call):
             medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
             text += f"{medal} {data['name']} — <code>{data['amount']:,}💰</code>\n"
         
-        edit_or_send(
-            call.message.chat.id, uid, 'treasury_top',
-            text, None, get_treasury_top_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'treasury_top', text, None, get_treasury_top_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'treasury_top', text, None, get_treasury_top_keyboard())
         bot.answer_callback_query(call.id)
         return
     
@@ -1756,10 +1681,8 @@ def callback_handler(call):
         for h in treasury['history'][-10:]:
             text += f"🕐 {h['user']} +<code>{h['amount']}💰</code> ({h['time']})\n"
         
-        edit_or_send(
-            call.message.chat.id, uid, 'treasury_history',
-            text, None, get_treasury_history_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'treasury_history', text, None, get_treasury_history_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'treasury_history', text, None, get_treasury_history_keyboard())
         bot.answer_callback_query(call.id)
         return
     
@@ -1767,10 +1690,8 @@ def callback_handler(call):
     elif data == "invite":
         bot_link = f"https://t.me/{(bot.get_me()).username}?start={uid}"
         text = get_invite_text(user, bot_link)
-        edit_or_send(
-            call.message.chat.id, uid, 'invite',
-            text, None, get_back_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'invite', text, None, get_back_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'invite', text, None, get_back_keyboard())
         bot.answer_callback_query(call.id)
         return
     
@@ -1778,10 +1699,8 @@ def callback_handler(call):
     elif data == "leaders":
         leaders = get_leaders(10)
         text = get_leaders_text(leaders)
-        edit_or_send(
-            call.message.chat.id, uid, 'leaders',
-            text, IMAGES['leaders'], get_back_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'leaders', text, IMAGES['leaders'], get_back_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'leaders', text, IMAGES['leaders'], get_back_keyboard())
         bot.answer_callback_query(call.id)
         return
     
@@ -1791,10 +1710,8 @@ def callback_handler(call):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = get_admin_panel_text()
-        edit_or_send(
-            call.message.chat.id, uid, 'admin',
-            text, None, get_admin_main_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'admin', text, None, get_admin_main_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'admin', text, None, get_admin_main_keyboard())
         bot.answer_callback_query(call.id)
         return
     
@@ -1812,10 +1729,8 @@ def callback_handler(call):
 ✅ Активных сегодня: <code>{stats['active_today']}</code>
 🆕 Новых сегодня: <code>{stats['new_today']}</code></blockquote>
 """
-        edit_or_send(
-            call.message.chat.id, uid, 'admin_stats',
-            text, None, get_admin_main_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'admin_stats', text, None, get_admin_main_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'admin_stats', text, None, get_admin_main_keyboard())
         bot.answer_callback_query(call.id)
         return
     
@@ -1824,10 +1739,8 @@ def callback_handler(call):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>💰 УПРАВЛЕНИЕ МОНЕТАМИ</b>\n\n<code>/addcoins ID СУММА</code>\n<code>/removecoins ID СУММА</code>"
-        edit_or_send(
-            call.message.chat.id, uid, 'admin_coins',
-            text, None, get_admin_main_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'admin_coins', text, None, get_admin_main_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'admin_coins', text, None, get_admin_main_keyboard())
         bot.answer_callback_query(call.id)
         return
     
@@ -1836,10 +1749,8 @@ def callback_handler(call):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>🎭 УПРАВЛЕНИЕ РОЛЯМИ</b>\n\n<code>/giverole ID РОЛЬ</code>\n<code>/removerole ID РОЛЬ</code>"
-        edit_or_send(
-            call.message.chat.id, uid, 'admin_roles',
-            text, None, get_admin_main_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'admin_roles', text, None, get_admin_main_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'admin_roles', text, None, get_admin_main_keyboard())
         bot.answer_callback_query(call.id)
         return
     
@@ -1848,10 +1759,8 @@ def callback_handler(call):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>🚫 УПРАВЛЕНИЕ БАНАМИ</b>\n\n<code>/ban ID [дни] [причина]</code>\n<code>/unban ID</code>"
-        edit_or_send(
-            call.message.chat.id, uid, 'admin_bans',
-            text, None, get_admin_main_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'admin_bans', text, None, get_admin_main_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'admin_bans', text, None, get_admin_main_keyboard())
         bot.answer_callback_query(call.id)
         return
     
@@ -1860,10 +1769,8 @@ def callback_handler(call):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>🎁 ПРОМОКОДЫ</b>\n\n<code>/createpromo КОД МОНЕТЫ ИСП [ДНИ]</code>\n<code>/createrolepromo КОД РОЛЬ ДНИ ЛИМИТ</code>"
-        edit_or_send(
-            call.message.chat.id, uid, 'admin_promo',
-            text, None, get_admin_main_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'admin_promo', text, None, get_admin_main_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'admin_promo', text, None, get_admin_main_keyboard())
         bot.answer_callback_query(call.id)
         return
     
@@ -1884,10 +1791,8 @@ def callback_handler(call):
 <code>/setbonusmax СУММА</code>
 <code>/setinvite СУММА</code>
 """
-        edit_or_send(
-            call.message.chat.id, uid, 'admin_economy',
-            text, None, get_admin_main_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'admin_economy', text, None, get_admin_main_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'admin_economy', text, None, get_admin_main_keyboard())
         bot.answer_callback_query(call.id)
         return
     
@@ -1906,10 +1811,8 @@ def callback_handler(call):
 📝 <code>/setkaznatext ТЕКСТ</code>
 💰 <code>/setkaznagoal СУММА</code>
 """
-        edit_or_send(
-            call.message.chat.id, uid, 'admin_treasury',
-            text, None, get_admin_treasury_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'admin_treasury', text, None, get_admin_treasury_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'admin_treasury', text, None, get_admin_treasury_keyboard())
         bot.answer_callback_query(call.id)
         return
     
@@ -1940,10 +1843,8 @@ def callback_handler(call):
 👥 Доноров: <code>{treasury['donors_count']}</code>
 🔥 Топ: {treasury['top_name']} - <code>{treasury['top_amount']:,}💰</code></blockquote>
 """
-        edit_or_send(
-            call.message.chat.id, uid, 'admin_treasury_stats',
-            text, None, get_admin_treasury_keyboard()
-        )
+        if not edit_message(call.message.chat.id, uid, 'admin_treasury_stats', text, None, get_admin_treasury_keyboard()):
+            send_new_message(call.message.chat.id, uid, 'admin_treasury_stats', text, None, get_admin_treasury_keyboard())
         bot.answer_callback_query(call.id)
         return
     
@@ -1994,7 +1895,8 @@ if __name__ == "__main__":
     print("   • 💰 Кнопки пожертвований")
     print("   • ✏️ Своя сумма для казны")
     print("   • 📢 Рассылка с HTML")
-    print("   • ✏️ ВСЕ СООБЩЕНИЯ РЕДАКТИРУЮТСЯ")
+    print("   • 🔄 ВСЕ МЕНЮ РЕДАКТИРУЮТСЯ")
+    print("   • 📝 Новые сообщения ТОЛЬКО для уведомлений")
     print("=" * 50)
     print(f"👑 Админ: {MASTER_IDS[0]}")
     print(f"📢 Чат: {CHAT_ID}")
