@@ -60,19 +60,6 @@ ROLE_INVITE_BONUS = {
     'Overlord': 180, 'Apex': 190, 'Quantum': 200
 }
 
-ROLE_PERMISSIONS = {
-    'Vip': {'can_invite_users': True, 'can_delete_messages': True, 'can_pin_messages': True, 'can_manage_video_chats': True, 'can_post_stories': True, 'can_edit_stories': True, 'can_delete_stories': True},
-    'Pro': {'can_invite_users': True},
-    'Phoenix': {'can_invite_users': True, 'can_delete_messages': True},
-    'Dragon': {'can_invite_users': True, 'can_delete_messages': True, 'can_pin_messages': True},
-    'Elite': {'can_invite_users': True, 'can_delete_messages': True, 'can_pin_messages': True, 'can_manage_video_chats': True},
-    'Phantom': {'can_invite_users': True, 'can_delete_messages': True, 'can_pin_messages': True, 'can_manage_video_chats': True, 'can_post_stories': True, 'can_edit_stories': True, 'can_delete_stories': True},
-    'Hydra': {'can_invite_users': True, 'can_delete_messages': True, 'can_pin_messages': True, 'can_manage_video_chats': True, 'can_post_stories': True, 'can_edit_stories': True, 'can_delete_stories': True},
-    'Overlord': {'can_invite_users': True, 'can_delete_messages': True, 'can_pin_messages': True, 'can_manage_video_chats': True, 'can_post_stories': True, 'can_edit_stories': True, 'can_delete_stories': True},
-    'Apex': {'can_invite_users': True, 'can_delete_messages': True, 'can_pin_messages': True, 'can_manage_video_chats': True, 'can_post_stories': True, 'can_edit_stories': True, 'can_delete_stories': True},
-    'Quantum': {'can_invite_users': True, 'can_delete_messages': True, 'can_pin_messages': True, 'can_manage_video_chats': True, 'can_post_stories': True, 'can_edit_stories': True, 'can_delete_stories': True}
-}
-
 # ========== ИЗОБРАЖЕНИЯ ==========
 IMAGES = {
     'main': 'https://s10.iimage.su/s/10/gqQbKjix0U9fspWOFuBLeysSgPSrz9ELbtMrrNzvy.jpg',
@@ -86,8 +73,8 @@ IMAGES = {
     'auction': 'https://s10.iimage.su/s/21/gnymrCyxnOiYWHwCZzyyScdnrycooJ1cTMrRLb3us.jpg',
     'achievements': 'https://s10.iimage.su/s/21/gTS6zsuxzE3vigLOn4DlsPBNiyte0Ptlmrn3cujz0.jpg',
     'lottery': 'https://s10.iimage.su/s/21/gCv91llxmzfQB6fMK2BsvfmwFnsHt1Q0uh75KGjti.jpg',
-    'about': IMAGES['main'],
-    'logs': IMAGES['main']
+    'about': 'https://s10.iimage.su/s/10/gqQbKjix0U9fspWOFuBLeysSgPSrz9ELbtMrrNzvy.jpg',
+    'logs': 'https://s10.iimage.su/s/10/gqQbKjix0U9fspWOFuBLeysSgPSrz9ELbtMrrNzvy.jpg'
 }
 
 # ========== JSON ФУНКЦИИ ==========
@@ -242,14 +229,16 @@ def add_message(user_id):
     users = load_json(USERS_FILE)
     user_id = str(user_id)
     if user_id in users:
-        eco = get_economy_settings()
+        eco = load_json("economy.json")
+        if not eco:
+            eco = {'base_reward': 1}
         multiplier = get_user_multiplier(int(user_id))
         
         event = get_active_event()
         if event and event.get('type') == 'double':
             multiplier *= event.get('value', 2)
         
-        reward = int(eco['base_reward'] * multiplier)
+        reward = int(eco.get('base_reward', 1) * multiplier)
         
         msk_now = get_moscow_time()
         today = msk_now.strftime('%Y-%m-%d')
@@ -349,6 +338,8 @@ def add_role(user_id, role_name, expires_at=None):
         
         if expires_at:
             temp_roles = load_json("temp_roles.json")
+            if not temp_roles:
+                temp_roles = {}
             if user_id not in temp_roles:
                 temp_roles[user_id] = []
             temp_roles[user_id].append({'role': role_name, 'expires': expires_at})
@@ -651,7 +642,7 @@ def get_leaders_by_today_messages(limit=10):
     leaders.sort(key=lambda x: x['value'], reverse=True)
     return leaders[:limit]
 
-# ========== КАЗНА ==========
+# ========== КАЗНА С ПРОЦЕНТАМИ ==========
 def get_treasury():
     treasury = load_json(TREASURY_FILE)
     if not treasury:
@@ -678,10 +669,19 @@ def donate_to_treasury(user_id, amount):
     if not user or user['coins'] < amount:
         return False, "❌ Недостаточно монет!"
     
+    # Снимаем монеты
     remove_coins(user_id, amount, f"пожертвование в казну")
     
-    treasury['balance'] += amount
-    treasury['total_collected'] += amount
+    # ========== ПРОЦЕНТЫ В КАЗНУ ==========
+    # 70% идет в казну
+    # 30% сгорает (выходит из оборота)
+    
+    percent_to_treasury = 70
+    to_treasury = int(amount * percent_to_treasury / 100)
+    burned = amount - to_treasury
+    
+    treasury['balance'] += to_treasury
+    treasury['total_collected'] += to_treasury
     
     user_id_str = str(user_id)
     if user_id_str not in treasury['donors']:
@@ -693,13 +693,13 @@ def donate_to_treasury(user_id, amount):
     save_json(USERS_FILE, users)
     
     save_treasury(treasury)
-    add_log(user_id, "donate", f"Пожертвовал {amount}💰 в казну")
+    add_log(user_id, "donate", f"Пожертвовал {amount}💰 (в казну {to_treasury}💰, сгорело {burned}💰)")
     check_achievements(user_id)
     
     if treasury['balance'] >= treasury['goal']:
-        return True, f"✅ <b>Пожертвовано {amount}💰</b>\n\n🎉 <b>ПОЗДРАВЛЯЕМ! ЦЕЛЬ ДОСТИГНУТА!</b>\n{treasury['goal_description']}"
+        return True, f"✅ <b>Пожертвовано {amount}💰</b>\n\n🔥 <b>В казну поступило:</b> {to_treasury}💰\n💨 <b>Сгорело:</b> {burned}💰\n\n🎉 <b>ПОЗДРАВЛЯЕМ! ЦЕЛЬ ДОСТИГНУТА!</b>\n{treasury['goal_description']}"
     
-    return True, f"✅ <b>Пожертвовано {amount}💰</b>\n📊 Собрано: {treasury['balance']}/{treasury['goal']}💰"
+    return True, f"✅ <b>Пожертвовано {amount}💰</b>\n\n🔥 <b>В казну поступило:</b> {to_treasury}💰\n💨 <b>Сгорело:</b> {burned}💰\n📊 Собрано: {treasury['balance']}/{treasury['goal']}💰"
 
 def get_treasury_stats():
     treasury = get_treasury()
@@ -714,6 +714,10 @@ def get_treasury_stats():
     
     top_donor = f"{donors[0]['name']} - {donors[0]['amount']}💰" if donors else "Нет донатов"
     
+    bar_length = 10
+    filled = int(percent / 100 * bar_length)
+    progress_bar = "█" * filled + "░" * (bar_length - filled)
+    
     return {
         'balance': treasury['balance'],
         'total_collected': treasury['total_collected'],
@@ -723,7 +727,8 @@ def get_treasury_stats():
         'announcement': treasury.get('announcement', '🏦 При достижении цели будет розыгрыш!'),
         'percent': percent,
         'donors_count': len(donors),
-        'top_donor': top_donor
+        'top_donor': top_donor,
+        'progress_bar': progress_bar
     }
 
 def set_treasury_goal(goal, description=None):
@@ -2018,7 +2023,10 @@ def show_treasury(call):
 {stats['announcement']}
 
 🎯 <b>ЦЕЛЬ:</b> {stats['goal']:,}💰
-📈 <b>ПРОГРЕСС:</b> {stats['percent']}% ░░░░░░░░░░
+📈 <b>ПРОГРЕСС:</b> {stats['percent']}% {stats['progress_bar']}
+
+🔥 <b>ПРОЦЕНТЫ В КАЗНУ:</b> 70% от суммы
+💨 <b>СГОРАЕТ:</b> 30% (выходит из оборота)
 
 👇 <b>СДЕЛАТЬ ПОЖЕРТВОВАНИЕ:</b>
 """
@@ -2214,6 +2222,7 @@ ROLE SHOP BOT — бот для покупки ролей и получения 
 
 <b>💸 Система казны:</b>
  • Жертвуй монеты на общую цель
+ • <b>70% идет в казну, 30% сгорает</b>
  • Топ доноров в таблице
  • При достижении цели — розыгрыш в канале
 
@@ -2265,6 +2274,7 @@ def show_help(call):
 
 <b>💸 КАЗНА СООБЩЕСТВА</b>
  • Жертвуй монеты на общую цель
+ • <b>70% идет в казну, 30% сгорает</b>
  • Топ доноров в таблице
  • При достижении цели — розыгрыш в канале
 
@@ -2278,7 +2288,7 @@ def show_help(call):
  • Список всех достижений: кнопка "Достижения"
 
 <b>🎲 ЛОТЕРЕЯ</b>
- • Купить билет: /lottery buy [количество]
+ • Купить билет: /lotterybuy [количество]
  • Розыгрыш каждый день в 20:00 МСК
 
 <b>🎭 ЧТО ДАЮТ РОЛИ?</b>
@@ -2298,6 +2308,7 @@ def show_help(call):
  /sell [название] [цена] — продать
  /bid [лот] [сумма] — ставка
  /lottery — лотерея
+ /lotterybuy [кол-во] — купить билеты
  /info — информация
  /help — это меню
  /admin — админ-панель
@@ -2552,6 +2563,28 @@ def lottery_command(message):
         return
     show_lottery(message)
 
+@bot.message_handler(commands=['lotterybuy'])
+def lotterybuy_command(message):
+    user_id = message.from_user.id
+    if is_banned(user_id):
+        bot.reply_to(message, "🚫 Вы забанены")
+        return
+    
+    try:
+        parts = message.text.split()
+        if len(parts) < 2:
+            bot.reply_to(message, "❌ Использование: /lotterybuy [количество]\nПример: /lotterybuy 5")
+            return
+        count = int(parts[1])
+        if count < 1 or count > 100:
+            bot.reply_to(message, "❌ Можно купить от 1 до 100 билетов")
+            return
+        
+        success, msg = buy_lottery_tickets(user_id, count)
+        bot.reply_to(message, msg)
+    except:
+        bot.reply_to(message, "❌ Ошибка")
+
 @bot.message_handler(commands=['info'])
 def info_command(message):
     eco = get_economy_settings()
@@ -2576,6 +2609,7 @@ ROLE SHOP BOT — бот для покупки ролей и получения 
 
 <b>💸 Система казны:</b>
  • Жертвуй монеты на общую цель
+ • <b>70% идет в казну, 30% сгорает</b>
  • Топ доноров в таблице
  • При достижении цели — розыгрыш в канале
 
@@ -2624,6 +2658,7 @@ def help_command(message):
 
 <b>💸 КАЗНА СООБЩЕСТВА</b>
  • Жертвуй монеты на общую цель
+ • <b>70% идет в казну, 30% сгорает</b>
  • Топ доноров в таблице
  • При достижении цели — розыгрыш в канале
 
@@ -2637,7 +2672,7 @@ def help_command(message):
  • Список всех достижений: кнопка "Достижения"
 
 <b>🎲 ЛОТЕРЕЯ</b>
- • Купить билет: /lottery buy [количество]
+ • Купить билет: /lotterybuy [количество]
  • Розыгрыш каждый день в 20:00 МСК
 
 <b>🎭 ЧТО ДАЮТ РОЛИ?</b>
@@ -2657,6 +2692,7 @@ def help_command(message):
  /sell [название] [цена] — продать
  /bid [лот] [сумма] — ставка
  /lottery — лотерея
+ /lotterybuy [кол-во] — купить билеты
  /info — информация
  /help — это меню
  /admin — админ-панель
@@ -3037,7 +3073,7 @@ def addachievement_command(message):
         return
     try:
         parts = message.text.split()
-        if len(parts) < 5:
+        if len(parts) < 6:
             bot.reply_to(message, "❌ Использование: /addachievement [название] [тип] [цель] [награда] [описание]\nТипы: coins, referrals, roles, streak, messages, donate")
             return
         name = ' '.join(parts[1:-4])
@@ -3223,28 +3259,6 @@ def logs_command(message):
         bot.reply_to(message, text)
     except:
         bot.reply_to(message, "❌ Использование: /logs, /logs clear, /logs user [ID]")
-
-@bot.message_handler(commands=['lotterybuy'])
-def lotterybuy_command(message):
-    user_id = message.from_user.id
-    if is_banned(user_id):
-        bot.reply_to(message, "🚫 Вы забанены")
-        return
-    
-    try:
-        parts = message.text.split()
-        if len(parts) < 2:
-            bot.reply_to(message, "❌ Использование: /lotterybuy [количество]\nПример: /lotterybuy 5")
-            return
-        count = int(parts[1])
-        if count < 1 or count > 100:
-            bot.reply_to(message, "❌ Можно купить от 1 до 100 билетов")
-            return
-        
-        success, msg = buy_lottery_tickets(user_id, count)
-        bot.reply_to(message, msg)
-    except:
-        bot.reply_to(message, "❌ Ошибка")
 
 @bot.message_handler(commands=['lotterydraw'])
 def lotterydraw_command(message):
@@ -3775,6 +3789,8 @@ def callback_handler(call):
 📝 {stats['goal_description']}
 👥 Доноров: {stats['donors_count']}
 
+🔥 <b>ПРОЦЕНТЫ:</b> 70% в казну, 30% сгорает
+
 Команды:
 /settreasurygoal СУММА — установить цель
 /setannouncement ТЕКСТ — изменить объявление
@@ -4097,7 +4113,10 @@ def show_treasury_by_message(user_id, original_message):
 {stats['announcement']}
 
 🎯 <b>ЦЕЛЬ:</b> {stats['goal']:,}💰
-📈 <b>ПРОГРЕСС:</b> {stats['percent']}% ░░░░░░░░░░
+📈 <b>ПРОГРЕСС:</b> {stats['percent']}% {stats['progress_bar']}
+
+🔥 <b>ПРОЦЕНТЫ В КАЗНУ:</b> 70% от суммы
+💨 <b>СГОРАЕТ:</b> 30% (выходит из оборота)
 
 👇 <b>СДЕЛАТЬ ПОЖЕРТВОВАНИЕ:</b>
 """
@@ -4338,6 +4357,7 @@ if __name__ == "__main__":
     print(f"🎭 Ролей: {len(PERMANENT_ROLES)}")
     print(f"🏆 Достижений: {len(get_achievements()['list'])}")
     print(f"🏦 Казна: {get_treasury()['balance']}💰")
+    print(f"🔥 Проценты в казну: 70% идет в казну, 30% сгорает")
     print(f"🔨 Аукцион: {len(get_auction()['lots'])} лотов")
     print("=" * 60)
     print("✅ Бот успешно запущен!")
@@ -4351,9 +4371,11 @@ if __name__ == "__main__":
     print("   • 📅 Задания")
     print("   • 📖 О нас")
     print("   • 📝 Журнал")
-    print("   • 🛒 Магазин (исправлен)")
+    print("   • 🛒 Магазин")
     print("   • 🔔 Уведомления в чат")
     print("   • 📢 Рассылка с форматированием")
+    print("=" * 60)
+    print("🔥 КАЗНА: 70% в казну, 30% сгорает")
     print("=" * 60)
     print("⏰ Фоновые задачи активны (сброс заданий, аукцион, лотерея)")
     print("=" * 60)
