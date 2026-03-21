@@ -24,9 +24,9 @@ EVENTS_FILE = "events.json"
 TASKS_FILE = "tasks.json"
 ACHIEVEMENTS_FILE = "achievements.json"
 LOTTERY_FILE = "lottery.json"
-TREASURY_FILE = "treasury.json"
 LOGS_FILE = "logs.json"
 ABOUT_FILE = "about.json"
+BOOSTS_FILE = "boosts.json"
 
 # ========== РОЛИ ==========
 PERMANENT_ROLES = {
@@ -60,6 +60,29 @@ ROLE_INVITE_BONUS = {
     'Overlord': 180, 'Apex': 190, 'Quantum': 200
 }
 
+# ========== БУСТЫ ==========
+STEAL_BOOSTS = {
+    'thief': {'name': '⚡️ ВОР', 'price': 500, 'type': 'steal_chance', 'value': 10, 'duration': 3600, 'desc': '+10% к краже (1 час)'},
+    'mask': {'name': '🕵️ МАСКИРОВКА', 'price': 800, 'type': 'steal_chance', 'value': 15, 'duration': 1800, 'desc': '+15% к краже (30 мин)'},
+    'shield': {'name': '🛡️ ЗАЩИТА', 'price': 600, 'type': 'protection', 'value': 25, 'duration': 7200, 'desc': '-25% шанс что ограбят (2 часа)'},
+    'detector': {'name': '📊 ДЕТЕКТОР', 'price': 300, 'type': 'detector', 'value': 1, 'duration': 0, 'desc': 'Показать топ жертв (1 раз)'},
+    'alarm': {'name': '🚨 ТРЕВОГА', 'price': 400, 'type': 'alarm', 'value': 30, 'duration': 0, 'desc': 'При краже: +30 мин вору'},
+    'cracker': {'name': '💪 ВЗЛОМЩИК', 'price': 1000, 'type': 'steal_amount', 'value': 30, 'duration': 0, 'desc': '+30% к сумме кражи (1 раз)'},
+    'escape': {'name': '🏃 ПОБЕГ', 'price': 700, 'type': 'escape_chance', 'value': 20, 'duration': 0, 'desc': '+20% к побегу (1 раз)'}
+}
+
+PERKS = {
+    'luck': {'name': '🍀 УДАЧА', 'price': 1000, 'type': 'bonus', 'value': 50, 'duration': 86400, 'desc': '+50% к бонусу (24ч)'},
+    'star': {'name': '⭐️ ЗВЕЗДА', 'price': 5000, 'type': 'permanent', 'value': 20, 'duration': 0, 'desc': '+20% ко всем монетам (навсегда)'},
+    'flame': {'name': '🔥 ПЛАМЯ', 'price': 1500, 'type': 'multiplier', 'value': 2, 'duration': 3600, 'desc': 'x2 к монетам за сообщения (1ч)'},
+    'piggy': {'name': '💰 КОПИЛКА', 'price': 2000, 'type': 'piggy', 'value': 1000, 'duration': 86400, 'desc': 'Через 24 часа +1000💰'},
+    'double': {'name': '🎲 ДУБЛЬ', 'price': 500, 'type': 'lottery', 'value': 2, 'duration': 0, 'desc': 'В лотерее 2 билета по цене 1'},
+    'mask_steal': {'name': '🎭 МАСКА', 'price': 800, 'type': 'hide', 'value': 1, 'duration': 0, 'desc': 'Скрыть ник при краже (1 раз)'},
+    'diamond': {'name': '💎 АЛМАЗ', 'price': 2500, 'type': 'income', 'value': 5, 'duration': 259200, 'desc': '+5% ко всем доходам (3 дня)'},
+    'trophy': {'name': '🏆 ТРОФЕЙ', 'price': 1000, 'type': 'exp', 'value': 50, 'duration': 3600, 'desc': '+50% к опыту (1 час)'},
+    'surprise': {'name': '🎁 СЮРПРИЗ', 'price': 1000, 'type': 'random', 'value': 0, 'duration': 0, 'desc': 'Рандом (50-5000💰)'}
+}
+
 # ========== ИЗОБРАЖЕНИЯ ==========
 IMAGES = {
     'main': 'https://s10.iimage.su/s/10/gqQbKjix0U9fspWOFuBLeysSgPSrz9ELbtMrrNzvy.jpg',
@@ -69,12 +92,11 @@ IMAGES = {
     'bonus': 'https://s10.iimage.su/s/10/gZgvLHrxSDHtVmKCmRdModftES14WYWmlIjzd7GXY.jpg',
     'profile': 'https://s10.iimage.su/s/10/gJbgiK3xrTAlMsKRtcQbcMLyG4HmIf1wKdZAw0Rrh.png',
     'tasks': 'https://s10.iimage.su/s/10/gZn2uqTx50anL7fsd6109sdqG7kCpjJ6nDXfq52I2.jpg',
-    'treasury': 'https://s10.iimage.su/s/19/gWzYmfwxTbeCN7dKFntWq7tLQBslcL70CfbeoHEja.jpg',
     'auction': 'https://s10.iimage.su/s/21/gnymrCyxnOiYWHwCZzyyScdnrycooJ1cTMrRLb3us.jpg',
     'achievements': 'https://s10.iimage.su/s/21/gTS6zsuxzE3vigLOn4DlsPBNiyte0Ptlmrn3cujz0.jpg',
     'lottery': 'https://s10.iimage.su/s/21/gCv91llxmzfQB6fMK2BsvfmwFnsHt1Q0uh75KGjti.jpg',
     'about': 'https://s10.iimage.su/s/10/gqQbKjix0U9fspWOFuBLeysSgPSrz9ELbtMrrNzvy.jpg',
-    'logs': 'https://s10.iimage.su/s/10/gqQbKjix0U9fspWOFuBLeysSgPSrz9ELbtMrrNzvy.jpg'
+    'steal': 'https://s10.iimage.su/s/21/gI6gjHux7nN4Ifz0gqLtylZgZwVOJNiP3YzY0oikD.png'
 }
 
 # ========== JSON ФУНКЦИИ ==========
@@ -138,7 +160,18 @@ def create_user(user_id, username, first_name):
             'streak_max': 0,
             'donated': 0,
             'referrals_earned': 0,
-            'achievements': []
+            'achievements': [],
+            'steal': {
+                'last_steal': None,
+                'jail_until': None,
+                'jail_count': 0,
+                'success_steals': 0,
+                'failed_steals': 0,
+                'total_stolen': 0,
+                'total_fines': 0
+            },
+            'active_boosts': {},
+            'perks': {}
         }
         save_json(USERS_FILE, users)
         add_log(user_id, "register", f"Зарегистрировался в боте")
@@ -148,6 +181,17 @@ def add_coins(user_id, amount, reason=""):
     users = load_json(USERS_FILE)
     user_id = str(user_id)
     if user_id in users:
+        # Проверяем перманентные бонусы
+        bonus_multiplier = 1.0
+        if 'star' in users[user_id].get('perks', {}):
+            bonus_multiplier *= 1.2
+        if 'diamond' in users[user_id].get('perks', {}):
+            diamond = users[user_id]['perks']['diamond']
+            if diamond.get('active', False):
+                bonus_multiplier *= 1.05
+        
+        amount = int(amount * bonus_multiplier)
+        
         users[user_id]['coins'] += amount
         users[user_id]['total_earned'] = users[user_id].get('total_earned', 0) + amount
         save_json(USERS_FILE, users)
@@ -173,6 +217,15 @@ def add_exp(user_id, exp):
     users = load_json(USERS_FILE)
     user_id = str(user_id)
     if user_id in users:
+        # Проверяем буст на опыт
+        exp_multiplier = 1.0
+        if 'trophy' in users[user_id].get('perks', {}):
+            trophy = users[user_id]['perks']['trophy']
+            if trophy.get('active', False):
+                exp_multiplier *= 1.5
+        
+        exp = int(exp * exp_multiplier)
+        
         old_level = users[user_id]['level']
         users[user_id]['exp'] += exp
         
@@ -201,7 +254,13 @@ def get_user_multiplier(user_id):
     if user_id in users:
         active = users[user_id].get('active_roles', [])
         if active:
-            return ROLE_MULTIPLIERS.get(active[0], 1.0)
+            mult = ROLE_MULTIPLIERS.get(active[0], 1.0)
+            # Проверяем буст flame
+            if 'flame' in users[user_id].get('perks', {}):
+                flame = users[user_id]['perks']['flame']
+                if flame.get('active', False):
+                    mult *= 2
+            return mult
     return 1.0
 
 def get_user_cashback(user_id):
@@ -221,6 +280,366 @@ def get_user_invite_bonus(user_id):
         if active:
             return ROLE_INVITE_BONUS.get(active[0], 100)
     return 100
+
+# ========== КРАЖА ==========
+def can_steal(user_id):
+    user = get_user(user_id)
+    if not user:
+        return False, "❌ Ты не зарегистрирован"
+    
+    # Проверка тюрьмы
+    jail_until = user.get('steal', {}).get('jail_until')
+    if jail_until:
+        try:
+            if datetime.fromisoformat(jail_until) > get_moscow_time():
+                remaining = datetime.fromisoformat(jail_until) - get_moscow_time()
+                minutes = remaining.seconds // 60
+                return False, f"🚔 Ты в тюрьме! Осталось: {minutes} минут"
+        except:
+            pass
+    
+    # Проверка времени последней кражи
+    last_steal = user.get('steal', {}).get('last_steal')
+    if last_steal:
+        try:
+            last_time = datetime.fromisoformat(last_steal)
+            if (get_moscow_time() - last_time).seconds < 3600:
+                remaining = 3600 - (get_moscow_time() - last_time).seconds
+                minutes = remaining // 60
+                return False, f"⏰ Кража доступна через {minutes} минут"
+        except:
+            pass
+    
+    return True, "Можно грабить"
+
+def get_steal_chance(stealer_id, target_id):
+    stealer = get_user(stealer_id)
+    target = get_user(target_id)
+    
+    # База 40%
+    chance = 40
+    
+    # Бонус от роли (до +20%)
+    roles = stealer.get('roles', [])
+    role_bonus = len(roles) * 2
+    chance += min(role_bonus, 20)
+    
+    # Бонус от бустов
+    boosts = stealer.get('active_boosts', {})
+    if 'thief' in boosts:
+        thief = boosts['thief']
+        if thief.get('active', False):
+            chance += 10
+    if 'mask' in boosts:
+        mask = boosts['mask']
+        if mask.get('active', False):
+            chance += 15
+    
+    # Защита жертвы
+    if 'shield' in target.get('active_boosts', {}):
+        shield = target['active_boosts']['shield']
+        if shield.get('active', False):
+            chance -= 25
+    
+    # Ограничиваем шанс 5-95%
+    chance = max(5, min(95, chance))
+    
+    return chance
+
+def steal_from(stealer_id, target_id):
+    stealer = get_user(stealer_id)
+    target = get_user(target_id)
+    
+    if not target:
+        return False, "❌ Игрок не найден"
+    
+    if target['coins'] < 100:
+        return False, "❌ У жертвы слишком мало монет"
+    
+    chance = get_steal_chance(stealer_id, target_id)
+    
+    # Проверка на успех
+    if random.randint(1, 100) <= chance:
+        # Успешная кража
+        steal_percent = random.randint(5, 20)
+        
+        # Бонус на сумму
+        amount_multiplier = 1.0
+        if 'cracker' in stealer.get('active_boosts', {}):
+            cracker = stealer['active_boosts']['cracker']
+            if cracker.get('active', False):
+                amount_multiplier *= 1.3
+                # Снимаем буст после использования
+                del stealer['active_boosts']['cracker']
+        
+        stolen = int(target['coins'] * steal_percent / 100 * amount_multiplier)
+        stolen = min(stolen, target['coins'] - 100)  # Оставляем жертве минимум 100
+        
+        # Переводим монеты
+        remove_coins(target_id, stolen, f"ограблен {stealer_id}")
+        add_coins(stealer_id, stolen, f"ограбление {target_id}")
+        
+        # Обновляем статистику
+        users = load_json(USERS_FILE)
+        users[str(stealer_id)]['steal']['success_steals'] += 1
+        users[str(stealer_id)]['steal']['total_stolen'] += stolen
+        users[str(stealer_id)]['steal']['last_steal'] = get_moscow_time().isoformat()
+        save_json(USERS_FILE, users)
+        
+        # Проверка на тревогу
+        if 'alarm' in target.get('active_boosts', {}):
+            alarm = target['active_boosts']['alarm']
+            if alarm.get('active', False):
+                # Добавляем время в тюрьму вору
+                jail_time = get_moscow_time() + timedelta(minutes=30)
+                users[str(stealer_id)]['steal']['jail_until'] = jail_time.isoformat()
+                users[str(stealer_id)]['steal']['jail_count'] += 1
+                save_json(USERS_FILE, users)
+                add_log(stealer_id, "steal_fail", f"Пойман на краже {target_id}, +30 мин тюрьмы")
+                return True, f"✅ Ты украл {stolen}💰!\n\n🚨 Сработала тревога! +30 минут тюрьмы!"
+        
+        add_log(stealer_id, "steal_success", f"Украл {stolen}💰 у {target_id}")
+        return True, f"✅ Ты украл {stolen}💰 у @{target.get('username', target_id)}!"
+    
+    else:
+        # Провал кражи — тюрьма
+        users = load_json(USERS_FILE)
+        jail_count = users[str(stealer_id)]['steal'].get('jail_count', 0) + 1
+        
+        # Срок: 1 час + 30 мин за каждый предыдущий раз
+        jail_minutes = 60 + (jail_count - 1) * 30
+        jail_time = get_moscow_time() + timedelta(minutes=jail_minutes)
+        
+        # Откуп: 500 + 250 за каждый раз
+        fine = 500 + (jail_count - 1) * 250
+        
+        users[str(stealer_id)]['steal']['jail_until'] = jail_time.isoformat()
+        users[str(stealer_id)]['steal']['jail_count'] = jail_count
+        users[str(stealer_id)]['steal']['failed_steals'] += 1
+        users[str(stealer_id)]['steal']['last_steal'] = get_moscow_time().isoformat()
+        save_json(USERS_FILE, users)
+        
+        add_log(stealer_id, "steal_fail", f"Пойман на краже {target_id}, срок {jail_minutes} мин")
+        
+        return False, f"❌ Тебя поймали!\n\n⛓️ Срок: {jail_minutes} минут\n💰 Откуп: {fine}💰"
+
+def pay_fine(user_id):
+    user = get_user(user_id)
+    if not user:
+        return False, "❌ Ошибка"
+    
+    jail_until = user.get('steal', {}).get('jail_until')
+    if not jail_until:
+        return False, "❌ Ты не в тюрьме"
+    
+    jail_time = datetime.fromisoformat(jail_until)
+    if jail_time < get_moscow_time():
+        return False, "❌ Ты уже вышел из тюрьмы"
+    
+    jail_count = user.get('steal', {}).get('jail_count', 1)
+    fine = 500 + (jail_count - 1) * 250
+    
+    if user['coins'] < fine:
+        return False, f"❌ Недостаточно монет! Нужно {fine}💰"
+    
+    # Пытаемся откупиться (шанс 70%)
+    if random.randint(1, 100) <= 70:
+        remove_coins(user_id, fine, "откуп из тюрьмы")
+        users = load_json(USERS_FILE)
+        users[str(user_id)]['steal']['jail_until'] = None
+        users[str(user_id)]['steal']['total_fines'] += fine
+        save_json(USERS_FILE, users)
+        add_log(user_id, "jail_escape", f"Откупился из тюрьмы за {fine}💰")
+        return True, f"✅ Ты откупился! Потрачено {fine}💰"
+    else:
+        # Откуп не удался, добавляем время
+        jail_minutes = 60 + (jail_count - 1) * 30
+        new_jail = get_moscow_time() + timedelta(minutes=jail_minutes)
+        users = load_json(USERS_FILE)
+        users[str(user_id)]['steal']['jail_until'] = new_jail.isoformat()
+        save_json(USERS_FILE, users)
+        add_log(user_id, "jail_escape_fail", f"Не удалось откупиться, +{jail_minutes} мин")
+        return False, f"❌ Откуп не прошел! Срок увеличен на {jail_minutes} минут"
+
+def try_escape(user_id):
+    user = get_user(user_id)
+    if not user:
+        return False, "❌ Ошибка"
+    
+    jail_until = user.get('steal', {}).get('jail_until')
+    if not jail_until:
+        return False, "❌ Ты не в тюрьме"
+    
+    jail_time = datetime.fromisoformat(jail_until)
+    if jail_time < get_moscow_time():
+        return False, "❌ Ты уже вышел из тюрьмы"
+    
+    # Шанс побега: база 30%
+    chance = 30
+    
+    # Бонус от буста
+    if 'escape' in user.get('active_boosts', {}):
+        escape = user['active_boosts']['escape']
+        if escape.get('active', False):
+            chance += 20
+            # Снимаем буст
+            users = load_json(USERS_FILE)
+            if 'escape' in users[str(user_id)]['active_boosts']:
+                del users[str(user_id)]['active_boosts']['escape']
+            save_json(USERS_FILE, users)
+    
+    if random.randint(1, 100) <= chance:
+        users = load_json(USERS_FILE)
+        users[str(user_id)]['steal']['jail_until'] = None
+        save_json(USERS_FILE, users)
+        add_log(user_id, "jail_escape", "Сбежал из тюрьмы")
+        return True, "✅ Ты сбежал из тюрьмы!"
+    else:
+        # Провал побега — +30 минут
+        new_jail = get_moscow_time() + timedelta(minutes=30)
+        users = load_json(USERS_FILE)
+        users[str(user_id)]['steal']['jail_until'] = new_jail.isoformat()
+        save_json(USERS_FILE, users)
+        add_log(user_id, "jail_escape_fail", "Не удалось сбежать, +30 мин")
+        return False, "❌ Побег не удался! +30 минут к сроку"
+
+# ========== МАГАЗИН БУСТОВ ==========
+def buy_boost(user_id, boost_id):
+    user = get_user(user_id)
+    boost = STEAL_BOOSTS.get(boost_id) or PERKS.get(boost_id)
+    
+    if not boost:
+        return False, "❌ Предмет не найден"
+    
+    if user['coins'] < boost['price']:
+        return False, f"❌ Недостаточно монет! Нужно {boost['price']}💰"
+    
+    remove_coins(user_id, boost['price'], f"покупка {boost['name']}")
+    
+    users = load_json(USERS_FILE)
+    user_id_str = str(user_id)
+    
+    if boost['type'] in ['steal_chance', 'protection', 'alarm']:
+        if 'active_boosts' not in users[user_id_str]:
+            users[user_id_str]['active_boosts'] = {}
+        
+        if boost['duration'] > 0:
+            expires = get_moscow_time() + timedelta(seconds=boost['duration'])
+            users[user_id_str]['active_boosts'][boost_id] = {
+                'active': True,
+                'expires': expires.isoformat(),
+                'value': boost['value']
+            }
+        else:
+            users[user_id_str]['active_boosts'][boost_id] = {
+                'active': True,
+                'value': boost['value']
+            }
+    
+    elif boost['type'] in ['bonus', 'multiplier', 'income', 'exp', 'permanent', 'piggy', 'lottery', 'hide', 'random']:
+        if 'perks' not in users[user_id_str]:
+            users[user_id_str]['perks'] = {}
+        
+        if boost['duration'] > 0:
+            expires = get_moscow_time() + timedelta(seconds=boost['duration'])
+            users[user_id_str]['perks'][boost_id] = {
+                'active': True,
+                'expires': expires.isoformat(),
+                'value': boost['value']
+            }
+        elif boost['type'] == 'permanent':
+            users[user_id_str]['perks'][boost_id] = {
+                'active': True,
+                'value': boost['value']
+            }
+        elif boost['type'] == 'piggy':
+            expires = get_moscow_time() + timedelta(seconds=boost['duration'])
+            users[user_id_str]['perks'][boost_id] = {
+                'active': True,
+                'expires': expires.isoformat(),
+                'value': boost['value']
+            }
+        elif boost['type'] == 'random':
+            random_amount = random.randint(50, 5000)
+            add_coins(user_id, random_amount, f"сюрприз")
+            save_json(USERS_FILE, users)
+            return True, f"✅ Ты купил {boost['name']}!\n\n🎁 Твой выигрыш: {random_amount}💰"
+    
+    save_json(USERS_FILE, users)
+    add_log(user_id, "buy_boost", f"Купил {boost['name']}")
+    
+    return True, f"✅ Ты купил {boost['name']}!"
+
+def check_perks():
+    while True:
+        time.sleep(60)
+        try:
+            users = load_json(USERS_FILE)
+            now = get_moscow_time()
+            changed = False
+            
+            for uid, data in users.items():
+                # Проверяем активные бусты
+                for boost_id in list(data.get('active_boosts', {}).keys()):
+                    boost = data['active_boosts'][boost_id]
+                    if boost.get('expires'):
+                        try:
+                            expires = datetime.fromisoformat(boost['expires'])
+                            if expires < now:
+                                del data['active_boosts'][boost_id]
+                                changed = True
+                        except:
+                            pass
+                
+                # Проверяем перки
+                for perk_id in list(data.get('perks', {}).keys()):
+                    perk = data['perks'][perk_id]
+                    if perk.get('expires'):
+                        try:
+                            expires = datetime.fromisoformat(perk['expires'])
+                            if expires < now:
+                                del data['perks'][perk_id]
+                                changed = True
+                        except:
+                            pass
+                
+                # Проверяем копилку
+                if 'piggy' in data.get('perks', {}):
+                    piggy = data['perks']['piggy']
+                    if piggy.get('expires') and piggy.get('active'):
+                        try:
+                            expires = datetime.fromisoformat(piggy['expires'])
+                            if expires < now:
+                                add_coins(int(uid), piggy['value'], "копилка")
+                                del data['perks']['piggy']
+                                changed = True
+                                try:
+                                    bot.send_message(int(uid), f"💰 <b>КОПИЛКА!</b>\n\n+{piggy['value']}💰 зачислено на баланс!", parse_mode='HTML')
+                                except:
+                                    pass
+                        except:
+                            pass
+                
+                # Проверяем тюрьму
+                jail_until = data.get('steal', {}).get('jail_until')
+                if jail_until:
+                    try:
+                        jail_time = datetime.fromisoformat(jail_until)
+                        if jail_time < now:
+                            data['steal']['jail_until'] = None
+                            changed = True
+                            try:
+                                bot.send_message(int(uid), "🚔 <b>ТЫ ВЫШЕЛ ИЗ ТЮРЬМЫ!</b>\n\nТеперь снова можно грабить!", parse_mode='HTML')
+                            except:
+                                pass
+                    except:
+                        pass
+            
+            if changed:
+                save_json(USERS_FILE, users)
+                
+        except Exception as e:
+            print(f"Ошибка проверки перков: {e}")
 
 # ========== ДОБАВЛЕНИЕ СООБЩЕНИЯ ==========
 def add_message(user_id):
@@ -505,6 +924,13 @@ def get_daily_bonus(user_id):
         bonus_min = int(bonus_min * boost['multiplier'])
         bonus_max = int(bonus_max * boost['multiplier'])
     
+    # Проверка на буст удачи
+    if 'luck' in user.get('perks', {}):
+        luck = user['perks']['luck']
+        if luck.get('active', False):
+            bonus_min = int(bonus_min * 1.5)
+            bonus_max = int(bonus_max * 1.5)
+    
     bonus = random.randint(bonus_min, bonus_max)
     
     users = load_json(USERS_FILE)
@@ -596,12 +1022,13 @@ def get_leaders_by_roles(limit=10):
     return leaders[:limit]
 
 def get_leaders_by_donations(limit=10):
-    treasury = get_treasury()
     leaders = []
-    for uid, amount in treasury.get('donors', {}).items():
-        user = get_user(int(uid))
-        name = user.get('username') or user.get('first_name') or f"User_{uid[-4:]}" if user else f"User_{uid[-4:]}"
-        leaders.append({'name': name, 'value': amount})
+    users = load_json(USERS_FILE)
+    for uid, data in users.items():
+        if int(uid) in MASTER_IDS:
+            continue
+        name = data.get('username') or data.get('first_name') or f"User_{uid[-4:]}"
+        leaders.append({'name': name, 'value': data.get('donated', 0)})
     leaders.sort(key=lambda x: x['value'], reverse=True)
     return leaders[:limit]
 
@@ -642,124 +1069,29 @@ def get_leaders_by_today_messages(limit=10):
     leaders.sort(key=lambda x: x['value'], reverse=True)
     return leaders[:limit]
 
-# ========== КАЗНА С ПРОЦЕНТАМИ ==========
-def get_treasury():
-    treasury = load_json(TREASURY_FILE)
-    if not treasury:
-        treasury = {
-            'balance': 0,
-            'total_collected': 0,
-            'total_withdrawn': 0,
-            'goal': 100000,
-            'goal_description': '🏦 Розыгрыш роли Quantum',
-            'announcement': '🏦 При достижении цели будет розыгрыш!',
-            'donors': {},
-            'history': []
-        }
-        save_json(TREASURY_FILE, treasury)
-    return treasury
-
-def save_treasury(data):
-    save_json(TREASURY_FILE, data)
-
-def donate_to_treasury(user_id, amount):
-    treasury = get_treasury()
-    user = get_user(user_id)
-    
-    if not user or user['coins'] < amount:
-        return False, "❌ Недостаточно монет!"
-    
-    # Снимаем монеты
-    remove_coins(user_id, amount, f"пожертвование в казну")
-    
-    # ========== ПРОЦЕНТЫ В КАЗНУ ==========
-    # 70% идет в казну
-    # 30% сгорает (выходит из оборота)
-    
-    percent_to_treasury = 70
-    to_treasury = int(amount * percent_to_treasury / 100)
-    burned = amount - to_treasury
-    
-    treasury['balance'] += to_treasury
-    treasury['total_collected'] += to_treasury
-    
-    user_id_str = str(user_id)
-    if user_id_str not in treasury['donors']:
-        treasury['donors'][user_id_str] = 0
-    treasury['donors'][user_id_str] += amount
-    
+def get_leaders_by_steals(limit=10):
     users = load_json(USERS_FILE)
-    users[str(user_id)]['donated'] = users[str(user_id)].get('donated', 0) + amount
-    save_json(USERS_FILE, users)
-    
-    save_treasury(treasury)
-    add_log(user_id, "donate", f"Пожертвовал {amount}💰 (в казну {to_treasury}💰, сгорело {burned}💰)")
-    check_achievements(user_id)
-    
-    if treasury['balance'] >= treasury['goal']:
-        return True, f"✅ <b>Пожертвовано {amount}💰</b>\n\n🔥 <b>В казну поступило:</b> {to_treasury}💰\n💨 <b>Сгорело:</b> {burned}💰\n\n🎉 <b>ПОЗДРАВЛЯЕМ! ЦЕЛЬ ДОСТИГНУТА!</b>\n{treasury['goal_description']}"
-    
-    return True, f"✅ <b>Пожертвовано {amount}💰</b>\n\n🔥 <b>В казну поступило:</b> {to_treasury}💰\n💨 <b>Сгорело:</b> {burned}💰\n📊 Собрано: {treasury['balance']}/{treasury['goal']}💰"
+    leaders = []
+    for uid, data in users.items():
+        if int(uid) in MASTER_IDS:
+            continue
+        steal = data.get('steal', {})
+        name = data.get('username') or data.get('first_name') or f"User_{uid[-4:]}"
+        leaders.append({'name': name, 'value': steal.get('success_steals', 0)})
+    leaders.sort(key=lambda x: x['value'], reverse=True)
+    return leaders[:limit]
 
-def get_treasury_stats():
-    treasury = get_treasury()
-    percent = int((treasury['balance'] / treasury['goal']) * 100) if treasury['goal'] > 0 else 0
-    
-    donors = []
-    for user_id, amount in treasury['donors'].items():
-        user = get_user(int(user_id))
-        name = user.get('username') or user.get('first_name') or f"User_{user_id[-4:]}" if user else f"User_{user_id[-4:]}"
-        donors.append({'name': name, 'amount': amount})
-    donors.sort(key=lambda x: x['amount'], reverse=True)
-    
-    top_donor = f"{donors[0]['name']} - {donors[0]['amount']}💰" if donors else "Нет донатов"
-    
-    return {
-        'balance': treasury['balance'],
-        'total_collected': treasury['total_collected'],
-        'total_withdrawn': treasury['total_withdrawn'],
-        'goal': treasury['goal'],
-        'goal_description': treasury['goal_description'],
-        'announcement': treasury.get('announcement', '🏦 При достижении цели будет розыгрыш!'),
-        'percent': percent,
-        'donors_count': len(donors),
-        'top_donor': top_donor
-    }
-
-def set_treasury_goal(goal, description=None):
-    treasury = get_treasury()
-    treasury['goal'] = goal
-    if description:
-        treasury['goal_description'] = description
-    save_treasury(treasury)
-
-def set_treasury_announcement(text):
-    treasury = get_treasury()
-    treasury['announcement'] = text
-    save_treasury(treasury)
-
-def withdraw_from_treasury(amount):
-    treasury = get_treasury()
-    if treasury['balance'] >= amount:
-        treasury['balance'] -= amount
-        treasury['total_withdrawn'] += amount
-        save_treasury(treasury)
-        add_log(MASTER_IDS[0], "treasury_withdraw", f"Выведено {amount}💰 из казны")
-        return True, treasury['balance']
-    return False, treasury['balance']
-
-def add_to_treasury(amount):
-    treasury = get_treasury()
-    treasury['balance'] += amount
-    treasury['total_collected'] += amount
-    save_treasury(treasury)
-    add_log(MASTER_IDS[0], "treasury_add", f"Добавлено {amount}💰 в казну")
-    return treasury['balance']
-
-def reset_treasury():
-    treasury = get_treasury()
-    treasury['balance'] = 0
-    save_treasury(treasury)
+def get_leaders_by_stolen(limit=10):
+    users = load_json(USERS_FILE)
+    leaders = []
+    for uid, data in users.items():
+        if int(uid) in MASTER_IDS:
+            continue
+        steal = data.get('steal', {})
+        name = data.get('username') or data.get('first_name') or f"User_{uid[-4:]}"
+        leaders.append({'name': name, 'value': steal.get('total_stolen', 0)})
+    leaders.sort(key=lambda x: x['value'], reverse=True)
+    return leaders[:limit]
 
 # ========== АУКЦИОН ==========
 def get_auction():
@@ -968,9 +1300,14 @@ def get_achievements():
                 {'id': 19, 'name': '💬 Говорун', 'type': 'messages', 'requirement': 500, 'reward': 500, 'desc': 'Написать 500 сообщений'},
                 {'id': 20, 'name': '💬 Оратор', 'type': 'messages', 'requirement': 1000, 'reward': 1000, 'desc': 'Написать 1,000 сообщений'},
                 {'id': 21, 'name': '💸 Меценат', 'type': 'donate', 'requirement': 1000, 'reward': 200, 'desc': 'Пожертвовать 1,000💰'},
-                {'id': 22, 'name': '💸 Благодетель', 'type': 'donate', 'requirement': 10000, 'reward': 1000, 'desc': 'Пожертвовать 10,000💰'}
+                {'id': 22, 'name': '💸 Благодетель', 'type': 'donate', 'requirement': 10000, 'reward': 1000, 'desc': 'Пожертвовать 10,000💰'},
+                {'id': 23, 'name': '🔪 Первая кража', 'type': 'steal', 'requirement': 1, 'reward': 100, 'desc': 'Совершить первую кражу'},
+                {'id': 24, 'name': '🔪 Профи', 'type': 'steal', 'requirement': 10, 'reward': 500, 'desc': 'Совершить 10 краж'},
+                {'id': 25, 'name': '🔪 Вор в законе', 'type': 'steal', 'requirement': 50, 'reward': 2000, 'desc': 'Совершить 50 краж'},
+                {'id': 26, 'name': '💰 Миллионер', 'type': 'stolen', 'requirement': 100000, 'reward': 5000, 'desc': 'Украсть 100,000💰'},
+                {'id': 27, 'name': '🚔 Рецидивист', 'type': 'jail', 'requirement': 10, 'reward': 1000, 'desc': 'Попасть в тюрьму 10 раз'}
             ],
-            'next_id': 23
+            'next_id': 28
         }
         save_json(ACHIEVEMENTS_FILE, achievements)
     return achievements
@@ -1021,6 +1358,12 @@ def check_achievements(user_id):
             achieved = True
         elif ach['type'] == 'donate' and user.get('donated', 0) >= ach['requirement']:
             achieved = True
+        elif ach['type'] == 'steal' and user.get('steal', {}).get('success_steals', 0) >= ach['requirement']:
+            achieved = True
+        elif ach['type'] == 'stolen' and user.get('steal', {}).get('total_stolen', 0) >= ach['requirement']:
+            achieved = True
+        elif ach['type'] == 'jail' and user.get('steal', {}).get('jail_count', 0) >= ach['requirement']:
+            achieved = True
         
         if achieved:
             add_coins(user_id, ach['reward'], f"достижение: {ach['name']}")
@@ -1056,6 +1399,17 @@ def buy_lottery_tickets(user_id, count):
     
     user = get_user(user_id)
     cost = count * 100
+    
+    # Проверка на буст "Дубль"
+    if 'double' in user.get('perks', {}):
+        double = user['perks']['double']
+        if double.get('active', False):
+            count *= 2
+            # Снимаем буст после использования
+            users = load_json(USERS_FILE)
+            if 'double' in users[str(user_id)]['perks']:
+                del users[str(user_id)]['perks']['double']
+            save_json(USERS_FILE, users)
     
     if user['coins'] < cost:
         return False, f"❌ Недостаточно монет! Нужно {cost}💰"
@@ -1187,15 +1541,18 @@ def get_tasks():
             'daily': [
                 {'id': 1, 'type': 'messages', 'goal': 50, 'reward': 50, 'desc': 'Написать 50 сообщений'},
                 {'id': 2, 'type': 'messages', 'goal': 100, 'reward': 100, 'desc': 'Написать 100 сообщений'},
-                {'id': 3, 'type': 'invite', 'goal': 2, 'reward': 200, 'desc': 'Пригласить 2 друзей'}
+                {'id': 3, 'type': 'invite', 'goal': 2, 'reward': 200, 'desc': 'Пригласить 2 друзей'},
+                {'id': 4, 'type': 'steal', 'goal': 1, 'reward': 100, 'desc': 'Совершить кражу'},
+                {'id': 5, 'type': 'lottery', 'goal': 1, 'reward': 50, 'desc': 'Купить билет лотереи'}
             ],
             'permanent': [
                 {'id': 101, 'type': 'coins', 'goal': 5000, 'reward': 500, 'desc': 'Накопить 5,000💰'},
-                {'id': 102, 'type': 'roles', 'goal': 3, 'reward': 1000, 'desc': 'Купить 3 роли'}
+                {'id': 102, 'type': 'roles', 'goal': 3, 'reward': 1000, 'desc': 'Купить 3 роли'},
+                {'id': 103, 'type': 'steal', 'goal': 10, 'reward': 500, 'desc': 'Совершить 10 краж'}
             ],
             'event': [],
             'progress': {},
-            'next_id': 103
+            'next_id': 104
         }
         save_json(TASKS_FILE, tasks)
     return tasks
@@ -1270,16 +1627,32 @@ def check_daily_tasks(user_id, task_type, progress):
         if task['id'] in tasks['progress'][user_id_str]['permanent']:
             continue
         
+        achieved = False
         if task_type == 'messages':
             user = get_user(user_id)
             if user and user.get('messages', 0) >= task['goal']:
-                add_coins(user_id, task['reward'], f"задание: {task['desc']}")
-                tasks['progress'][user_id_str]['permanent'].add(task['id'])
-                add_log(user_id, "task_complete", f"Выполнил задание: {task['desc']} (+{task['reward']}💰)")
-                try:
-                    bot.send_message(int(user_id), f"✅ <b>Задание выполнено!</b>\n\n{task['desc']}\n+{task['reward']}💰", parse_mode='HTML')
-                except:
-                    pass
+                achieved = True
+        elif task_type == 'coins':
+            user = get_user(user_id)
+            if user and user['coins'] >= task['goal']:
+                achieved = True
+        elif task_type == 'roles':
+            user = get_user(user_id)
+            if user and len(user.get('roles', [])) >= task['goal']:
+                achieved = True
+        elif task_type == 'steal':
+            user = get_user(user_id)
+            if user and user.get('steal', {}).get('success_steals', 0) >= task['goal']:
+                achieved = True
+        
+        if achieved:
+            add_coins(user_id, task['reward'], f"задание: {task['desc']}")
+            tasks['progress'][user_id_str]['permanent'].add(task['id'])
+            add_log(user_id, "task_complete", f"Выполнил задание: {task['desc']} (+{task['reward']}💰)")
+            try:
+                bot.send_message(int(user_id), f"✅ <b>Задание выполнено!</b>\n\n{task['desc']}\n+{task['reward']}💰", parse_mode='HTML')
+            except:
+                pass
     
     save_tasks(tasks)
 
@@ -1397,7 +1770,7 @@ def has_permission(user_id, permission):
         'owner': ['all'],
         'moderator': ['ban', 'unban', 'add_coins', 'remove_coins', 'create_promo', 'giverole', 'removerole', 'tempgive'],
         'role_admin': ['giverole', 'removerole', 'tempgive'],
-        'economy_admin': ['setreward', 'setbonus', 'treasury_manage', 'set_announcement', 'event'],
+        'economy_admin': ['setreward', 'setbonus', 'set_announcement', 'event'],
         'media_admin': ['mailing', 'set_announcement']
     }
     
@@ -1417,7 +1790,7 @@ def get_main_keyboard(page=1):
         types.InlineKeyboardButton("📅 Задания", callback_data="tasks"),
         types.InlineKeyboardButton("🎁 Бонус", callback_data="bonus"),
         types.InlineKeyboardButton("🔗 Пригласить", callback_data="invite"),
-        types.InlineKeyboardButton("🏦 Казна", callback_data="treasury"),
+        types.InlineKeyboardButton("🔪 Кража", callback_data="steal"),
         types.InlineKeyboardButton("🔨 Аукцион", callback_data="auction"),
         types.InlineKeyboardButton("🏆 Достижения", callback_data="achievements"),
         types.InlineKeyboardButton("🎲 Лотерея", callback_data="lottery"),
@@ -1462,34 +1835,50 @@ def get_admin_back_keyboard():
     markup.add(types.InlineKeyboardButton("◀️ Назад в админ-панель", callback_data="admin_back"))
     return markup
 
-def get_shop_keyboard(page=1):
+def get_shop_keyboard(page=1, section="roles"):
     markup = types.InlineKeyboardMarkup(row_width=1)
     
-    roles_list = list(PERMANENT_ROLES.keys())
-    per_page = 3
-    total_pages = (len(roles_list) + per_page - 1) // per_page
+    if section == "roles":
+        roles_list = list(PERMANENT_ROLES.keys())
+        per_page = 3
+        total_pages = (len(roles_list) + per_page - 1) // per_page
+        
+        if page < 1:
+            page = 1
+        if page > total_pages:
+            page = total_pages
+        
+        start = (page - 1) * per_page
+        end = min(start + per_page, len(roles_list))
+        
+        for role in roles_list[start:end]:
+            markup.add(types.InlineKeyboardButton(f"{role} — {PERMANENT_ROLES[role]:,}💰", callback_data=f"perm_{role}"))
+        
+        if total_pages > 1:
+            nav = []
+            if page > 1:
+                nav.append(types.InlineKeyboardButton("◀️", callback_data=f"shop_page_{page-1}"))
+            if page < total_pages:
+                nav.append(types.InlineKeyboardButton("▶️", callback_data=f"shop_page_{page+1}"))
+            if nav:
+                markup.row(*nav)
     
-    if page < 1:
-        page = 1
-    if page > total_pages:
-        page = total_pages
+    elif section == "steal_boosts":
+        for boost_id, boost in STEAL_BOOSTS.items():
+            markup.add(types.InlineKeyboardButton(f"{boost['name']} — {boost['price']}💰", callback_data=f"boost_{boost_id}"))
     
-    start = (page - 1) * per_page
-    end = min(start + per_page, len(roles_list))
+    elif section == "perks":
+        for perk_id, perk in PERKS.items():
+            markup.add(types.InlineKeyboardButton(f"{perk['name']} — {perk['price']}💰", callback_data=f"perk_{perk_id}"))
     
-    for role in roles_list[start:end]:
-        markup.add(types.InlineKeyboardButton(f"{role} — {PERMANENT_ROLES[role]:,}💰", callback_data=f"perm_{role}"))
-    
-    if total_pages > 1:
-        nav = []
-        if page > 1:
-            nav.append(types.InlineKeyboardButton("◀️", callback_data=f"shop_page_{page-1}"))
-        if page < total_pages:
-            nav.append(types.InlineKeyboardButton("▶️", callback_data=f"shop_page_{page+1}"))
-        if nav:
-            markup.row(*nav)
-    
+    # Навигация по разделам магазина
+    markup.row(
+        types.InlineKeyboardButton("🎭 Роли", callback_data="shop_section_roles"),
+        types.InlineKeyboardButton("⚡️ Бусты", callback_data="shop_section_steal_boosts"),
+        types.InlineKeyboardButton("🍀 Плюхи", callback_data="shop_section_perks")
+    )
     markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main"))
+    
     return markup
 
 def get_role_keyboard(role_name):
@@ -1541,19 +1930,21 @@ def get_bonus_keyboard():
     )
     return markup
 
-def get_treasury_keyboard():
-    markup = types.InlineKeyboardMarkup(row_width=3)
+def get_steal_keyboard(target_id):
+    markup = types.InlineKeyboardMarkup()
     markup.add(
-        types.InlineKeyboardButton("50💰", callback_data="donate_50"),
-        types.InlineKeyboardButton("100💰", callback_data="donate_100"),
-        types.InlineKeyboardButton("500💰", callback_data="donate_500")
+        types.InlineKeyboardButton("🔪 Ограбить", callback_data=f"steal_confirm_{target_id}"),
+        types.InlineKeyboardButton("❌ Отмена", callback_data="back_to_main")
     )
+    return markup
+
+def get_jail_keyboard():
+    markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(
-        types.InlineKeyboardButton("1000💰", callback_data="donate_1000"),
-        types.InlineKeyboardButton("5000💰", callback_data="donate_5000"),
-        types.InlineKeyboardButton("✏️ Своя", callback_data="donate_custom")
+        types.InlineKeyboardButton("💰 Откупиться", callback_data="jail_pay"),
+        types.InlineKeyboardButton("🕵️ Сбежать", callback_data="jail_escape"),
+        types.InlineKeyboardButton("⏳ Ждать", callback_data="back_to_main")
     )
-    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main"))
     return markup
 
 def get_auction_keyboard():
@@ -1627,7 +2018,9 @@ def get_leaders_keyboard():
         types.InlineKeyboardButton("💸 По донатам", callback_data="leaders_donations"),
         types.InlineKeyboardButton("📈 По уровню", callback_data="leaders_level"),
         types.InlineKeyboardButton("🔥 По серии", callback_data="leaders_streak"),
-        types.InlineKeyboardButton("💬 За сегодня", callback_data="leaders_today")
+        types.InlineKeyboardButton("💬 За сегодня", callback_data="leaders_today"),
+        types.InlineKeyboardButton("🔪 По кражам", callback_data="leaders_steals"),
+        types.InlineKeyboardButton("💰 По украденному", callback_data="leaders_stolen")
     )
     markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main"))
     return markup
@@ -1642,7 +2035,6 @@ def get_admin_main_keyboard():
         types.InlineKeyboardButton("🚫 Баны", callback_data="admin_bans"),
         types.InlineKeyboardButton("🎁 Промокоды", callback_data="admin_promo"),
         types.InlineKeyboardButton("⚙️ Экономика", callback_data="admin_economy"),
-        types.InlineKeyboardButton("🏦 Казна", callback_data="admin_treasury"),
         types.InlineKeyboardButton("🔨 Аукцион", callback_data="admin_auction"),
         types.InlineKeyboardButton("🏆 Достижения", callback_data="admin_achievements"),
         types.InlineKeyboardButton("🎲 Лотерея", callback_data="admin_lottery"),
@@ -1669,8 +2061,6 @@ def show_main_menu(call_or_msg, page=1):
         first_name = call_or_msg.from_user.first_name if hasattr(call_or_msg, 'from_user') else "User"
         user = create_user(user_id, username, first_name)
     
-    treasury = get_treasury()
-    
     text = f"""
 <b>🤖 ROLE SHOP BOT</b>
 
@@ -1679,7 +2069,6 @@ def show_main_menu(call_or_msg, page=1):
 📊 <b>Твой уровень:</b> {user.get('level', 1)}
 ⭐️ <b>Опыт:</b> {user.get('exp', 0)}/{user.get('exp_next', 100)}
 🔥 <b>Серия:</b> {user.get('streak_daily', 0)} дней
-💰 <b>Баланс казны:</b> {treasury['balance']:,}💰
 
 🛒 <b>Магазин ролей</b>
  • Покупай уникальные роли за монеты
@@ -1704,30 +2093,15 @@ def show_main_menu(call_or_msg, page=1):
     else:
         bot.send_photo(user_id, IMAGES['main'], caption=text, parse_mode='HTML', reply_markup=get_main_keyboard(page))
 
-def show_shop(call, page=1):
+def show_shop(call, section="roles", page=1):
     user = get_user(call.from_user.id)
     
-    roles_list = list(PERMANENT_ROLES.items())
-    total_pages = (len(roles_list) + 2) // 3
-    start = (page - 1) * 3
-    end = start + 3
-    
-    roles_text = ""
-    for name, price in roles_list[start:end]:
-        roles_text += f" • {name} | {price:,}💰 | приписка {name}\n"
-    
-    cashback = get_user_cashback(call.from_user.id)
-    
     text = f"""
-<b>🛒 МАГАЗИН РОЛЕЙ</b> <i>(стр. {page}/{total_pages})</i>
+<b>🛒 МАГАЗИН</b>
 
-📁 Постоянные роли (навсегда):
-{roles_text}
+💰 <b>Твой баланс:</b> {user['coins']:,}💰
 
-💰 <b>Твой кешбэк:</b> {cashback}%
-💸 <b>Твой баланс:</b> {user['coins']:,}💰
-
-👇 Выбери роль для покупки
+👇 Выбери товар
 """
     
     try:
@@ -1735,49 +2109,147 @@ def show_shop(call, page=1):
             types.InputMediaPhoto(IMAGES['shop'], caption=text, parse_mode='HTML'),
             call.message.chat.id,
             call.message.message_id,
-            reply_markup=get_shop_keyboard(page)
+            reply_markup=get_shop_keyboard(page, section)
         )
     except:
         pass
 
-def show_myroles(call, page=1):
-    user = get_user(call.from_user.id)
-    roles = user.get('roles', [])
-    active = user.get('active_roles', [])
+def show_steal(call):
+    user_id = call.from_user.id
+    user = get_user(user_id)
     
-    total_pages = (len(roles) + 2) // 3 if roles else 1
-    start = (page - 1) * 3
-    end = start + 3
+    # Проверка тюрьмы
+    jail_until = user.get('steal', {}).get('jail_until')
+    if jail_until:
+        try:
+            jail_time = datetime.fromisoformat(jail_until)
+            if jail_time > get_moscow_time():
+                remaining = jail_time - get_moscow_time()
+                hours = remaining.seconds // 3600
+                minutes = (remaining.seconds % 3600) // 60
+                
+                jail_count = user.get('steal', {}).get('jail_count', 1)
+                fine = 500 + (jail_count - 1) * 250
+                
+                text = f"""
+🚔 <b>ВЫ В ТЮРЬМЕ!</b>
+
+⛓️ <b>Срок:</b> {hours}ч {minutes}мин
+💰 <b>Откуп:</b> {fine}💰
+📊 <b>Пойман:</b> {jail_count} раз(а)
+
+👇 Выбери действие
+"""
+                try:
+                    bot.edit_message_media(
+                        types.InputMediaPhoto(IMAGES['steal'], caption=text, parse_mode='HTML'),
+                        call.message.chat.id,
+                        call.message.message_id,
+                        reply_markup=get_jail_keyboard()
+                    )
+                except:
+                    pass
+                return
+        except:
+            pass
     
-    if not roles:
-        roles_text = "😕 У тебя пока нет ролей!"
-    else:
-        roles_text = ""
-        for role in roles[start:end]:
-            status = "✅" if role in active else "❌"
-            roles_text += f" {status} {role}\n"
+    # Проверка времени кражи
+    last_steal = user.get('steal', {}).get('last_steal')
+    if last_steal:
+        try:
+            last_time = datetime.fromisoformat(last_steal)
+            time_diff = (get_moscow_time() - last_time).seconds
+            if time_diff < 3600:
+                remaining = 3600 - time_diff
+                minutes = remaining // 60
+                text = f"""
+⏰ <b>КРАЖА НЕДОСТУПНА</b>
+
+Следующая кража через: {minutes} минут
+
+📊 <b>Твоя статистика:</b>
+🔪 Успешных краж: {user.get('steal', {}).get('success_steals', 0)}
+🚔 Провалов: {user.get('steal', {}).get('failed_steals', 0)}
+💰 Украдено: {user.get('steal', {}).get('total_stolen', 0)}💰
+"""
+                try:
+                    bot.edit_message_media(
+                        types.InputMediaPhoto(IMAGES['steal'], caption=text, parse_mode='HTML'),
+                        call.message.chat.id,
+                        call.message.message_id,
+                        reply_markup=get_back_keyboard()
+                    )
+                except:
+                    pass
+                return
+        except:
+            pass
+    
+    # Показываем список игроков для грабежа
+    users = load_json(USERS_FILE)
+    targets = []
+    for uid, data in users.items():
+        if int(uid) != user_id and int(uid) not in MASTER_IDS:
+            if data['coins'] >= 100:
+                name = data.get('username') or data.get('first_name') or f"User_{uid[-4:]}"
+                targets.append({'id': uid, 'name': name, 'coins': data['coins']})
+    
+    targets.sort(key=lambda x: x['coins'], reverse=True)
+    targets = targets[:10]
+    
+    if not targets:
+        text = "😢 Нет доступных целей для кражи"
+        try:
+            bot.edit_message_media(
+                types.InputMediaPhoto(IMAGES['steal'], caption=text, parse_mode='HTML'),
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=get_back_keyboard()
+            )
+        except:
+            pass
+        return
+    
+    # Показываем выбор жертвы
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    for target in targets:
+        markup.add(types.InlineKeyboardButton(
+            f"👤 {target['name']} — {target['coins']:,}💰",
+            callback_data=f"steal_target_{target['id']}"
+        ))
+    markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data="back_to_main"))
     
     text = f"""
-<b>📋 МОИ РОЛИ</b> <i>(стр. {page}/{total_pages})</i>
+🔪 <b>КРАЖА</b>
 
-✨ У тебя есть следующие роли:
+Выбери жертву:
 
-{roles_text}
-▸ <b>Твой баланс:</b> {user['coins']:,}💰
+📊 <b>Твои шансы:</b>
+🎲 База: 40%
+🎭 За роль: +{min(len(user.get('roles', [])) * 2, 20)}%
+⚡️ За бусты: зависит от активных
+🛡️ Защита жертвы: -25% (если есть)
+
+💰 <b>Твоя статистика:</b>
+🔪 Успешно: {user.get('steal', {}).get('success_steals', 0)}
+🚔 Провалов: {user.get('steal', {}).get('failed_steals', 0)}
+💸 Украдено: {user.get('steal', {}).get('total_stolen', 0)}💰
 """
     
     try:
         bot.edit_message_media(
-            types.InputMediaPhoto(IMAGES['myroles'], caption=text, parse_mode='HTML'),
+            types.InputMediaPhoto(IMAGES['steal'], caption=text, parse_mode='HTML'),
             call.message.chat.id,
             call.message.message_id,
-            reply_markup=get_myroles_keyboard(roles, active, page) if roles else get_back_keyboard()
+            reply_markup=markup
         )
     except:
         pass
 
 def show_profile(call):
     user = get_user(call.from_user.id)
+    
+    steal = user.get('steal', {})
     
     text = f"""
 <b>👤 ПРОФИЛЬ</b> {call.from_user.first_name}
@@ -1793,6 +2265,12 @@ def show_profile(call):
 ▸ <b>Рефералов:</b> {len(user.get('invites', []))}
 💸 <b>Пожертвовано:</b> {user.get('donated', 0):,}💰
 🏆 <b>Достижений:</b> {len(user.get('achievements', []))}
+
+🔪 <b>Статистика краж:</b>
+✅ Успешно: {steal.get('success_steals', 0)}
+❌ Провалов: {steal.get('failed_steals', 0)}
+💰 Украдено: {steal.get('total_stolen', 0)}💰
+💸 Заплачено откупов: {steal.get('total_fines', 0)}💰
 """
     
     try:
@@ -1817,7 +2295,21 @@ def show_tasks(call):
         key = f"{task['id']}_{today}"
         progress = user_progress['daily'].get(key, 0)
         status = "✅" if progress >= task['goal'] else "⏳"
-        daily_text += f"\n{status} {task['desc']} — {progress}/{task['goal']} (+{task['reward']}💰)"
+        
+        if task['type'] == 'messages':
+            current = user.get('messages_today', 0)
+            daily_text += f"\n{status} {task['desc']} — {current}/{task['goal']} (+{task['reward']}💰)"
+        elif task['type'] == 'invite':
+            current = len(user.get('invites', []))
+            daily_text += f"\n{status} {task['desc']} — {current}/{task['goal']} (+{task['reward']}💰)"
+        elif task['type'] == 'steal':
+            current = user.get('steal', {}).get('success_steals', 0)
+            daily_text += f"\n{status} {task['desc']} — {current}/{task['goal']} (+{task['reward']}💰)"
+        elif task['type'] == 'lottery':
+            current = user.get('lottery_tickets_today', 0)
+            daily_text += f"\n{status} {task['desc']} — {current}/{task['goal']} (+{task['reward']}💰)"
+        else:
+            daily_text += f"\n{status} {task['desc']} — {progress}/{task['goal']} (+{task['reward']}💰)"
     
     perm_text = ""
     for task in tasks['permanent']:
@@ -1829,6 +2321,8 @@ def show_tasks(call):
             elif task['type'] == 'roles' and len(user.get('roles', [])) >= task['goal']:
                 perm_text += f"\n✅ {task['desc']} (+{task['reward']}💰)"
             elif task['type'] == 'messages' and user.get('messages', 0) >= task['goal']:
+                perm_text += f"\n✅ {task['desc']} (+{task['reward']}💰)"
+            elif task['type'] == 'steal' and user.get('steal', {}).get('success_steals', 0) >= task['goal']:
                 perm_text += f"\n✅ {task['desc']} (+{task['reward']}💰)"
             else:
                 perm_text += f"\n❌ {task['desc']} (+{task['reward']}💰)"
@@ -1898,6 +2392,14 @@ def show_bonus(call):
         bonus_min = int(bonus_min * boost['multiplier'])
         bonus_max = int(bonus_max * boost['multiplier'])
         boost_text += f"\n⚡️ ВРЕМЕННЫЙ БУСТ x{boost['multiplier']}"
+    
+    # Проверка на буст удачи
+    if 'luck' in user.get('perks', {}):
+        luck = user['perks']['luck']
+        if luck.get('active', False):
+            bonus_min = int(bonus_min * 1.5)
+            bonus_max = int(bonus_max * 1.5)
+            boost_text += f"\n🍀 БУСТ УДАЧИ x1.5"
     
     text = f"""
 <b>🎁 ЕЖЕДНЕВНЫЙ БОНУС</b>{boost_text}
@@ -1977,6 +2479,14 @@ def show_leaders(call, category="coins"):
         leaders = get_leaders_by_today_messages(10)
         title = "💬 ЗА СЕГОДНЯ"
         icon = "💬"
+    elif category == "steals":
+        leaders = get_leaders_by_steals(10)
+        title = "🔪 ПО КРАЖАМ"
+        icon = "🔪"
+    elif category == "stolen":
+        leaders = get_leaders_by_stolen(10)
+        title = "💰 ПО УКРАДЕННОМУ"
+        icon = "💰"
     else:
         leaders = get_leaders_by_coins(10)
         title = "🏆 ПО МОНЕТАМ"
@@ -1996,41 +2506,6 @@ def show_leaders(call, category="coins"):
             call.message.chat.id,
             call.message.message_id,
             reply_markup=get_leaders_keyboard()
-        )
-    except:
-        pass
-
-def show_treasury(call):
-    stats = get_treasury_stats()
-    user = get_user(call.from_user.id)
-    user_donated = user.get('donated', 0) if user else 0
-    
-    text = f"""
-<b>🏦 КАЗНА СООБЩЕСТВА</b>
-
-💰 <b>СОБРАНО:</b> {stats['balance']:,} / {stats['goal']:,}💰
-📊 <b>ПРОГРЕСС:</b> {stats['percent']}%
-
-👥 <b>ДОНОРОВ:</b> {stats['donors_count']} человек
-🔥 <b>ТОП ДОНОР:</b> {stats['top_donor']}
-
-📊 <b>ТВОЙ ВКЛАД:</b> {user_donated:,}💰
-
-📢 <b>ОБЪЯВЛЕНИЕ:</b>
-{stats['announcement']}
-
-🔥 <b>ПРОЦЕНТЫ В КАЗНУ:</b> 70% от суммы
-💨 <b>СГОРАЕТ:</b> 30% (выходит из оборота)
-
-👇 <b>СДЕЛАТЬ ПОЖЕРТВОВАНИЕ:</b>
-"""
-    
-    try:
-        bot.edit_message_media(
-            types.InputMediaPhoto(IMAGES['treasury'], caption=text, parse_mode='HTML'),
-            call.message.chat.id,
-            call.message.message_id,
-            reply_markup=get_treasury_keyboard()
         )
     except:
         pass
@@ -2213,20 +2688,27 @@ ROLE SHOP BOT — бот для покупки ролей и получения 
  • 1 сообщение = {eco['base_reward']} монета
  • Приглашение друга = +{eco['base_invite']} монет
  • Ежедневный бонус = {eco['base_bonus_min']}-{eco['base_bonus_max']} монет
+ • Кража монет у других игроков
+ • Промокоды, задания, достижения
 
-<b>💸 Система казны:</b>
- • Жертвуй монеты на общую цель
- • <b>70% идет в казну, 30% сгорает</b>
- • Топ доноров в таблице
- • При достижении цели — розыгрыш в канале
+<b>🔪 Система кражи:</b>
+ • Раз в час можно ограбить другого игрока
+ • Шанс успеха зависит от роли и бустов
+ • При провале — тюрьма со растущим сроком
+ • В тюрьме можно откупиться или сбежать
+
+<b>🛒 Магазин:</b>
+ • Роли — постоянные привилегии
+ • Бусты — временные усиления для кражи
+ • Плюхи — полезные предметы (удача, копилка и др.)
 
 <b>🔨 Аукцион:</b>
  • Продавай свои предметы другим игрокам
  • Делай ставки на понравившиеся лоты
 
 <b>🏆 Достижения:</b>
- • Выполняй задания и получай награды
- • 22+ достижений с разными целями
+ • Выполняй условия и получай награды
+ • 27+ достижений с разными целями
 
 <b>🎲 Лотерея:</b>
  • Покупай билеты и выигрывай призы
@@ -2264,13 +2746,34 @@ def show_help(call):
  • Пиши в чат — {eco['base_reward']} монета
  • Приглашай друзей — {eco['base_invite']} монет
  • Ежедневный бонус — {eco['base_bonus_min']}-{eco['base_bonus_max']} монет
+ • Кража — до 20% от монет жертвы
  • Активируй промокоды
 
-<b>💸 КАЗНА СООБЩЕСТВА</b>
- • Жертвуй монеты на общую цель
- • <b>70% идет в казну, 30% сгорает</b>
- • Топ доноров в таблице
- • При достижении цели — розыгрыш в канале
+<b>🔪 КАК ГРАБИТЬ?</b>
+ 1. Нажми "🔪 Кража" в главном меню
+ 2. Выбери жертву из списка
+ 3. Подтверди кражу
+ 4. При успехе — получишь монеты
+ 5. При провале — сядешь в тюрьму
+
+<b>🚔 ТЮРЬМА:</b>
+ • Срок: 1 час (растет с каждым разом)
+ • Откуп: 500💰 (растет)
+ • Побег: 30% шанс
+ • Если не вышел — жди окончания срока
+
+<b>🛒 МАГАЗИН БУСТОВ:</b>
+ • ВОР — +10% к краже
+ • МАСКИРОВКА — +15% к краже
+ • ЗАЩИТА — -25% шанс что ограбят
+ • ВЗЛОМЩИК — +30% к сумме кражи
+ • ПОБЕГ — +20% к побегу из тюрьмы
+
+<b>🍀 ПЛЮХИ:</b>
+ • УДАЧА — +50% к бонусу
+ • ЗВЕЗДА — +20% ко всем монетам навсегда
+ • ПЛАМЯ — x2 к монетам за сообщения
+ • КОПИЛКА — +1000💰 через 24 часа
 
 <b>🔨 АУКЦИОН</b>
  • Продать предмет: /sell [название] [цена]
@@ -2289,6 +2792,7 @@ def show_help(call):
  • Множитель монет (до x2)
  • Кешбэк с покупок (до 10%)
  • Бонус за приглашения (до +200💰)
+ • Бонус к краже (до +20%)
 
 <b>📋 КОМАНДЫ</b>
  /start — главное меню
@@ -2297,7 +2801,6 @@ def show_help(call):
  /invite — пригласить
  /use [код] — промокод
  /top — лидеры
- /donate — казна
  /auction — аукцион
  /sell [название] [цена] — продать
  /bid [лот] [сумма] — ставка
@@ -2359,6 +2862,8 @@ def profile_command(message):
         bot.reply_to(message, "❌ Ты не зарегистрирован! Напиши /start")
         return
     
+    steal = user.get('steal', {})
+    
     text = f"""
 <b>👤 ПРОФИЛЬ</b> {message.from_user.first_name}
 
@@ -2373,6 +2878,12 @@ def profile_command(message):
 ▸ <b>Рефералов:</b> {len(user.get('invites', []))}
 💸 <b>Пожертвовано:</b> {user.get('donated', 0):,}💰
 🏆 <b>Достижений:</b> {len(user.get('achievements', []))}
+
+🔪 <b>Статистика краж:</b>
+✅ Успешно: {steal.get('success_steals', 0)}
+❌ Провалов: {steal.get('failed_steals', 0)}
+💰 Украдено: {steal.get('total_stolen', 0)}💰
+💸 Заплачено откупов: {steal.get('total_fines', 0)}💰
 """
     bot.send_photo(user_id, IMAGES['profile'], caption=text, parse_mode='HTML', reply_markup=get_back_keyboard())
 
@@ -2477,14 +2988,6 @@ def top_command(message):
         text += f"{medal} {user['name']} — <b>{user['value']:,}💰</b>\n"
     bot.send_photo(message.chat.id, IMAGES['leaders'], caption=text, parse_mode='HTML', reply_markup=get_back_keyboard())
 
-@bot.message_handler(commands=['donate'])
-def donate_command(message):
-    user_id = message.from_user.id
-    if is_banned(user_id):
-        bot.reply_to(message, "🚫 Вы забанены")
-        return
-    show_treasury(message)
-
 @bot.message_handler(commands=['auction'])
 def auction_command(message):
     user_id = message.from_user.id
@@ -2574,8 +3077,17 @@ def lotterybuy_command(message):
             bot.reply_to(message, "❌ Можно купить от 1 до 100 билетов")
             return
         
+        # Сохраняем количество купленных билетов для заданий
+        users = load_json(USERS_FILE)
+        today = get_moscow_time().strftime('%Y-%m-%d')
+        users[str(user_id)]['lottery_tickets_today'] = users[str(user_id)].get('lottery_tickets_today', 0) + count
+        save_json(USERS_FILE, users)
+        
         success, msg = buy_lottery_tickets(user_id, count)
         bot.reply_to(message, msg)
+        
+        if success:
+            check_daily_tasks(user_id, 'lottery', count)
     except:
         bot.reply_to(message, "❌ Ошибка")
 
@@ -2600,20 +3112,27 @@ ROLE SHOP BOT — бот для покупки ролей и получения 
  • 1 сообщение = {eco['base_reward']} монета
  • Приглашение друга = +{eco['base_invite']} монет
  • Ежедневный бонус = {eco['base_bonus_min']}-{eco['base_bonus_max']} монет
+ • Кража монет у других игроков
+ • Промокоды, задания, достижения
 
-<b>💸 Система казны:</b>
- • Жертвуй монеты на общую цель
- • <b>70% идет в казну, 30% сгорает</b>
- • Топ доноров в таблице
- • При достижении цели — розыгрыш в канале
+<b>🔪 Система кражи:</b>
+ • Раз в час можно ограбить другого игрока
+ • Шанс успеха зависит от роли и бустов
+ • При провале — тюрьма со растущим сроком
+ • В тюрьме можно откупиться или сбежать
+
+<b>🛒 Магазин:</b>
+ • Роли — постоянные привилегии
+ • Бусты — временные усиления для кражи
+ • Плюхи — полезные предметы (удача, копилка и др.)
 
 <b>🔨 Аукцион:</b>
  • Продавай свои предметы другим игрокам
  • Делай ставки на понравившиеся лоты
 
 <b>🏆 Достижения:</b>
- • Выполняй задания и получай награды
- • 22+ достижений с разными целями
+ • Выполняй условия и получай награды
+ • 27+ достижений с разными целями
 
 <b>🎲 Лотерея:</b>
  • Покупай билеты и выигрывай призы
@@ -2648,13 +3167,34 @@ def help_command(message):
  • Пиши в чат — {eco['base_reward']} монета
  • Приглашай друзей — {eco['base_invite']} монет
  • Ежедневный бонус — {eco['base_bonus_min']}-{eco['base_bonus_max']} монет
+ • Кража — до 20% от монет жертвы
  • Активируй промокоды
 
-<b>💸 КАЗНА СООБЩЕСТВА</b>
- • Жертвуй монеты на общую цель
- • <b>70% идет в казну, 30% сгорает</b>
- • Топ доноров в таблице
- • При достижении цели — розыгрыш в канале
+<b>🔪 КАК ГРАБИТЬ?</b>
+ 1. Нажми "🔪 Кража" в главном меню
+ 2. Выбери жертву из списка
+ 3. Подтверди кражу
+ 4. При успехе — получишь монеты
+ 5. При провале — сядешь в тюрьму
+
+<b>🚔 ТЮРЬМА:</b>
+ • Срок: 1 час (растет с каждым разом)
+ • Откуп: 500💰 (растет)
+ • Побег: 30% шанс
+ • Если не вышел — жди окончания срока
+
+<b>🛒 МАГАЗИН БУСТОВ:</b>
+ • ВОР — +10% к краже
+ • МАСКИРОВКА — +15% к краже
+ • ЗАЩИТА — -25% шанс что ограбят
+ • ВЗЛОМЩИК — +30% к сумме кражи
+ • ПОБЕГ — +20% к побегу из тюрьмы
+
+<b>🍀 ПЛЮХИ:</b>
+ • УДАЧА — +50% к бонусу
+ • ЗВЕЗДА — +20% ко всем монетам навсегда
+ • ПЛАМЯ — x2 к монетам за сообщения
+ • КОПИЛКА — +1000💰 через 24 часа
 
 <b>🔨 АУКЦИОН</b>
  • Продать предмет: /sell [название] [цена]
@@ -2673,6 +3213,7 @@ def help_command(message):
  • Множитель монет (до x2)
  • Кешбэк с покупок (до 10%)
  • Бонус за приглашения (до +200💰)
+ • Бонус к краже (до +20%)
 
 <b>📋 КОМАНДЫ</b>
  /start — главное меню
@@ -2681,7 +3222,6 @@ def help_command(message):
  /invite — пригласить
  /use [код] — промокод
  /top — лидеры
- /donate — казна
  /auction — аукцион
  /sell [название] [цена] — продать
  /bid [лот] [сумма] — ставка
@@ -2718,7 +3258,6 @@ def admin_command(message):
 🚫 <b>Баны</b> — блокировка пользователей
 🎁 <b>Промокоды</b> — создание промокодов
 ⚙️ <b>Экономика</b> — настройка наград
-🏦 <b>Казна</b> — управление казной
 🔨 <b>Аукцион</b> — управление аукционом
 🏆 <b>Достижения</b> — управление достижениями
 🎲 <b>Лотерея</b> — управление лотереей
@@ -2996,20 +3535,6 @@ def stats_command(message):
 """
     bot.reply_to(message, text, parse_mode='HTML')
 
-@bot.message_handler(commands=['settreasurygoal'])
-def settreasurygoal_command(message):
-    if not has_permission(message.from_user.id, 'treasury_manage'):
-        bot.reply_to(message, "❌ У вас нет прав на это действие.")
-        return
-    try:
-        parts = message.text.split()
-        goal = int(parts[1])
-        desc = ' '.join(parts[2:]) if len(parts) > 2 else None
-        set_treasury_goal(goal, desc)
-        bot.reply_to(message, f"✅ Цель казны установлена: {goal}💰")
-    except:
-        bot.reply_to(message, "❌ Использование: /settreasurygoal СУММА [ОПИСАНИЕ]")
-
 @bot.message_handler(commands=['setannouncement'])
 def setannouncement_command(message):
     if not has_permission(message.from_user.id, 'set_announcement'):
@@ -3020,45 +3545,13 @@ def setannouncement_command(message):
         if not text:
             bot.reply_to(message, "❌ Использование: /setannouncement [текст объявления]")
             return
-        set_treasury_announcement(text)
-        bot.reply_to(message, f"✅ Объявление в казне обновлено:\n\n{text}")
+        # Вместо казны сохраняем в about
+        about = get_about()
+        about['announcement'] = text
+        save_json(ABOUT_FILE, about)
+        bot.reply_to(message, f"✅ Объявление обновлено:\n\n{text}")
     except:
         bot.reply_to(message, "❌ Ошибка")
-
-@bot.message_handler(commands=['treasuryadd'])
-def treasuryadd_command(message):
-    if not has_permission(message.from_user.id, 'treasury_manage'):
-        bot.reply_to(message, "❌ У вас нет прав на это действие.")
-        return
-    try:
-        amount = int(message.text.split()[1])
-        add_to_treasury(amount)
-        bot.reply_to(message, f"✅ Добавлено {amount}💰 в казну")
-    except:
-        bot.reply_to(message, "❌ Использование: /treasuryadd СУММА")
-
-@bot.message_handler(commands=['treasurywithdraw'])
-def treasurywithdraw_command(message):
-    if not has_permission(message.from_user.id, 'treasury_manage'):
-        bot.reply_to(message, "❌ У вас нет прав на это действие.")
-        return
-    try:
-        amount = int(message.text.split()[1])
-        success, balance = withdraw_from_treasury(amount)
-        if success:
-            bot.reply_to(message, f"✅ Выведено {amount}💰 из казны. Остаток: {balance}💰")
-        else:
-            bot.reply_to(message, f"❌ Недостаточно средств! В казне: {balance}💰")
-    except:
-        bot.reply_to(message, "❌ Использование: /treasurywithdraw СУММА")
-
-@bot.message_handler(commands=['treasuryreset'])
-def treasuryreset_command(message):
-    if not has_permission(message.from_user.id, 'treasury_manage'):
-        bot.reply_to(message, "❌ У вас нет прав на это действие.")
-        return
-    reset_treasury()
-    bot.reply_to(message, "✅ Прогресс казны сброшен")
 
 @bot.message_handler(commands=['addachievement'])
 def addachievement_command(message):
@@ -3068,7 +3561,7 @@ def addachievement_command(message):
     try:
         parts = message.text.split()
         if len(parts) < 6:
-            bot.reply_to(message, "❌ Использование: /addachievement [название] [тип] [цель] [награда] [описание]\nТипы: coins, referrals, roles, streak, messages, donate")
+            bot.reply_to(message, "❌ Использование: /addachievement [название] [тип] [цель] [награда] [описание]\nТипы: coins, referrals, roles, streak, messages, donate, steal, stolen, jail")
             return
         name = ' '.join(parts[1:-4])
         atype = parts[-4]
@@ -3076,8 +3569,8 @@ def addachievement_command(message):
         reward = int(parts[-2])
         desc = parts[-1]
         
-        if atype not in ['coins', 'referrals', 'roles', 'streak', 'messages', 'donate']:
-            bot.reply_to(message, "❌ Неверный тип. Доступные: coins, referrals, roles, streak, messages, donate")
+        if atype not in ['coins', 'referrals', 'roles', 'streak', 'messages', 'donate', 'steal', 'stolen', 'jail']:
+            bot.reply_to(message, "❌ Неверный тип. Доступные: coins, referrals, roles, streak, messages, donate, steal, stolen, jail")
             return
         
         add_achievement(name, atype, requirement, reward, desc)
@@ -3105,7 +3598,7 @@ def addtask_command(message):
     try:
         parts = message.text.split()
         if len(parts) < 6:
-            bot.reply_to(message, "❌ Использование: /addtask [тип] [категория] [цель] [награда] [описание]\nТип: messages, invite, coins, roles\nКатегория: daily, permanent, event")
+            bot.reply_to(message, "❌ Использование: /addtask [тип] [категория] [цель] [награда] [описание]\nТип: messages, invite, coins, roles, steal, lottery\nКатегория: daily, permanent, event")
             return
         task_type = parts[1]
         category = parts[2]
@@ -3113,8 +3606,8 @@ def addtask_command(message):
         reward = int(parts[4])
         desc = ' '.join(parts[5:])
         
-        if task_type not in ['messages', 'invite', 'coins', 'roles']:
-            bot.reply_to(message, "❌ Неверный тип. Доступные: messages, invite, coins, roles")
+        if task_type not in ['messages', 'invite', 'coins', 'roles', 'steal', 'lottery']:
+            bot.reply_to(message, "❌ Неверный тип. Доступные: messages, invite, coins, roles, steal, lottery")
             return
         if category not in ['daily', 'permanent', 'event']:
             bot.reply_to(message, "❌ Неверная категория. Доступные: daily, permanent, event")
@@ -3316,7 +3809,7 @@ def backup_command(message):
     os.makedirs(backup_dir, exist_ok=True)
     
     files = [USERS_FILE, ADMINS_FILE, AUCTION_FILE, EVENTS_FILE, TASKS_FILE, 
-             ACHIEVEMENTS_FILE, LOTTERY_FILE, TREASURY_FILE, LOGS_FILE, ABOUT_FILE,
+             ACHIEVEMENTS_FILE, LOTTERY_FILE, LOGS_FILE, ABOUT_FILE,
              "promocodes.json", "economy.json", "temp_boost.json", "temp_roles.json"]
     
     for file in files:
@@ -3354,13 +3847,19 @@ def callback_handler(call):
         return
     
     elif data == "shop":
-        show_shop(call)
+        show_shop(call, "roles")
+        bot.answer_callback_query(call.id)
+        return
+    
+    elif data.startswith("shop_section_"):
+        section = data.replace("shop_section_", "")
+        show_shop(call, section)
         bot.answer_callback_query(call.id)
         return
     
     elif data.startswith("shop_page_"):
         page = int(data.replace("shop_page_", ""))
-        show_shop(call, page)
+        show_shop(call, "roles", page)
         bot.answer_callback_query(call.id)
         return
     
@@ -3406,9 +3905,83 @@ def callback_handler(call):
         bot.answer_callback_query(call.id)
         return
     
-    elif data == "treasury":
-        show_treasury(call)
+    elif data == "steal":
+        show_steal(call)
         bot.answer_callback_query(call.id)
+        return
+    
+    elif data.startswith("steal_target_"):
+        target_id = int(data.replace("steal_target_", ""))
+        target_user = get_user(target_id)
+        
+        if not target_user:
+            bot.answer_callback_query(call.id, "❌ Игрок не найден", show_alert=True)
+            return
+        
+        chance = get_steal_chance(uid, target_id)
+        
+        text = f"""
+🔪 <b>ПОДТВЕРЖДЕНИЕ КРАЖИ</b>
+
+👤 <b>Жертва:</b> @{target_user.get('username', target_id)}
+💰 <b>У жертвы:</b> {target_user['coins']:,}💰
+🎲 <b>Твой шанс:</b> {chance}%
+
+👇 Подтверди кражу
+"""
+        markup = types.InlineKeyboardMarkup()
+        markup.add(
+            types.InlineKeyboardButton("🔪 Ограбить", callback_data=f"steal_confirm_{target_id}"),
+            types.InlineKeyboardButton("❌ Отмена", callback_data="steal")
+        )
+        
+        try:
+            bot.edit_message_media(
+                types.InputMediaPhoto(IMAGES['steal'], caption=text, parse_mode='HTML'),
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=markup
+            )
+        except:
+            pass
+        bot.answer_callback_query(call.id)
+        return
+    
+    elif data.startswith("steal_confirm_"):
+        target_id = int(data.replace("steal_confirm_", ""))
+        
+        can, msg = can_steal(uid)
+        if not can:
+            bot.answer_callback_query(call.id, msg, show_alert=True)
+            show_steal(call)
+            return
+        
+        success, result = steal_from(uid, target_id)
+        bot.answer_callback_query(call.id, result, show_alert=True)
+        
+        if success:
+            show_main_menu(call)
+            check_daily_tasks(uid, 'steal', 1)
+        else:
+            show_steal(call)
+        return
+    
+    elif data == "jail_pay":
+        success, result = pay_fine(uid)
+        bot.answer_callback_query(call.id, result, show_alert=True)
+        if success:
+            show_main_menu(call)
+        else:
+            show_steal(call)
+        return
+    
+    elif data == "jail_escape":
+        success, result = try_escape(uid)
+        bot.answer_callback_query(call.id, result, show_alert=True)
+        if success:
+            show_main_menu(call)
+        else:
+            show_steal(call)
         return
     
     elif data == "auction":
@@ -3486,6 +4059,23 @@ def callback_handler(call):
             show_main_menu(call)
         return
     
+    # ========== ПОКУПКА БУСТОВ ==========
+    elif data.startswith("boost_"):
+        boost_id = data.replace("boost_", "")
+        success, msg = buy_boost(uid, boost_id)
+        bot.answer_callback_query(call.id, msg, show_alert=True)
+        if success:
+            show_shop(call, "steal_boosts")
+        return
+    
+    elif data.startswith("perk_"):
+        perk_id = data.replace("perk_", "")
+        success, msg = buy_boost(uid, perk_id)
+        bot.answer_callback_query(call.id, msg, show_alert=True)
+        if success:
+            show_shop(call, "perks")
+        return
+    
     # ========== ПЕРЕКЛЮЧЕНИЕ РОЛИ ==========
     elif data.startswith("toggle_"):
         role = data.replace("toggle_", "")
@@ -3500,21 +4090,6 @@ def callback_handler(call):
         
         bot.answer_callback_query(call.id, msg)
         show_myroles(call)
-        return
-    
-    # ========== ДОНАТ ==========
-    elif data.startswith("donate_"):
-        if data == "donate_custom":
-            msg = bot.send_message(uid, "💰 Введи сумму пожертвования:")
-            bot.register_next_step_handler(msg, process_custom_donate, call.message)
-            bot.answer_callback_query(call.id)
-            return
-        else:
-            amount = int(data.replace("donate_", ""))
-            success, msg = donate_to_treasury(uid, amount)
-            bot.answer_callback_query(call.id, msg, show_alert=True)
-            if success:
-                show_treasury(call)
         return
     
     # ========== АУКЦИОН ==========
@@ -3545,9 +4120,16 @@ def callback_handler(call):
             return
         else:
             count = int(data.replace("lottery_", ""))
+            # Сохраняем для заданий
+            users = load_json(USERS_FILE)
+            today = get_moscow_time().strftime('%Y-%m-%d')
+            users[str(uid)]['lottery_tickets_today'] = users[str(uid)].get('lottery_tickets_today', 0) + count
+            save_json(USERS_FILE, users)
+            
             success, msg = buy_lottery_tickets(uid, count)
             bot.answer_callback_query(call.id, msg, show_alert=True)
             if success:
+                check_daily_tasks(uid, 'lottery', count)
                 show_lottery(call)
         return
     
@@ -3756,41 +4338,6 @@ def callback_handler(call):
 /setbonusmax СУММА
 /setinvite СУММА
 /setboost МНОЖИТЕЛЬ ЧАСЫ
-"""
-        try:
-            bot.edit_message_text(
-                text,
-                call.message.chat.id,
-                call.message.message_id,
-                parse_mode='HTML',
-                reply_markup=get_admin_back_keyboard()
-            )
-        except:
-            pass
-        bot.answer_callback_query(call.id)
-        return
-    
-    elif data == "admin_treasury":
-        if not has_permission(uid, 'treasury_manage'):
-            bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
-            return
-        stats = get_treasury_stats()
-        text = f"""
-<b>🏦 КАЗНА</b>
-
-📊 Баланс: {stats['balance']:,}💰
-🎯 Цель: {stats['goal']:,}💰 ({stats['percent']}%)
-📝 {stats['goal_description']}
-👥 Доноров: {stats['donors_count']}
-
-🔥 <b>ПРОЦЕНТЫ:</b> 70% в казну, 30% сгорает
-
-Команды:
-/settreasurygoal СУММА — установить цель
-/setannouncement ТЕКСТ — изменить объявление
-/treasuryadd СУММА — добавить в казну
-/treasurywithdraw СУММА — вывести из казны
-/treasuryreset — сбросить прогресс
 """
         try:
             bot.edit_message_text(
@@ -4075,51 +4622,6 @@ def callback_handler(call):
         bot.answer_callback_query(call.id)
 
 # ========== ОБРАБОТЧИКИ ШАГОВ ==========
-def process_custom_donate(message, original_message):
-    user_id = message.from_user.id
-    try:
-        amount = int(message.text.strip())
-        if amount <= 0:
-            bot.send_message(user_id, "❌ Сумма должна быть положительной")
-            return
-        success, msg = donate_to_treasury(user_id, amount)
-        bot.send_message(user_id, msg, parse_mode='HTML')
-        if success:
-            def show_treasury_by_message(user_id, original_message):
-    stats = get_treasury_stats()
-    user = get_user(user_id)
-    user_donated = user.get('donated', 0) if user else 0
-    
-    text = f"""
-<b>🏦 КАЗНА СООБЩЕСТВА</b>
-
-💰 <b>СОБРАНО:</b> {stats['balance']:,} / {stats['goal']:,}💰
-📊 <b>ПРОГРЕСС:</b> {stats['percent']}%
-
-👥 <b>ДОНОРОВ:</b> {stats['donors_count']} человек
-🔥 <b>ТОП ДОНОР:</b> {stats['top_donor']}
-
-📊 <b>ТВОЙ ВКЛАД:</b> {user_donated:,}💰
-
-📢 <b>ОБЪЯВЛЕНИЕ:</b>
-{stats['announcement']}
-
-🔥 <b>ПРОЦЕНТЫ В КАЗНУ:</b> 70% от суммы
-💨 <b>СГОРАЕТ:</b> 30% (выходит из оборота)
-
-👇 <b>СДЕЛАТЬ ПОЖЕРТВОВАНИЕ:</b>
-"""
-    
-    try:
-        bot.edit_message_media(
-            types.InputMediaPhoto(IMAGES['treasury'], caption=text, parse_mode='HTML'),
-            original_message.chat.id,
-            original_message.message_id,
-            reply_markup=get_treasury_keyboard()
-        )
-    except:
-        pass
-
 def process_bid_amount(message, lot_id, original_message):
     user_id = message.from_user.id
     try:
@@ -4189,9 +4691,17 @@ def process_lottery_buy(message, original_message):
         if count < 1 or count > 100:
             bot.send_message(user_id, "❌ Можно купить от 1 до 100 билетов")
             return
+        
+        # Сохраняем для заданий
+        users = load_json(USERS_FILE)
+        today = get_moscow_time().strftime('%Y-%m-%d')
+        users[str(user_id)]['lottery_tickets_today'] = users[str(user_id)].get('lottery_tickets_today', 0) + count
+        save_json(USERS_FILE, users)
+        
         success, msg = buy_lottery_tickets(user_id, count)
         bot.send_message(user_id, msg, parse_mode='HTML')
         if success:
+            check_daily_tasks(user_id, 'lottery', count)
             show_lottery_by_message(user_id, original_message)
     except:
         bot.send_message(user_id, "❌ Введи число от 1 до 100")
@@ -4258,6 +4768,12 @@ def background_tasks():
             # Сброс ежедневных заданий в 00:00
             if last_date != today and msk_now.hour == 0 and msk_now.minute < 5:
                 reset_daily_tasks()
+                # Сброс счетчика билетов лотереи
+                users = load_json(USERS_FILE)
+                for uid in users:
+                    if 'lottery_tickets_today' in users[uid]:
+                        users[uid]['lottery_tickets_today'] = 0
+                save_json(USERS_FILE, users)
                 last_date = today
                 print(f"✅ Ежедневные задания сброшены: {today}")
             
@@ -4295,6 +4811,9 @@ def background_tasks():
                     draw_lottery()
                     print(f"✅ Лотерея проведена: {today}")
             
+            # Проверка бустов и перков
+            check_perks()
+            
         except Exception as e:
             print(f"❌ Ошибка в фоне: {e}")
 
@@ -4318,13 +4837,11 @@ if __name__ == "__main__":
     if not os.path.exists(EVENTS_FILE):
         save_json(EVENTS_FILE, {})
     if not os.path.exists(TASKS_FILE):
-        save_json(TASKS_FILE, {})
+        get_tasks()
     if not os.path.exists(ACHIEVEMENTS_FILE):
         get_achievements()
     if not os.path.exists(LOTTERY_FILE):
         save_json(LOTTERY_FILE, {'tickets': {}, 'jackpot': 0, 'last_draw': None, 'total_tickets': 0})
-    if not os.path.exists(TREASURY_FILE):
-        get_treasury()
     if not os.path.exists(LOGS_FILE):
         save_json(LOGS_FILE, {'logs': []})
     if not os.path.exists(ABOUT_FILE):
@@ -4339,34 +4856,25 @@ if __name__ == "__main__":
         save_json("temp_boost.json", {})
     
     print("=" * 60)
-    print("🚀 ROLE SHOP BOT V5.0 — ФИНАЛЬНАЯ ВЕРСИЯ")
+    print("🚀 ROLE SHOP BOT V6.0 — СИСТЕМА КРАЖ")
     print("=" * 60)
     print(f"👑 Главный админ: {MASTER_IDS[0]}")
     print(f"📢 Чат ID: {CHAT_ID}")
     print(f"🎭 Ролей: {len(PERMANENT_ROLES)}")
     print(f"🏆 Достижений: {len(get_achievements()['list'])}")
-    print(f"🏦 Казна: {get_treasury()['balance']}💰")
-    print(f"🔥 Проценты в казну: 70% идет в казну, 30% сгорает")
+    print(f"🔪 Система кражи: АКТИВНА")
     print(f"🔨 Аукцион: {len(get_auction()['lots'])} лотов")
     print("=" * 60)
     print("✅ Бот успешно запущен!")
-    print("📋 Все функции активны:")
-    print("   • 👑 Админы")
-    print("   • 📊 7 топов")
-    print("   • 🎁 Ивенты")
-    print("   • 🔨 Аукцион")
-    print("   • 🏆 Достижения")
-    print("   • 🎲 Лотерея")
-    print("   • 📅 Задания")
-    print("   • 📖 О нас")
-    print("   • 📝 Журнал")
-    print("   • 🛒 Магазин")
-    print("   • 🔔 Уведомления в чат")
-    print("   • 📢 Рассылка с форматированием")
+    print("📋 Новые функции:")
+    print("   • 🔪 КРАЖА — грабь других игроков")
+    print("   • 🚔 ТЮРЬМА — срок от 1 часа")
+    print("   • ⚡️ БУСТЫ ДЛЯ КРАЖИ — 7 видов")
+    print("   • 🍀 ПЛЮХИ — 9 видов")
+    print("   • 🏆 НОВЫЕ ДОСТИЖЕНИЯ — за кражи")
+    print("   • 📊 НОВЫЕ ТОПЫ — по кражам")
     print("=" * 60)
-    print("🔥 КАЗНА: 70% в казну, 30% сгорает")
-    print("=" * 60)
-    print("⏰ Фоновые задачи активны (сброс заданий, аукцион, лотерея)")
+    print("⏰ Фоновые задачи активны (сброс заданий, аукцион, лотерея, тюрьма, бусты)")
     print("=" * 60)
     
     threading.Thread(target=background_tasks, daemon=True).start()
