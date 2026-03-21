@@ -2338,19 +2338,20 @@ def show_tasks(call):
         except:
             pass
     
-    text = f"""
+text = f"""
 <b>📅 ЗАДАНИЯ</b>
 
 🗓️ <b>ЕЖЕДНЕВНЫЕ</b> (обновятся завтра в 00:00):
-{daily_text if daily_text else "\nНет заданий"}
+{daily_text if daily_text else "Нет заданий"}
 
 🏆 <b>ПОСТОЯННЫЕ</b>:
-{perm_text if perm_text else "\nНет заданий"}
+{perm_text if perm_text else "Нет заданий"}
 
 ⚡️ <b>СОБЫТИЙНЫЕ</b>:
-{event_text if event_text else "\nНет активных заданий"}
+{event_text if event_text else "Нет активных заданий"}
 
-▸ <b>Твой баланс:</b> {user['coins']:,}💰"""
+▸ <b>Твой баланс:</b> {user['coins']:,}💰
+"""
     
     try:
         bot.edit_message_media(
