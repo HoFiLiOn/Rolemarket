@@ -2350,8 +2350,7 @@ def show_tasks(call):
 ⚡️ <b>СОБЫТИЙНЫЕ</b>:
 {event_text if event_text else "\nНет активных заданий"}
 
-▸ <b>Твой баланс:</b> {user['coins']:,}💰
-"""
+▸ <b>Твой баланс:</b> {user['coins']:,}💰"""
     
     try:
         bot.edit_message_media(
