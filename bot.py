@@ -7,6 +7,20 @@ import random
 from datetime import datetime, timedelta
 import threading
 import re
+import os
+
+DATA_DIR = "/app/data"
+os.makedirs(DATA_DIR, exist_ok=True)
+
+USERS_FILE = os.path.join(DATA_DIR, "users.json")
+ADMINS_FILE = os.path.join(DATA_DIR, "admins.json")
+AUCTION_FILE = os.path.join(DATA_DIR, "auction.json")
+EVENTS_FILE = os.path.join(DATA_DIR, "events.json")
+TASKS_FILE = os.path.join(DATA_DIR, "tasks.json")
+ACHIEVEMENTS_FILE = os.path.join(DATA_DIR, "achievements.json")
+LOTTERY_FILE = os.path.join(DATA_DIR, "lottery.json")
+LOGS_FILE = os.path.join(DATA_DIR, "logs.json")
+ABOUT_FILE = os.path.join(DATA_DIR, "about.json")
 
 # ========== ТОКЕН ==========
 TOKEN = "8272462109:AAH2DjVD2cNhGb7aK9MTXZhkL3NCF1fQ6T0"
