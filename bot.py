@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import threading
 
 # ========== ТОКЕН ==========
-TOKEN = "8272462109:AAH2DjVD2cNhGb7aK9MTXZhkL3NCF1fQ6T0"
+TOKEN = "8272462109:AAGkBJ1LZpVRNMHAh1DJooni3rlg-H2QK4Q"
 bot = telebot.TeleBot(TOKEN)
 
 # ========== ТВОЙ АДМИН-АККАУНТ ==========
