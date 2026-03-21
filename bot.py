@@ -714,7 +714,7 @@ def get_treasury_stats():
     
     top_donor = f"{donors[0]['name']} - {donors[0]['amount']}💰" if donors else "Нет донатов"
     
-    # Создаём прогресс-бар без бэкслешей в f-строке
+    # Прогресс-бар (без f-строки с бэкслешами)
     bar_length = 10
     filled = int(percent / 100 * bar_length)
     progress_bar = "█" * filled + "░" * (bar_length - filled)
@@ -2039,39 +2039,6 @@ def show_treasury(call):
     except:
         pass
 
-def show_treasury_by_message(user_id, original_message):
-    stats = get_treasury_stats()
-    user = get_user(user_id)
-    user_donated = user.get('donated', 0) if user else 0
-    
-    text = f"""
-<b>🏦 КАЗНА СООБЩЕСТВА</b>
-
-💰 <b>ВСЕГО СОБРАНО:</b> {stats['balance']:,} монет
-👥 <b>ДОНОРОВ:</b> {stats['donors_count']} человек
-🔥 <b>ТОП ДОНОР:</b> {stats['top_donor']}
-
-📊 <b>ТВОЙ ВКЛАД:</b> {user_donated:,}💰
-
-📢 <b>ОБЪЯВЛЕНИЕ:</b>
-{stats['announcement']}
-
-🎯 <b>ЦЕЛЬ:</b> {stats['goal']:,}💰
-📈 <b>ПРОГРЕСС:</b> {stats['percent']}% {stats['progress_bar']}
-
-👇 <b>СДЕЛАТЬ ПОЖЕРТВОВАНИЕ:</b>
-"""
-    
-    try:
-        bot.edit_message_media(
-            types.InputMediaPhoto(IMAGES['treasury'], caption=text, parse_mode='HTML'),
-            original_message.chat.id,
-            original_message.message_id,
-            reply_markup=get_treasury_keyboard()
-        )
-    except:
-        pass
-
 def show_auction(call):
     check_expired_auctions()
     auction = get_auction()
@@ -2601,7 +2568,7 @@ def info_command(message):
 ROLE SHOP BOT — бот для покупки ролей и получения привилегий.
 
 👨‍💻 <b>Создатель:</b> HoFiLiOn
-📬 <b>Контакт:</b> @HoFiLiOnclkc
+?? <b>Контакт:</b> @HoFiLiOnclkc
 
 <b>🎯 Для чего:</b>
  • Покупай уникальные роли за монеты
