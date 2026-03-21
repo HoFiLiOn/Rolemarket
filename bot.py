@@ -8,25 +8,6 @@ from datetime import datetime, timedelta
 import threading
 import re
 
-# ========== НАСТРОЙКА ПУТЕЙ ДЛЯ RENDER ==========
-import os
-
-# Если есть переменная DATA_DIR, используем её
-DATA_DIR = os.getenv("DATA_DIR", ".")
-os.makedirs(DATA_DIR, exist_ok=True)
-
-# Все пути к файлам меняем на DATA_DIR + имя файла
-USERS_FILE = os.path.join(DATA_DIR, "users.json")
-ADMINS_FILE = os.path.join(DATA_DIR, "admins.json")
-AUCTION_FILE = os.path.join(DATA_DIR, "auction.json")
-EVENTS_FILE = os.path.join(DATA_DIR, "events.json")
-TASKS_FILE = os.path.join(DATA_DIR, "tasks.json")
-ACHIEVEMENTS_FILE = os.path.join(DATA_DIR, "achievements.json")
-LOTTERY_FILE = os.path.join(DATA_DIR, "lottery.json")
-TREASURY_FILE = os.path.join(DATA_DIR, "treasury.json")
-LOGS_FILE = os.path.join(DATA_DIR, "logs.json")
-ABOUT_FILE = os.path.join(DATA_DIR, "about.json")
-
 # ========== ТОКЕН ==========
 TOKEN = "8272462109:AAH2DjVD2cNhGb7aK9MTXZhkL3NCF1fQ6T0"
 bot = telebot.TeleBot(TOKEN)
@@ -261,16 +242,14 @@ def add_message(user_id):
     users = load_json(USERS_FILE)
     user_id = str(user_id)
     if user_id in users:
-        eco = load_json("economy.json")
-        if not eco:
-            eco = {'base_reward': 1}
+        eco = get_economy_settings()
         multiplier = get_user_multiplier(int(user_id))
         
         event = get_active_event()
         if event and event.get('type') == 'double':
             multiplier *= event.get('value', 2)
         
-        reward = int(eco.get('base_reward', 1) * multiplier)
+        reward = int(eco['base_reward'] * multiplier)
         
         msk_now = get_moscow_time()
         today = msk_now.strftime('%Y-%m-%d')
@@ -370,8 +349,6 @@ def add_role(user_id, role_name, expires_at=None):
         
         if expires_at:
             temp_roles = load_json("temp_roles.json")
-            if not temp_roles:
-                temp_roles = {}
             if user_id not in temp_roles:
                 temp_roles[user_id] = []
             temp_roles[user_id].append({'role': role_name, 'expires': expires_at})
@@ -737,11 +714,6 @@ def get_treasury_stats():
     
     top_donor = f"{donors[0]['name']} - {donors[0]['amount']}💰" if donors else "Нет донатов"
     
-    # Прогресс-бар (без f-строки с бэкслешами)
-    bar_length = 10
-    filled = int(percent / 100 * bar_length)
-    progress_bar = "█" * filled + "░" * (bar_length - filled)
-    
     return {
         'balance': treasury['balance'],
         'total_collected': treasury['total_collected'],
@@ -751,8 +723,7 @@ def get_treasury_stats():
         'announcement': treasury.get('announcement', '🏦 При достижении цели будет розыгрыш!'),
         'percent': percent,
         'donors_count': len(donors),
-        'top_donor': top_donor,
-        'progress_bar': progress_bar
+        'top_donor': top_donor
     }
 
 def set_treasury_goal(goal, description=None):
@@ -2047,7 +2018,7 @@ def show_treasury(call):
 {stats['announcement']}
 
 🎯 <b>ЦЕЛЬ:</b> {stats['goal']:,}💰
-📈 <b>ПРОГРЕСС:</b> {stats['percent']}% {stats['progress_bar']}
+📈 <b>ПРОГРЕСС:</b> {stats['percent']}% ░░░░░░░░░░
 
 👇 <b>СДЕЛАТЬ ПОЖЕРТВОВАНИЕ:</b>
 """
@@ -2581,28 +2552,6 @@ def lottery_command(message):
         return
     show_lottery(message)
 
-@bot.message_handler(commands=['lotterybuy'])
-def lotterybuy_command(message):
-    user_id = message.from_user.id
-    if is_banned(user_id):
-        bot.reply_to(message, "🚫 Вы забанены")
-        return
-    
-    try:
-        parts = message.text.split()
-        if len(parts) < 2:
-            bot.reply_to(message, "❌ Использование: /lotterybuy [количество]\nПример: /lotterybuy 5")
-            return
-        count = int(parts[1])
-        if count < 1 or count > 100:
-            bot.reply_to(message, "❌ Можно купить от 1 до 100 билетов")
-            return
-        
-        success, msg = buy_lottery_tickets(user_id, count)
-        bot.reply_to(message, msg)
-    except:
-        bot.reply_to(message, "❌ Ошибка")
-
 @bot.message_handler(commands=['info'])
 def info_command(message):
     eco = get_economy_settings()
@@ -2688,7 +2637,7 @@ def help_command(message):
  • Список всех достижений: кнопка "Достижения"
 
 <b>🎲 ЛОТЕРЕЯ</b>
- • Купить билет: /lotterybuy [количество]
+ • Купить билет: /lottery buy [количество]
  • Розыгрыш каждый день в 20:00 МСК
 
 <b>🎭 ЧТО ДАЮТ РОЛИ?</b>
@@ -2708,7 +2657,6 @@ def help_command(message):
  /sell [название] [цена] — продать
  /bid [лот] [сумма] — ставка
  /lottery — лотерея
- /lotterybuy [кол-во] — купить билеты
  /info — информация
  /help — это меню
  /admin — админ-панель
@@ -3089,7 +3037,7 @@ def addachievement_command(message):
         return
     try:
         parts = message.text.split()
-        if len(parts) < 6:
+        if len(parts) < 5:
             bot.reply_to(message, "❌ Использование: /addachievement [название] [тип] [цель] [награда] [описание]\nТипы: coins, referrals, roles, streak, messages, donate")
             return
         name = ' '.join(parts[1:-4])
@@ -3275,6 +3223,28 @@ def logs_command(message):
         bot.reply_to(message, text)
     except:
         bot.reply_to(message, "❌ Использование: /logs, /logs clear, /logs user [ID]")
+
+@bot.message_handler(commands=['lotterybuy'])
+def lotterybuy_command(message):
+    user_id = message.from_user.id
+    if is_banned(user_id):
+        bot.reply_to(message, "🚫 Вы забанены")
+        return
+    
+    try:
+        parts = message.text.split()
+        if len(parts) < 2:
+            bot.reply_to(message, "❌ Использование: /lotterybuy [количество]\nПример: /lotterybuy 5")
+            return
+        count = int(parts[1])
+        if count < 1 or count > 100:
+            bot.reply_to(message, "❌ Можно купить от 1 до 100 билетов")
+            return
+        
+        success, msg = buy_lottery_tickets(user_id, count)
+        bot.reply_to(message, msg)
+    except:
+        bot.reply_to(message, "❌ Ошибка")
 
 @bot.message_handler(commands=['lotterydraw'])
 def lotterydraw_command(message):
@@ -4127,7 +4097,7 @@ def show_treasury_by_message(user_id, original_message):
 {stats['announcement']}
 
 🎯 <b>ЦЕЛЬ:</b> {stats['goal']:,}💰
-📈 <b>ПРОГРЕСС:</b> {stats['percent']}% {stats['progress_bar']}
+📈 <b>ПРОГРЕСС:</b> {stats['percent']}% ░░░░░░░░░░
 
 👇 <b>СДЕЛАТЬ ПОЖЕРТВОВАНИЕ:</b>
 """
