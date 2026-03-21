@@ -714,10 +714,6 @@ def get_treasury_stats():
     
     top_donor = f"{donors[0]['name']} - {donors[0]['amount']}💰" if donors else "Нет донатов"
     
-    bar_length = 10
-    filled = int(percent / 100 * bar_length)
-    progress_bar = "█" * filled + "░" * (bar_length - filled)
-    
     return {
         'balance': treasury['balance'],
         'total_collected': treasury['total_collected'],
@@ -727,8 +723,7 @@ def get_treasury_stats():
         'announcement': treasury.get('announcement', '🏦 При достижении цели будет розыгрыш!'),
         'percent': percent,
         'donors_count': len(donors),
-        'top_donor': top_donor,
-        'progress_bar': progress_bar
+        'top_donor': top_donor
     }
 
 def set_treasury_goal(goal, description=None):
@@ -2013,7 +2008,9 @@ def show_treasury(call):
     text = f"""
 <b>🏦 КАЗНА СООБЩЕСТВА</b>
 
-💰 <b>ВСЕГО СОБРАНО:</b> {stats['balance']:,} монет
+💰 <b>СОБРАНО:</b> {stats['balance']:,} / {stats['goal']:,}💰
+📊 <b>ПРОГРЕСС:</b> {stats['percent']}%
+
 👥 <b>ДОНОРОВ:</b> {stats['donors_count']} человек
 🔥 <b>ТОП ДОНОР:</b> {stats['top_donor']}
 
@@ -2021,9 +2018,6 @@ def show_treasury(call):
 
 📢 <b>ОБЪЯВЛЕНИЕ:</b>
 {stats['announcement']}
-
-🎯 <b>ЦЕЛЬ:</b> {stats['goal']:,}💰
-📈 <b>ПРОГРЕСС:</b> {stats['percent']}% {stats['progress_bar']}
 
 🔥 <b>ПРОЦЕНТЫ В КАЗНУ:</b> 70% от суммы
 💨 <b>СГОРАЕТ:</b> 30% (выходит из оборота)
@@ -4091,11 +4085,7 @@ def process_custom_donate(message, original_message):
         success, msg = donate_to_treasury(user_id, amount)
         bot.send_message(user_id, msg, parse_mode='HTML')
         if success:
-            show_treasury_by_message(user_id, original_message)
-    except:
-        bot.send_message(user_id, "❌ Введи число!")
-
-def show_treasury_by_message(user_id, original_message):
+            def show_treasury_by_message(user_id, original_message):
     stats = get_treasury_stats()
     user = get_user(user_id)
     user_donated = user.get('donated', 0) if user else 0
@@ -4103,7 +4093,9 @@ def show_treasury_by_message(user_id, original_message):
     text = f"""
 <b>🏦 КАЗНА СООБЩЕСТВА</b>
 
-💰 <b>ВСЕГО СОБРАНО:</b> {stats['balance']:,} монет
+💰 <b>СОБРАНО:</b> {stats['balance']:,} / {stats['goal']:,}💰
+📊 <b>ПРОГРЕСС:</b> {stats['percent']}%
+
 👥 <b>ДОНОРОВ:</b> {stats['donors_count']} человек
 🔥 <b>ТОП ДОНОР:</b> {stats['top_donor']}
 
@@ -4111,9 +4103,6 @@ def show_treasury_by_message(user_id, original_message):
 
 📢 <b>ОБЪЯВЛЕНИЕ:</b>
 {stats['announcement']}
-
-🎯 <b>ЦЕЛЬ:</b> {stats['goal']:,}💰
-📈 <b>ПРОГРЕСС:</b> {stats['percent']}% {stats['progress_bar']}
 
 🔥 <b>ПРОЦЕНТЫ В КАЗНУ:</b> 70% от суммы
 💨 <b>СГОРАЕТ:</b> 30% (выходит из оборота)
