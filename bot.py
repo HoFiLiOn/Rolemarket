@@ -242,14 +242,16 @@ def add_message(user_id):
     users = load_json(USERS_FILE)
     user_id = str(user_id)
     if user_id in users:
-        eco = get_economy_settings()
+        eco = load_json("economy.json")
+        if not eco:
+            eco = {'base_reward': 1}
         multiplier = get_user_multiplier(int(user_id))
         
         event = get_active_event()
         if event and event.get('type') == 'double':
             multiplier *= event.get('value', 2)
         
-        reward = int(eco['base_reward'] * multiplier)
+        reward = int(eco.get('base_reward', 1) * multiplier)
         
         msk_now = get_moscow_time()
         today = msk_now.strftime('%Y-%m-%d')
@@ -349,6 +351,8 @@ def add_role(user_id, role_name, expires_at=None):
         
         if expires_at:
             temp_roles = load_json("temp_roles.json")
+            if not temp_roles:
+                temp_roles = {}
             if user_id not in temp_roles:
                 temp_roles[user_id] = []
             temp_roles[user_id].append({'role': role_name, 'expires': expires_at})
@@ -2558,6 +2562,28 @@ def lottery_command(message):
         return
     show_lottery(message)
 
+@bot.message_handler(commands=['lotterybuy'])
+def lotterybuy_command(message):
+    user_id = message.from_user.id
+    if is_banned(user_id):
+        bot.reply_to(message, "🚫 Вы забанены")
+        return
+    
+    try:
+        parts = message.text.split()
+        if len(parts) < 2:
+            bot.reply_to(message, "❌ Использование: /lotterybuy [количество]\nПример: /lotterybuy 5")
+            return
+        count = int(parts[1])
+        if count < 1 or count > 100:
+            bot.reply_to(message, "❌ Можно купить от 1 до 100 билетов")
+            return
+        
+        success, msg = buy_lottery_tickets(user_id, count)
+        bot.reply_to(message, msg)
+    except:
+        bot.reply_to(message, "❌ Ошибка")
+
 @bot.message_handler(commands=['info'])
 def info_command(message):
     eco = get_economy_settings()
@@ -2568,7 +2594,7 @@ def info_command(message):
 ROLE SHOP BOT — бот для покупки ролей и получения привилегий.
 
 👨‍💻 <b>Создатель:</b> HoFiLiOn
-?? <b>Контакт:</b> @HoFiLiOnclkc
+📬 <b>Контакт:</b> @HoFiLiOnclkc
 
 <b>🎯 Для чего:</b>
  • Покупай уникальные роли за монеты
@@ -2643,7 +2669,7 @@ def help_command(message):
  • Список всех достижений: кнопка "Достижения"
 
 <b>🎲 ЛОТЕРЕЯ</b>
- • Купить билет: /lottery buy [количество]
+ • Купить билет: /lotterybuy [количество]
  • Розыгрыш каждый день в 20:00 МСК
 
 <b>🎭 ЧТО ДАЮТ РОЛИ?</b>
@@ -2663,6 +2689,7 @@ def help_command(message):
  /sell [название] [цена] — продать
  /bid [лот] [сумма] — ставка
  /lottery — лотерея
+ /lotterybuy [кол-во] — купить билеты
  /info — информация
  /help — это меню
  /admin — админ-панель
@@ -3043,7 +3070,7 @@ def addachievement_command(message):
         return
     try:
         parts = message.text.split()
-        if len(parts) < 5:
+        if len(parts) < 6:
             bot.reply_to(message, "❌ Использование: /addachievement [название] [тип] [цель] [награда] [описание]\nТипы: coins, referrals, roles, streak, messages, donate")
             return
         name = ' '.join(parts[1:-4])
@@ -3229,28 +3256,6 @@ def logs_command(message):
         bot.reply_to(message, text)
     except:
         bot.reply_to(message, "❌ Использование: /logs, /logs clear, /logs user [ID]")
-
-@bot.message_handler(commands=['lotterybuy'])
-def lotterybuy_command(message):
-    user_id = message.from_user.id
-    if is_banned(user_id):
-        bot.reply_to(message, "🚫 Вы забанены")
-        return
-    
-    try:
-        parts = message.text.split()
-        if len(parts) < 2:
-            bot.reply_to(message, "❌ Использование: /lotterybuy [количество]\nПример: /lotterybuy 5")
-            return
-        count = int(parts[1])
-        if count < 1 or count > 100:
-            bot.reply_to(message, "❌ Можно купить от 1 до 100 билетов")
-            return
-        
-        success, msg = buy_lottery_tickets(user_id, count)
-        bot.reply_to(message, msg)
-    except:
-        bot.reply_to(message, "❌ Ошибка")
 
 @bot.message_handler(commands=['lotterydraw'])
 def lotterydraw_command(message):
@@ -4103,7 +4108,7 @@ def show_treasury_by_message(user_id, original_message):
 {stats['announcement']}
 
 🎯 <b>ЦЕЛЬ:</b> {stats['goal']:,}💰
-📈 <b>ПРОГРЕСС:</b> {stats['percent']}% ░░░░░░░░░░
+📈 <b>ПРОГРЕСС:</b> {stats['percent']}% {stats['progress_bar']}
 
 👇 <b>СДЕЛАТЬ ПОЖЕРТВОВАНИЕ:</b>
 """
