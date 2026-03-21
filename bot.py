@@ -2350,9 +2350,8 @@ text = f"""
 ⚡️ <b>СОБЫТИЙНЫЕ</b>:
 {event_text if event_text else "Нет активных заданий"}
 
-▸ <b>Твой баланс:</b> {user['coins']:,}💰
-"""
-    
+▸ <b>Твой баланс:</b> {user['coins']:,}💰"""
+  
     try:
         bot.edit_message_media(
             types.InputMediaPhoto(IMAGES['tasks'], caption=text, parse_mode='HTML'),
