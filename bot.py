@@ -847,23 +847,46 @@ def format_text(text, user_id=None, **kwargs):
             text = text.replace(k, v)
     return text
 
-# ========== КЛАВИАТУРЫ ==========
-def get_main_keyboard(page=1):
+# ========== КЛАВИАТУРЫ С ЗАЩИТОЙ ==========
+def make_safe_callback(callback, user_id):
+    """Добавляет user_id в callback_data для защиты от чужих кнопок"""
+    return f"user_{user_id}_{callback}"
+
+def extract_callback(data):
+    """Извлекает оригинальный callback из защищённого"""
+    if data.startswith("user_"):
+        parts = data.split("_")
+        if len(parts) >= 3:
+            return "_".join(parts[2:])
+    return data
+
+def get_owner_id(data):
+    """Возвращает owner_id из защищённого callback"""
+    if data.startswith("user_"):
+        parts = data.split("_")
+        if len(parts) >= 2:
+            try:
+                return int(parts[1])
+            except:
+                pass
+    return None
+
+def get_main_keyboard(user_id, page=1):
     markup = types.InlineKeyboardMarkup(row_width=2)
     btns = [
-        types.InlineKeyboardButton("🛒 Магазин", callback_data="shop"),
-        types.InlineKeyboardButton("📋 Мои роли", callback_data="myroles"),
-        types.InlineKeyboardButton("👤 Профиль", callback_data="profile"),
-        types.InlineKeyboardButton("🎁 Бонус", callback_data="bonus"),
-        types.InlineKeyboardButton("🔗 Пригласить", callback_data="invite"),
-        types.InlineKeyboardButton("🏦 Казна", callback_data="treasury"),
-        types.InlineKeyboardButton("🔨 Аукцион", callback_data="auction"),
-        types.InlineKeyboardButton("🔪 Кража", callback_data="steal"),
-        types.InlineKeyboardButton("🏆 Достижения", callback_data="achievements"),
-        types.InlineKeyboardButton("🎲 Лотерея", callback_data="lottery"),
-        types.InlineKeyboardButton("📖 О нас", callback_data="about"),
-        types.InlineKeyboardButton("🎨 Кастомизация", callback_data="custom"),
-        types.InlineKeyboardButton("📊 Лидеры", callback_data="leaders")
+        types.InlineKeyboardButton("🛒 Магазин", callback_data=make_safe_callback("shop", user_id)),
+        types.InlineKeyboardButton("📋 Мои роли", callback_data=make_safe_callback("myroles", user_id)),
+        types.InlineKeyboardButton("👤 Профиль", callback_data=make_safe_callback("profile", user_id)),
+        types.InlineKeyboardButton("🎁 Бонус", callback_data=make_safe_callback("bonus", user_id)),
+        types.InlineKeyboardButton("🔗 Пригласить", callback_data=make_safe_callback("invite", user_id)),
+        types.InlineKeyboardButton("🏦 Казна", callback_data=make_safe_callback("treasury", user_id)),
+        types.InlineKeyboardButton("🔨 Аукцион", callback_data=make_safe_callback("auction", user_id)),
+        types.InlineKeyboardButton("🔪 Кража", callback_data=make_safe_callback("steal", user_id)),
+        types.InlineKeyboardButton("🏆 Достижения", callback_data=make_safe_callback("achievements", user_id)),
+        types.InlineKeyboardButton("🎲 Лотерея", callback_data=make_safe_callback("lottery", user_id)),
+        types.InlineKeyboardButton("📖 О нас", callback_data=make_safe_callback("about", user_id)),
+        types.InlineKeyboardButton("🎨 Кастомизация", callback_data=make_safe_callback("custom", user_id)),
+        types.InlineKeyboardButton("📊 Лидеры", callback_data=make_safe_callback("leaders", user_id))
     ]
     per_page = 4
     total = (len(btns) + per_page - 1) // per_page
@@ -878,26 +901,26 @@ def get_main_keyboard(page=1):
     if total > 1:
         nav = []
         if page > 1:
-            nav.append(types.InlineKeyboardButton("◀️", callback_data=f"main_page_{page-1}"))
+            nav.append(types.InlineKeyboardButton("◀️", callback_data=make_safe_callback(f"main_page_{page-1}", user_id)))
         if page < total:
-            nav.append(types.InlineKeyboardButton("▶️", callback_data=f"main_page_{page+1}"))
+            nav.append(types.InlineKeyboardButton("▶️", callback_data=make_safe_callback(f"main_page_{page+1}", user_id)))
         if nav:
             markup.row(*nav)
     return markup
 
-def get_back_keyboard():
+def get_back_keyboard(user_id):
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main"))
+    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data=make_safe_callback("back_to_main", user_id)))
     return markup
 
-def get_shop_keyboard():
+def get_shop_keyboard(user_id):
     markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(types.InlineKeyboardButton("🎭 Роли", callback_data="shop_roles"))
-    markup.add(types.InlineKeyboardButton("⚡️ Бусты для кражи", callback_data="shop_boosts"))
-    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main"))
+    markup.add(types.InlineKeyboardButton("🎭 Роли", callback_data=make_safe_callback("shop_roles", user_id)))
+    markup.add(types.InlineKeyboardButton("⚡️ Бусты для кражи", callback_data=make_safe_callback("shop_boosts", user_id)))
+    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data=make_safe_callback("back_to_main", user_id)))
     return markup
 
-def get_roles_keyboard(page=1):
+def get_roles_keyboard(user_id, page=1):
     markup = types.InlineKeyboardMarkup(row_width=1)
     roles = list(PERMANENT_ROLES.items())
     per_page = 3
@@ -908,27 +931,27 @@ def get_roles_keyboard(page=1):
         page = total
     start = (page - 1) * per_page
     for name, price in roles[start:start+per_page]:
-        markup.add(types.InlineKeyboardButton(f"{name} — {price:,}💰", callback_data=f"perm_{name}"))
+        markup.add(types.InlineKeyboardButton(f"{name} — {price:,}💰", callback_data=make_safe_callback(f"perm_{name}", user_id)))
     if total > 1:
         nav = []
         if page > 1:
-            nav.append(types.InlineKeyboardButton("◀️", callback_data=f"roles_page_{page-1}"))
+            nav.append(types.InlineKeyboardButton("◀️", callback_data=make_safe_callback(f"roles_page_{page-1}", user_id)))
         if page < total:
-            nav.append(types.InlineKeyboardButton("▶️", callback_data=f"roles_page_{page+1}"))
+            nav.append(types.InlineKeyboardButton("▶️", callback_data=make_safe_callback(f"roles_page_{page+1}", user_id)))
         if nav:
             markup.row(*nav)
-    markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data="shop"))
+    markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data=make_safe_callback("shop", user_id)))
     return markup
 
-def get_role_keyboard(role):
+def get_role_keyboard(user_id, role):
     markup = types.InlineKeyboardMarkup()
     markup.add(
-        types.InlineKeyboardButton("✅ Купить", callback_data=f"buy_perm_{role}"),
-        types.InlineKeyboardButton("◀️ Назад", callback_data="shop_roles")
+        types.InlineKeyboardButton("✅ Купить", callback_data=make_safe_callback(f"buy_perm_{role}", user_id)),
+        types.InlineKeyboardButton("◀️ Назад", callback_data=make_safe_callback("shop_roles", user_id))
     )
     return markup
 
-def get_boosts_keyboard(page=1):
+def get_boosts_keyboard(user_id, page=1):
     markup = types.InlineKeyboardMarkup(row_width=1)
     boosts = list(STEAL_BOOSTS.items())
     per_page = 3
@@ -939,27 +962,27 @@ def get_boosts_keyboard(page=1):
         page = total
     start = (page - 1) * per_page
     for bid, b in boosts[start:start+per_page]:
-        markup.add(types.InlineKeyboardButton(f"{b['name']} — {b['price']}💰", callback_data=f"boost_{bid}"))
+        markup.add(types.InlineKeyboardButton(f"{b['name']} — {b['price']}💰", callback_data=make_safe_callback(f"boost_{bid}", user_id)))
     if total > 1:
         nav = []
         if page > 1:
-            nav.append(types.InlineKeyboardButton("◀️", callback_data=f"boosts_page_{page-1}"))
+            nav.append(types.InlineKeyboardButton("◀️", callback_data=make_safe_callback(f"boosts_page_{page-1}", user_id)))
         if page < total:
-            nav.append(types.InlineKeyboardButton("▶️", callback_data=f"boosts_page_{page+1}"))
+            nav.append(types.InlineKeyboardButton("▶️", callback_data=make_safe_callback(f"boosts_page_{page+1}", user_id)))
         if nav:
             markup.row(*nav)
-    markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data="shop"))
+    markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data=make_safe_callback("shop", user_id)))
     return markup
 
-def get_boost_keyboard(bid):
+def get_boost_keyboard(user_id, bid):
     markup = types.InlineKeyboardMarkup()
     markup.add(
-        types.InlineKeyboardButton("✅ Купить", callback_data=f"buy_boost_{bid}"),
-        types.InlineKeyboardButton("◀️ Назад", callback_data="shop_boosts")
+        types.InlineKeyboardButton("✅ Купить", callback_data=make_safe_callback(f"buy_boost_{bid}", user_id)),
+        types.InlineKeyboardButton("◀️ Назад", callback_data=make_safe_callback("shop_boosts", user_id))
     )
     return markup
 
-def get_myroles_keyboard(roles, active, page=1):
+def get_myroles_keyboard(user_id, roles, active, page=1):
     markup = types.InlineKeyboardMarkup(row_width=1)
     per_page = 3
     total = (len(roles) + per_page - 1) // per_page if roles else 1
@@ -970,66 +993,66 @@ def get_myroles_keyboard(roles, active, page=1):
     start = (page - 1) * per_page
     for r in roles[start:start+per_page]:
         if r in active:
-            markup.add(types.InlineKeyboardButton(f"🔴 Выключить {r}", callback_data=f"toggle_{r}"))
+            markup.add(types.InlineKeyboardButton(f"🔴 Выключить {r}", callback_data=make_safe_callback(f"toggle_{r}", user_id)))
         else:
-            markup.add(types.InlineKeyboardButton(f"🟢 Включить {r}", callback_data=f"toggle_{r}"))
+            markup.add(types.InlineKeyboardButton(f"🟢 Включить {r}", callback_data=make_safe_callback(f"toggle_{r}", user_id)))
     if total > 1:
         nav = []
         if page > 1:
-            nav.append(types.InlineKeyboardButton("◀️", callback_data=f"myroles_page_{page-1}"))
+            nav.append(types.InlineKeyboardButton("◀️", callback_data=make_safe_callback(f"myroles_page_{page-1}", user_id)))
         if page < total:
-            nav.append(types.InlineKeyboardButton("▶️", callback_data=f"myroles_page_{page+1}"))
+            nav.append(types.InlineKeyboardButton("▶️", callback_data=make_safe_callback(f"myroles_page_{page+1}", user_id)))
         if nav:
             markup.row(*nav)
-    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main"))
+    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data=make_safe_callback("back_to_main", user_id)))
     return markup
 
-def get_bonus_keyboard():
+def get_bonus_keyboard(user_id):
     markup = types.InlineKeyboardMarkup()
     markup.add(
-        types.InlineKeyboardButton("🎁 Забрать бонус", callback_data="daily"),
-        types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main")
+        types.InlineKeyboardButton("🎁 Забрать бонус", callback_data=make_safe_callback("daily", user_id)),
+        types.InlineKeyboardButton("◀️ В главное меню", callback_data=make_safe_callback("back_to_main", user_id))
     )
     return markup
 
-def get_treasury_keyboard():
+def get_treasury_keyboard(user_id):
     markup = types.InlineKeyboardMarkup(row_width=3)
     markup.add(
-        types.InlineKeyboardButton("50💰", callback_data="donate_50"),
-        types.InlineKeyboardButton("100💰", callback_data="donate_100"),
-        types.InlineKeyboardButton("500💰", callback_data="donate_500")
+        types.InlineKeyboardButton("50💰", callback_data=make_safe_callback("donate_50", user_id)),
+        types.InlineKeyboardButton("100💰", callback_data=make_safe_callback("donate_100", user_id)),
+        types.InlineKeyboardButton("500💰", callback_data=make_safe_callback("donate_500", user_id))
     )
     markup.add(
-        types.InlineKeyboardButton("1000💰", callback_data="donate_1000"),
-        types.InlineKeyboardButton("5000💰", callback_data="donate_5000"),
-        types.InlineKeyboardButton("10000💰", callback_data="donate_10000")
+        types.InlineKeyboardButton("1000💰", callback_data=make_safe_callback("donate_1000", user_id)),
+        types.InlineKeyboardButton("5000💰", callback_data=make_safe_callback("donate_5000", user_id)),
+        types.InlineKeyboardButton("10000💰", callback_data=make_safe_callback("donate_10000", user_id))
     )
-    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main"))
+    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data=make_safe_callback("back_to_main", user_id)))
     return markup
 
-def get_auction_keyboard():
+def get_auction_keyboard(user_id):
     a = get_auction()
     markup = types.InlineKeyboardMarkup(row_width=1)
     for lot in a['lots']:
-        markup.add(types.InlineKeyboardButton(f"🔸 Лот #{lot['id']} — {lot['item_name']} ({lot['current_price']}💰)", callback_data=f"bid_{lot['id']}"))
-    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main"))
+        markup.add(types.InlineKeyboardButton(f"🔸 Лот #{lot['id']} — {lot['item_name']} ({lot['current_price']}💰)", callback_data=make_safe_callback(f"bid_{lot['id']}", user_id)))
+    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data=make_safe_callback("back_to_main", user_id)))
     return markup
 
-def get_steal_keyboard(in_jail=False):
+def get_steal_keyboard(user_id, in_jail=False):
     markup = types.InlineKeyboardMarkup(row_width=1)
     if in_jail:
         markup.add(
-            types.InlineKeyboardButton("🔓 Побег (1000💰)", callback_data="jail_escape"),
-            types.InlineKeyboardButton("💰 Откуп (5000💰)", callback_data="jail_bribe"),
-            types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main")
+            types.InlineKeyboardButton("🔓 Побег (1000💰)", callback_data=make_safe_callback("jail_escape", user_id)),
+            types.InlineKeyboardButton("💰 Откуп (5000💰)", callback_data=make_safe_callback("jail_bribe", user_id)),
+            types.InlineKeyboardButton("◀️ В главное меню", callback_data=make_safe_callback("back_to_main", user_id))
         )
     else:
         markup.add(
-            types.InlineKeyboardButton("🔪 Выбрать жертву", callback_data="steal_select"),
-            types.InlineKeyboardButton("📊 Моя статистика", callback_data="steal_stats"),
-            types.InlineKeyboardButton("🏆 Топ воров", callback_data="leaders_steal"),
-            types.InlineKeyboardButton("💰 Топ украденного", callback_data="leaders_stolen"),
-            types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main")
+            types.InlineKeyboardButton("🔪 Выбрать жертву", callback_data=make_safe_callback("steal_select", user_id)),
+            types.InlineKeyboardButton("📊 Моя статистика", callback_data=make_safe_callback("steal_stats", user_id)),
+            types.InlineKeyboardButton("🏆 Топ воров", callback_data=make_safe_callback("leaders_steal", user_id)),
+            types.InlineKeyboardButton("💰 Топ украденного", callback_data=make_safe_callback("leaders_stolen", user_id)),
+            types.InlineKeyboardButton("◀️ В главное меню", callback_data=make_safe_callback("back_to_main", user_id))
         )
     return markup
 
@@ -1041,65 +1064,103 @@ def get_steal_select_keyboard(user_id):
         if int(uid) == user_id or int(uid) in MASTER_IDS:
             continue
         name = get_display_name(data)
-        btns.append(types.InlineKeyboardButton(name, callback_data=f"steal_{uid}"))
+        btns.append(types.InlineKeyboardButton(name, callback_data=make_safe_callback(f"steal_{uid}", user_id)))
         if len(btns) >= 20:
             break
     for i in range(0, len(btns), 2):
         markup.add(*btns[i:i+2])
-    markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data="steal"))
+    markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data=make_safe_callback("steal", user_id)))
     return markup
 
-def get_leaders_keyboard():
+def get_leaders_keyboard(user_id):
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(
-        types.InlineKeyboardButton("🏆 По монетам", callback_data="leaders_coins"),
-        types.InlineKeyboardButton("👥 По рефералам", callback_data="leaders_referrals"),
-        types.InlineKeyboardButton("🎭 По ролям", callback_data="leaders_roles"),
-        types.InlineKeyboardButton("📈 По уровню", callback_data="leaders_level"),
-        types.InlineKeyboardButton("🔥 По серии", callback_data="leaders_streak"),
-        types.InlineKeyboardButton("💬 За сегодня", callback_data="leaders_today"),
-        types.InlineKeyboardButton("🔪 По кражам", callback_data="leaders_steal"),
-        types.InlineKeyboardButton("💰 По украденному", callback_data="leaders_stolen")
+        types.InlineKeyboardButton("🏆 По монетам", callback_data=make_safe_callback("leaders_coins", user_id)),
+        types.InlineKeyboardButton("👥 По рефералам", callback_data=make_safe_callback("leaders_referrals", user_id)),
+        types.InlineKeyboardButton("🎭 По ролям", callback_data=make_safe_callback("leaders_roles", user_id)),
+        types.InlineKeyboardButton("📈 По уровню", callback_data=make_safe_callback("leaders_level", user_id)),
+        types.InlineKeyboardButton("🔥 По серии", callback_data=make_safe_callback("leaders_streak", user_id)),
+        types.InlineKeyboardButton("💬 За сегодня", callback_data=make_safe_callback("leaders_today", user_id)),
+        types.InlineKeyboardButton("🔪 По кражам", callback_data=make_safe_callback("leaders_steal", user_id)),
+        types.InlineKeyboardButton("💰 По украденному", callback_data=make_safe_callback("leaders_stolen", user_id))
     )
-    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main"))
+    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data=make_safe_callback("back_to_main", user_id)))
     return markup
 
-def get_custom_keyboard():
+def get_custom_keyboard(user_id):
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(
-        types.InlineKeyboardButton("🏷️ Изменить статус", callback_data="custom_status"),
-        types.InlineKeyboardButton("✨ Изменить эмодзи", callback_data="custom_emoji"),
-        types.InlineKeyboardButton("🎭 Изменить ник", callback_data="custom_nick"),
-        types.InlineKeyboardButton("🗑 Сбросить всё", callback_data="custom_reset"),
-        types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main")
+        types.InlineKeyboardButton("🏷️ Изменить статус", callback_data=make_safe_callback("custom_status", user_id)),
+        types.InlineKeyboardButton("✨ Изменить эмодзи", callback_data=make_safe_callback("custom_emoji", user_id)),
+        types.InlineKeyboardButton("🎭 Изменить ник", callback_data=make_safe_callback("custom_nick", user_id)),
+        types.InlineKeyboardButton("🗑 Сбросить всё", callback_data=make_safe_callback("custom_reset", user_id)),
+        types.InlineKeyboardButton("◀️ В главное меню", callback_data=make_safe_callback("back_to_main", user_id))
     )
     return markup
 
-def get_admin_main_keyboard():
+def get_achievements_keyboard(user_id, page=1):
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    ach_list = get_achievements()['list']
+    per_page = 10
+    total = (len(ach_list) + per_page - 1) // per_page
+    if page < 1:
+        page = 1
+    if page > total:
+        page = total
+    start = (page - 1) * per_page
+    for ach in ach_list[start:start+per_page]:
+        markup.add(types.InlineKeyboardButton(f"{ach['name']} — {ach['desc']} (+{ach['reward']}💰)", callback_data=make_safe_callback(f"ach_{ach['id']}", user_id)))
+    if total > 1:
+        nav = []
+        if page > 1:
+            nav.append(types.InlineKeyboardButton("◀️", callback_data=make_safe_callback(f"achievements_page_{page-1}", user_id)))
+        if page < total:
+            nav.append(types.InlineKeyboardButton("▶️", callback_data=make_safe_callback(f"achievements_page_{page+1}", user_id)))
+        if nav:
+            markup.row(*nav)
+    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data=make_safe_callback("back_to_main", user_id)))
+    return markup
+
+def get_lottery_keyboard(user_id):
+    markup = types.InlineKeyboardMarkup(row_width=3)
+    markup.add(
+        types.InlineKeyboardButton("1 билет (100💰)", callback_data=make_safe_callback("lottery_1", user_id)),
+        types.InlineKeyboardButton("5 билетов (500💰)", callback_data=make_safe_callback("lottery_5", user_id)),
+        types.InlineKeyboardButton("10 билетов (1000💰)", callback_data=make_safe_callback("lottery_10", user_id))
+    )
+    markup.add(
+        types.InlineKeyboardButton("50 билетов (5000💰)", callback_data=make_safe_callback("lottery_50", user_id)),
+        types.InlineKeyboardButton("100 билетов (10000💰)", callback_data=make_safe_callback("lottery_100", user_id)),
+        types.InlineKeyboardButton("✏️ Своё кол-во", callback_data=make_safe_callback("lottery_custom", user_id))
+    )
+    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data=make_safe_callback("back_to_main", user_id)))
+    return markup
+
+def get_admin_main_keyboard(user_id):
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(
-        types.InlineKeyboardButton("📊 Статистика", callback_data="admin_stats"),
-        types.InlineKeyboardButton("👥 Пользователи", callback_data="admin_users"),
-        types.InlineKeyboardButton("💰 Монеты", callback_data="admin_coins"),
-        types.InlineKeyboardButton("🎭 Роли", callback_data="admin_roles"),
-        types.InlineKeyboardButton("🚫 Баны", callback_data="admin_bans"),
-        types.InlineKeyboardButton("🎁 Промокоды", callback_data="admin_promo"),
-        types.InlineKeyboardButton("⚙️ Экономика", callback_data="admin_economy"),
-        types.InlineKeyboardButton("🏦 Казна", callback_data="admin_treasury"),
-        types.InlineKeyboardButton("🔨 Аукцион", callback_data="admin_auction"),
-        types.InlineKeyboardButton("🔪 Кража", callback_data="admin_steal"),
-        types.InlineKeyboardButton("🏆 Достижения", callback_data="admin_achievements"),
-        types.InlineKeyboardButton("🎲 Лотерея", callback_data="admin_lottery"),
-        types.InlineKeyboardButton("✏️ Тексты", callback_data="admin_texts"),
-        types.InlineKeyboardButton("🖼️ Фото", callback_data="admin_images"),
-        types.InlineKeyboardButton("📢 Рассылка", callback_data="admin_mailing"),
-        types.InlineKeyboardButton("📦 Бэкап", callback_data="admin_backup")
+        types.InlineKeyboardButton("📊 Статистика", callback_data=make_safe_callback("admin_stats", user_id)),
+        types.InlineKeyboardButton("👥 Пользователи", callback_data=make_safe_callback("admin_users", user_id)),
+        types.InlineKeyboardButton("💰 Монеты", callback_data=make_safe_callback("admin_coins", user_id)),
+        types.InlineKeyboardButton("🎭 Роли", callback_data=make_safe_callback("admin_roles", user_id)),
+        types.InlineKeyboardButton("🚫 Баны", callback_data=make_safe_callback("admin_bans", user_id)),
+        types.InlineKeyboardButton("🎁 Промокоды", callback_data=make_safe_callback("admin_promo", user_id)),
+        types.InlineKeyboardButton("⚙️ Экономика", callback_data=make_safe_callback("admin_economy", user_id)),
+        types.InlineKeyboardButton("🏦 Казна", callback_data=make_safe_callback("admin_treasury", user_id)),
+        types.InlineKeyboardButton("🔨 Аукцион", callback_data=make_safe_callback("admin_auction", user_id)),
+        types.InlineKeyboardButton("🔪 Кража", callback_data=make_safe_callback("admin_steal", user_id)),
+        types.InlineKeyboardButton("🏆 Достижения", callback_data=make_safe_callback("admin_achievements", user_id)),
+        types.InlineKeyboardButton("🎲 Лотерея", callback_data=make_safe_callback("admin_lottery", user_id)),
+        types.InlineKeyboardButton("✏️ Тексты", callback_data=make_safe_callback("admin_texts", user_id)),
+        types.InlineKeyboardButton("🖼️ Фото", callback_data=make_safe_callback("admin_images", user_id)),
+        types.InlineKeyboardButton("📢 Рассылка", callback_data=make_safe_callback("admin_mailing", user_id)),
+        types.InlineKeyboardButton("📦 Бэкап", callback_data=make_safe_callback("admin_backup", user_id))
     )
     return markup
 
-def get_admin_back_keyboard():
+def get_admin_back_keyboard(user_id):
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("◀️ Назад в админ-панель", callback_data="admin_back"))
+    markup.add(types.InlineKeyboardButton("◀️ Назад в админ-панель", callback_data=make_safe_callback("admin_back", user_id)))
     return markup
 
 # ========== ОТОБРАЖЕНИЕ РАЗДЕЛОВ ==========
@@ -1114,49 +1175,53 @@ def show_main_menu(call_or_msg, page=1):
     text = format_text(get_text('main'), uid)
     if hasattr(call_or_msg, 'message'):
         try:
-            bot.edit_message_media(types.InputMediaPhoto(get_image('main'), caption=text, parse_mode='HTML'), call_or_msg.message.chat.id, call_or_msg.message.message_id, reply_markup=get_main_keyboard(page))
+            bot.edit_message_media(types.InputMediaPhoto(get_image('main'), caption=text, parse_mode='HTML'), call_or_msg.message.chat.id, call_or_msg.message.message_id, reply_markup=get_main_keyboard(uid, page))
         except:
-            bot.send_photo(uid, get_image('main'), caption=text, parse_mode='HTML', reply_markup=get_main_keyboard(page))
+            bot.send_photo(uid, get_image('main'), caption=text, parse_mode='HTML', reply_markup=get_main_keyboard(uid, page))
     else:
-        bot.send_photo(uid, get_image('main'), caption=text, parse_mode='HTML', reply_markup=get_main_keyboard(page))
+        bot.send_photo(uid, get_image('main'), caption=text, parse_mode='HTML', reply_markup=get_main_keyboard(uid, page))
 
 def show_shop(call):
-    text = format_text(get_text('shop'), call.from_user.id)
+    uid = call.from_user.id
+    text = format_text(get_text('shop'), uid)
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('shop'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_shop_keyboard())
+        bot.edit_message_media(types.InputMediaPhoto(get_image('shop'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_shop_keyboard(uid))
     except:
         pass
 
 def show_shop_roles(call, page=1):
-    user = get_user(call.from_user.id)
+    uid = call.from_user.id
+    user = get_user(uid)
     roles = list(PERMANENT_ROLES.items())
     total = (len(roles) + 2) // 3
     start = (page - 1) * 3
     roles_text = ""
     for name, price in roles[start:start+3]:
         roles_text += f" • {name} | {price:,}💰\n"
-    text = format_text(get_text('shop_roles'), call.from_user.id, page=page, total_pages=total, roles_text=roles_text, cashback=get_user_cashback(call.from_user.id), coins=user['coins'])
+    text = format_text(get_text('shop_roles'), uid, page=page, total_pages=total, roles_text=roles_text, cashback=get_user_cashback(uid), coins=user['coins'])
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('shop'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_roles_keyboard(page))
+        bot.edit_message_media(types.InputMediaPhoto(get_image('shop'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_roles_keyboard(uid, page))
     except:
         pass
 
 def show_shop_boosts(call, page=1):
-    user = get_user(call.from_user.id)
+    uid = call.from_user.id
+    user = get_user(uid)
     boosts = list(STEAL_BOOSTS.items())
     total = (len(boosts) + 2) // 3
     start = (page - 1) * 3
     boosts_text = ""
     for bid, b in boosts[start:start+3]:
         boosts_text += f" • {b['name']} | {b['price']}💰 | +{b['boost']}%\n"
-    text = format_text(get_text('shop_boosts'), call.from_user.id, page=page, total_pages=total, boosts_text=boosts_text, coins=user['coins'])
+    text = format_text(get_text('shop_boosts'), uid, page=page, total_pages=total, boosts_text=boosts_text, coins=user['coins'])
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('shop'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_boosts_keyboard(page))
+        bot.edit_message_media(types.InputMediaPhoto(get_image('shop'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_boosts_keyboard(uid, page))
     except:
         pass
 
 def show_myroles(call, page=1):
-    user = get_user(call.from_user.id)
+    uid = call.from_user.id
+    user = get_user(uid)
     roles = user.get('roles', [])
     active = user.get('active_roles', [])
     total = (len(roles) + 2) // 3 if roles else 1
@@ -1168,22 +1233,24 @@ def show_myroles(call, page=1):
         for r in roles[start:start+3]:
             status = "✅" if r in active else "❌"
             roles_text += f" {status} {r}\n"
-    text = format_text(get_text('myroles'), call.from_user.id, page=page, total_pages=total, roles_text=roles_text, coins=user['coins'])
+    text = format_text(get_text('myroles'), uid, page=page, total_pages=total, roles_text=roles_text, coins=user['coins'])
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('myroles'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_myroles_keyboard(roles, active, page) if roles else get_back_keyboard())
+        bot.edit_message_media(types.InputMediaPhoto(get_image('myroles'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_myroles_keyboard(uid, roles, active, page) if roles else get_back_keyboard(uid))
     except:
         pass
 
 def show_profile(call):
-    user = get_user(call.from_user.id)
-    text = format_text(get_text('profile'), call.from_user.id, first_name=call.from_user.first_name)
+    uid = call.from_user.id
+    user = get_user(uid)
+    text = format_text(get_text('profile'), uid, first_name=call.from_user.first_name)
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('profile'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_back_keyboard())
+        bot.edit_message_media(types.InputMediaPhoto(get_image('profile'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_back_keyboard(uid))
     except:
         pass
 
 def show_bonus(call):
-    user = get_user(call.from_user.id)
+    uid = call.from_user.id
+    user = get_user(uid)
     eco = load_json(ECONOMY_FILE)
     if not eco:
         eco = {'base_bonus_min': 50, 'base_bonus_max': 200}
@@ -1196,36 +1263,38 @@ def show_bonus(call):
         bonus_max = base_max + (idx * 20)
     else:
         bonus_min, bonus_max = base_min, base_max
-    text = format_text(get_text('bonus'), call.from_user.id, boost_text="", streak=user.get('streak_daily', 0), bonus_min=bonus_min, bonus_max=bonus_max)
+    text = format_text(get_text('bonus'), uid, boost_text="", streak=user.get('streak_daily', 0), bonus_min=bonus_min, bonus_max=bonus_max)
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('bonus'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_bonus_keyboard())
+        bot.edit_message_media(types.InputMediaPhoto(get_image('bonus'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_bonus_keyboard(uid))
     except:
         pass
 
 def show_invite(call):
-    user = get_user(call.from_user.id)
-    bot_link = f"https://t.me/{(bot.get_me()).username}?start={call.from_user.id}"
-    text = format_text(get_text('invite'), call.from_user.id, invites_count=len(user.get('invites', [])), referrals_earned=user.get('referrals_earned', 0), bonus=get_user_invite_bonus(call.from_user.id), bot_link=bot_link)
+    uid = call.from_user.id
+    user = get_user(uid)
+    bot_link = f"https://t.me/{(bot.get_me()).username}?start={uid}"
+    text = format_text(get_text('invite'), uid, invites_count=len(user.get('invites', [])), referrals_earned=user.get('referrals_earned', 0), bonus=get_user_invite_bonus(uid), bot_link=bot_link)
     try:
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_back_keyboard())
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_back_keyboard(uid))
     except:
         pass
 
 def show_treasury(call):
+    uid = call.from_user.id
     stats = get_treasury_stats()
-    user = get_user(call.from_user.id)
+    user = get_user(uid)
     user_donated = user.get('donated', 0) if user else 0
-    # Прогресс-бар без бэкслешей
     bar_len = 10
     filled = int(stats['percent'] / 100 * bar_len)
     progress_bar = "█" * filled + "░" * (bar_len - filled)
-    text = format_text(get_text('treasury'), call.from_user.id, collected=stats['balance'], donors_count=stats['donors_count'], top_donor=stats['top_donor'], user_donated=user_donated, announcement=stats['announcement'], goal=stats['goal'], percent=stats['percent'], progress_bar=progress_bar)
+    text = format_text(get_text('treasury'), uid, collected=stats['balance'], donors_count=stats['donors_count'], top_donor=stats['top_donor'], user_donated=user_donated, announcement=stats['announcement'], goal=stats['goal'], percent=stats['percent'], progress_bar=progress_bar)
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('treasury'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_treasury_keyboard())
+        bot.edit_message_media(types.InputMediaPhoto(get_image('treasury'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_treasury_keyboard(uid))
     except:
         pass
 
 def show_auction(call):
+    uid = call.from_user.id
     check_expired_auctions()
     a = get_auction()
     if not a['lots']:
@@ -1238,32 +1307,35 @@ def show_auction(call):
             h = left.seconds // 3600
             m = (left.seconds % 3600) // 60
             auctions_text += f"\n<b>🔸 Лот #{lot['id']}</b>\n📦 {lot['item_name']}\n💰 {lot['current_price']}💰\n👤 {lot['seller_name']}\n⏰ {h}ч {m}м\n➖➖➖➖➖\n"
-    text = format_text(get_text('auction'), call.from_user.id, auctions_text=auctions_text)
+    text = format_text(get_text('auction'), uid, auctions_text=auctions_text)
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('auction'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_auction_keyboard())
+        bot.edit_message_media(types.InputMediaPhoto(get_image('auction'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_auction_keyboard(uid))
     except:
         pass
 
 def show_steal(call):
-    user = get_user(call.from_user.id)
-    in_jail, time_left = is_in_jail(call.from_user.id)
+    uid = call.from_user.id
+    user = get_user(uid)
+    in_jail, time_left = is_in_jail(uid)
     jail_text = f"⛓️ <b>ВЫ В ТЮРЬМЕ!</b>\nОсталось: {time_left:.1f} ч\n\n" if in_jail else ""
     stats = user.get('steal_stats', {})
-    text = format_text(get_text('steal'), call.from_user.id, jail_text=jail_text, steal_success=stats.get('success', 0), steal_failed=stats.get('failed', 0), stolen=stats.get('total_stolen', 0), lost=stats.get('total_lost', 0))
+    text = format_text(get_text('steal'), uid, jail_text=jail_text, steal_success=stats.get('success', 0), steal_failed=stats.get('failed', 0), stolen=stats.get('total_stolen', 0), lost=stats.get('total_lost', 0))
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('steal'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_steal_keyboard(in_jail))
+        bot.edit_message_media(types.InputMediaPhoto(get_image('steal'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_steal_keyboard(uid, in_jail))
     except:
         pass
 
 def show_steal_select(call):
+    uid = call.from_user.id
     text = "🔪 <b>ВЫБЕРИ ЖЕРТВУ</b>"
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('steal'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_steal_select_keyboard(call.from_user.id))
+        bot.edit_message_media(types.InputMediaPhoto(get_image('steal'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_steal_select_keyboard(uid))
     except:
         pass
 
 def show_steal_stats(call):
-    user = get_user(call.from_user.id)
+    uid = call.from_user.id
+    user = get_user(uid)
     stats = user.get('steal_stats', {})
     success = stats.get('success', 0)
     failed = stats.get('failed', 0)
@@ -1271,14 +1343,15 @@ def show_steal_stats(call):
     rate = (success / total * 100) if total > 0 else 0
     text = f"<b>📊 СТАТИСТИКА КРАЖ</b>\n\n🔪 Успешных: {success}\n❌ Провалов: {failed}\n💰 Украдено: {stats.get('total_stolen', 0):,}💰\n💸 Потеряно: {stats.get('total_lost', 0):,}💰\n\n📈 Процент успеха: {rate:.1f}%"
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data="steal"))
+    markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data=make_safe_callback("steal", uid)))
     try:
         bot.edit_message_media(types.InputMediaPhoto(get_image('steal'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
     except:
         pass
 
 def show_achievements(call, page=1):
-    user = get_user(call.from_user.id)
+    uid = call.from_user.id
+    user = get_user(uid)
     ach_list = get_achievements()['list']
     completed = set(user.get('achievements', []))
     per_page = 10
@@ -1292,102 +1365,70 @@ def show_achievements(call, page=1):
     for ach in ach_list[start:start+per_page]:
         status = "✅" if ach['id'] in completed else "❌"
         ach_text += f"{status} <b>{ach['name']}</b>\n   {ach['desc']} — +{ach['reward']}💰\n\n"
-    text = format_text(get_text('achievements'), call.from_user.id, page=page, total_pages=total, achievements_text=ach_text)
+    text = format_text(get_text('achievements'), uid, page=page, total_pages=total, achievements_text=ach_text)
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('achievements'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_achievements_keyboard(page))
+        bot.edit_message_media(types.InputMediaPhoto(get_image('achievements'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_achievements_keyboard(uid, page))
     except:
         pass
-
-def get_achievements_keyboard(page=1):
-    markup = types.InlineKeyboardMarkup(row_width=1)
-    ach_list = get_achievements()['list']
-    per_page = 10
-    total = (len(ach_list) + per_page - 1) // per_page
-    if page < 1:
-        page = 1
-    if page > total:
-        page = total
-    start = (page - 1) * per_page
-    for ach in ach_list[start:start+per_page]:
-        markup.add(types.InlineKeyboardButton(f"{ach['name']} — {ach['desc']} (+{ach['reward']}💰)", callback_data=f"ach_{ach['id']}"))
-    if total > 1:
-        nav = []
-        if page > 1:
-            nav.append(types.InlineKeyboardButton("◀️", callback_data=f"achievements_page_{page-1}"))
-        if page < total:
-            nav.append(types.InlineKeyboardButton("▶️", callback_data=f"achievements_page_{page+1}"))
-        if nav:
-            markup.row(*nav)
-    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main"))
-    return markup
 
 def show_lottery(call):
+    uid = call.from_user.id
     l = get_lottery()
-    text = format_text(get_text('lottery'), call.from_user.id, jackpot=l['jackpot'], total_tickets=l['total_tickets'])
+    text = format_text(get_text('lottery'), uid, jackpot=l['jackpot'], total_tickets=l['total_tickets'])
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('lottery'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_lottery_keyboard())
+        bot.edit_message_media(types.InputMediaPhoto(get_image('lottery'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_lottery_keyboard(uid))
     except:
         pass
 
-def get_lottery_keyboard():
-    markup = types.InlineKeyboardMarkup(row_width=3)
-    markup.add(
-        types.InlineKeyboardButton("1 билет (100💰)", callback_data="lottery_1"),
-        types.InlineKeyboardButton("5 билетов (500💰)", callback_data="lottery_5"),
-        types.InlineKeyboardButton("10 билетов (1000💰)", callback_data="lottery_10")
-    )
-    markup.add(
-        types.InlineKeyboardButton("50 билетов (5000💰)", callback_data="lottery_50"),
-        types.InlineKeyboardButton("100 билетов (10000💰)", callback_data="lottery_100"),
-        types.InlineKeyboardButton("✏️ Своё кол-во", callback_data="lottery_custom")
-    )
-    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main"))
-    return markup
-
 def show_about(call):
+    uid = call.from_user.id
     about = load_json(ABOUT_FILE)
     if not about:
         about = {'created_at': '21.03.2026', 'chat_link': 'https://t.me/Chat_by_HoFiLiOn', 'channel_link': 'https://t.me/mapsinssb2byhofilion', 'creator': '@HoFiLiOn'}
         save_json(ABOUT_FILE, about)
     stats = get_stats()
-    text = format_text(get_text('about'), call.from_user.id, created_at=about['created_at'], total_users=stats['total_users'], total_messages=stats['total_messages'], total_coins=stats['total_coins'], creator=about['creator'], chat_link=about['chat_link'], channel_link=about['channel_link'])
+    text = format_text(get_text('about'), uid, created_at=about['created_at'], total_users=stats['total_users'], total_messages=stats['total_messages'], total_coins=stats['total_coins'], creator=about['creator'], chat_link=about['chat_link'], channel_link=about['channel_link'])
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("📢 Чат", url=about['chat_link']), types.InlineKeyboardButton("📣 Канал", url=about['channel_link']))
-    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data="back_to_main"))
+    markup.add(types.InlineKeyboardButton("◀️ В главное меню", callback_data=make_safe_callback("back_to_main", uid)))
     try:
         bot.edit_message_media(types.InputMediaPhoto(get_image('about'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
     except:
         pass
 
 def show_custom(call):
-    user = get_user(call.from_user.id)
-    text = format_text(get_text('custom'), call.from_user.id, status=user.get('status', 'Не установлен'), nick_emoji=user.get('nick_emoji', 'Нет'), nickname=user.get('nickname', call.from_user.first_name))
+    uid = call.from_user.id
+    user = get_user(uid)
+    text = format_text(get_text('custom'), uid, status=user.get('status', 'Не установлен'), nick_emoji=user.get('nick_emoji', 'Нет'), nickname=user.get('nickname', call.from_user.first_name))
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('custom'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_custom_keyboard())
+        bot.edit_message_media(types.InputMediaPhoto(get_image('custom'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_custom_keyboard(uid))
     except:
         pass
 
 def show_info(call):
-    text = format_text(get_text('info'), call.from_user.id)
+    uid = call.from_user.id
+    text = format_text(get_text('info'), uid)
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("📢 Наш чат", url="https://t.me/Chat_by_HoFiLiOn"))
-    bot.send_message(call.from_user.id, text, parse_mode='HTML', reply_markup=markup)
+    bot.send_message(uid, text, parse_mode='HTML', reply_markup=markup)
     try:
         bot.delete_message(call.message.chat.id, call.message.message_id)
     except:
         pass
 
 def show_help(call):
-    text = format_text(get_text('help'), call.from_user.id)
+    uid = call.from_user.id
+    text = format_text(get_text('help'), uid)
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("📢 Наш чат", url="https://t.me/Chat_by_HoFiLiOn"))
-    bot.send_message(call.from_user.id, text, parse_mode='HTML', reply_markup=markup)
+    bot.send_message(uid, text, parse_mode='HTML', reply_markup=markup)
     try:
         bot.delete_message(call.message.chat.id, call.message.message_id)
     except:
         pass
 
 def show_leaders(call, category="coins"):
+    uid = call.from_user.id
     if category == "coins":
         leaders = get_leaders_by_coins(10)
         title = "🏆 ПО МОНЕТАМ"
@@ -1419,9 +1460,9 @@ def show_leaders(call, category="coins"):
     for i, u in enumerate(leaders, 1):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
         leaders_text += f"{medal} {u['name']} — <b>{u['value']:,}</b>\n"
-    text = format_text(get_text('leaders'), call.from_user.id, title=title, leaders_text=leaders_text)
+    text = format_text(get_text('leaders'), uid, title=title, leaders_text=leaders_text)
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('leaders'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_leaders_keyboard())
+        bot.edit_message_media(types.InputMediaPhoto(get_image('leaders'), caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_leaders_keyboard(uid))
     except:
         pass
 
@@ -1521,8 +1562,8 @@ def get_stats():
     return {'total_users': total_users, 'total_coins': total_coins, 'total_messages': total_messages, 'active_today': active, 'new_today': new}
 
 # ========== КОМАНДЫ ==========
-@bot.message_handler(commands=['start'])
-def start_command(message):
+@bot.message_handler(commands=['menu', 'start'])
+def menu_command(message):
     uid = message.from_user.id
     if is_banned(uid):
         bot.reply_to(message, "🚫 Вы забанены")
@@ -1531,7 +1572,7 @@ def start_command(message):
     if not user:
         user = create_user(uid, message.from_user.username, message.from_user.first_name)
     args = message.text.split()
-    if len(args) > 1:
+    if len(args) > 1 and args[0] == '/menu':
         try:
             inviter = int(args[1])
             if inviter != uid and not is_master(inviter):
@@ -1549,10 +1590,10 @@ def profile_command(message):
         return
     user = get_user(uid)
     if not user:
-        bot.reply_to(message, "❌ Ты не зарегистрирован! Напиши /start")
+        bot.reply_to(message, "❌ Ты не зарегистрирован! Напиши /menu")
         return
     text = format_text(get_text('profile'), uid, first_name=message.from_user.first_name)
-    bot.send_photo(uid, get_image('profile'), caption=text, parse_mode='HTML', reply_markup=get_back_keyboard())
+    bot.send_photo(uid, get_image('profile'), caption=text, parse_mode='HTML', reply_markup=get_back_keyboard(uid))
 
 @bot.message_handler(commands=['daily'])
 def daily_command(message):
@@ -1562,7 +1603,7 @@ def daily_command(message):
         return
     user = get_user(uid)
     if not user:
-        bot.reply_to(message, "❌ Ты не зарегистрирован! Напиши /start")
+        bot.reply_to(message, "❌ Ты не зарегистрирован! Напиши /menu")
         return
     bonus, msg = get_daily_bonus(uid)
     bot.reply_to(message, msg)
@@ -1575,7 +1616,7 @@ def invite_command(message):
         return
     user = get_user(uid)
     if not user:
-        bot.reply_to(message, "❌ Ты не зарегистрирован! Напиши /start")
+        bot.reply_to(message, "❌ Ты не зарегистрирован! Напиши /menu")
         return
     link = f"https://t.me/{(bot.get_me()).username}?start={uid}"
     text = format_text(get_text('invite'), uid, invites_count=len(user.get('invites', [])), referrals_earned=user.get('referrals_earned', 0), bonus=get_user_invite_bonus(uid), bot_link=link)
@@ -1596,12 +1637,13 @@ def use_promo_command(message):
 
 @bot.message_handler(commands=['top'])
 def top_command(message):
+    uid = message.from_user.id
     leaders = get_leaders_by_coins(10)
     text = "<b>📊 ТАБЛИЦА ЛИДЕРОВ</b>\n\n"
     for i, u in enumerate(leaders, 1):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
         text += f"{medal} {u['name']} — <b>{u['value']:,}💰</b>\n"
-    bot.send_photo(message.chat.id, get_image('leaders'), caption=text, parse_mode='HTML', reply_markup=get_back_keyboard())
+    bot.send_photo(uid, get_image('leaders'), caption=text, parse_mode='HTML', reply_markup=get_back_keyboard(uid))
 
 @bot.message_handler(commands=['steal'])
 def steal_command(message):
@@ -1756,30 +1798,34 @@ def resetcustom_command(message):
 
 @bot.message_handler(commands=['info'])
 def info_command(message):
-    text = format_text(get_text('info'), message.from_user.id)
+    uid = message.from_user.id
+    text = format_text(get_text('info'), uid)
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("📢 Наш чат", url="https://t.me/Chat_by_HoFiLiOn"))
-    bot.send_message(message.chat.id, text, parse_mode='HTML', reply_markup=markup)
+    bot.send_message(uid, text, parse_mode='HTML', reply_markup=markup)
 
 @bot.message_handler(commands=['help'])
 def help_command(message):
-    text = format_text(get_text('help'), message.from_user.id)
+    uid = message.from_user.id
+    text = format_text(get_text('help'), uid)
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("📢 Наш чат", url="https://t.me/Chat_by_HoFiLiOn"))
-    bot.send_message(message.chat.id, text, parse_mode='HTML', reply_markup=markup)
+    bot.send_message(uid, text, parse_mode='HTML', reply_markup=markup)
 
 @bot.message_handler(commands=['admin'])
 def admin_command(message):
-    if not is_admin(message.from_user.id):
+    uid = message.from_user.id
+    if not is_admin(uid):
         bot.reply_to(message, "❌ У вас нет прав администратора.")
         return
     text = "<b>🔧 АДМИН-ПАНЕЛЬ</b>\n\nВыберите раздел для управления:"
-    bot.send_message(message.chat.id, text, parse_mode='HTML', reply_markup=get_admin_main_keyboard())
+    bot.send_message(uid, text, parse_mode='HTML', reply_markup=get_admin_main_keyboard(uid))
 
 # ========== АДМИН-КОМАНДЫ ==========
 @bot.message_handler(commands=['addcoins'])
 def addcoins_command(message):
-    if not has_permission(message.from_user.id, 'add_coins'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'add_coins'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -1793,7 +1839,8 @@ def addcoins_command(message):
 
 @bot.message_handler(commands=['removecoins'])
 def removecoins_command(message):
-    if not has_permission(message.from_user.id, 'remove_coins'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'remove_coins'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -1807,7 +1854,8 @@ def removecoins_command(message):
 
 @bot.message_handler(commands=['giverole'])
 def giverole_command(message):
-    if not has_permission(message.from_user.id, 'giverole'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'giverole'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -1824,7 +1872,8 @@ def giverole_command(message):
 
 @bot.message_handler(commands=['removerole'])
 def removerole_command(message):
-    if not has_permission(message.from_user.id, 'removerole'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'removerole'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -1840,7 +1889,8 @@ def removerole_command(message):
 
 @bot.message_handler(commands=['ban'])
 def ban_command(message):
-    if not has_permission(message.from_user.id, 'ban'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'ban'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -1852,7 +1902,8 @@ def ban_command(message):
 
 @bot.message_handler(commands=['unban'])
 def unban_command(message):
-    if not has_permission(message.from_user.id, 'unban'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'unban'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -1864,7 +1915,8 @@ def unban_command(message):
 
 @bot.message_handler(commands=['setreward'])
 def setreward_command(message):
-    if not has_permission(message.from_user.id, 'setreward'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'setreward'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -1880,7 +1932,8 @@ def setreward_command(message):
 
 @bot.message_handler(commands=['setbonusmin'])
 def setbonusmin_command(message):
-    if not has_permission(message.from_user.id, 'setbonus'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'setbonus'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -1896,7 +1949,8 @@ def setbonusmin_command(message):
 
 @bot.message_handler(commands=['setbonusmax'])
 def setbonusmax_command(message):
-    if not has_permission(message.from_user.id, 'setbonus'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'setbonus'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -1912,7 +1966,8 @@ def setbonusmax_command(message):
 
 @bot.message_handler(commands=['setinvite'])
 def setinvite_command(message):
-    if not has_permission(message.from_user.id, 'setbonus'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'setbonus'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -1928,7 +1983,8 @@ def setinvite_command(message):
 
 @bot.message_handler(commands=['settreasurygoal'])
 def settreasurygoal_command(message):
-    if not has_permission(message.from_user.id, 'treasury_manage'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'treasury_manage'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -1942,7 +1998,8 @@ def settreasurygoal_command(message):
 
 @bot.message_handler(commands=['setannouncement'])
 def setannouncement_command(message):
-    if not has_permission(message.from_user.id, 'set_announcement'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'set_announcement'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -1957,25 +2014,24 @@ def setannouncement_command(message):
 
 @bot.message_handler(commands=['treasuryadd'])
 def treasuryadd_command(message):
-    if not has_permission(message.from_user.id, 'treasury_manage'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'treasury_manage'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
         amount = int(message.text.split()[1])
-        add_to_treasury(amount)
+        t = get_treasury()
+        t['balance'] += amount
+        t['total_collected'] = t.get('total_collected', 0) + amount
+        save_json(TREASURY_FILE, t)
         bot.reply_to(message, f"✅ Добавлено {amount}💰 в казну")
     except:
         bot.reply_to(message, "❌ Использование: /treasuryadd СУММА")
 
-def add_to_treasury(amount):
-    t = get_treasury()
-    t['balance'] += amount
-    t['total_collected'] = t.get('total_collected', 0) + amount
-    save_json(TREASURY_FILE, t)
-
 @bot.message_handler(commands=['treasurywithdraw'])
 def treasurywithdraw_command(message):
-    if not has_permission(message.from_user.id, 'treasury_manage'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'treasury_manage'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -1993,7 +2049,8 @@ def treasurywithdraw_command(message):
 
 @bot.message_handler(commands=['treasuryreset'])
 def treasuryreset_command(message):
-    if not has_permission(message.from_user.id, 'treasury_manage'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'treasury_manage'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     t = get_treasury()
@@ -2003,7 +2060,8 @@ def treasuryreset_command(message):
 
 @bot.message_handler(commands=['freejail'])
 def freejail_command(message):
-    if not has_permission(message.from_user.id, 'all'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'all'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -2015,7 +2073,8 @@ def freejail_command(message):
 
 @bot.message_handler(commands=['clearjail'])
 def clearjail_command(message):
-    if not has_permission(message.from_user.id, 'all'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'all'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     save_json(JAIL_FILE, {})
@@ -2023,7 +2082,8 @@ def clearjail_command(message):
 
 @bot.message_handler(commands=['resetsteal'])
 def resetsteal_command(message):
-    if not has_permission(message.from_user.id, 'all'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'all'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -2040,7 +2100,8 @@ def resetsteal_command(message):
 
 @bot.message_handler(commands=['stealcooldown'])
 def stealcooldown_command(message):
-    if not has_permission(message.from_user.id, 'all'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'all'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -2055,7 +2116,8 @@ def stealcooldown_command(message):
 
 @bot.message_handler(commands=['jailtime'])
 def jailtime_command(message):
-    if not has_permission(message.from_user.id, 'all'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'all'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -2069,7 +2131,8 @@ def jailtime_command(message):
 
 @bot.message_handler(commands=['addrole'])
 def addrole_command(message):
-    if not has_permission(message.from_user.id, 'role_manage'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'role_manage'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -2089,7 +2152,8 @@ def addrole_command(message):
 
 @bot.message_handler(commands=['delrole'])
 def delrole_command(message):
-    if not has_permission(message.from_user.id, 'role_manage'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'role_manage'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -2107,7 +2171,8 @@ def delrole_command(message):
 
 @bot.message_handler(commands=['addachievement'])
 def addachievement_command(message):
-    if not has_permission(message.from_user.id, 'all'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'all'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -2128,7 +2193,8 @@ def addachievement_command(message):
 
 @bot.message_handler(commands=['delachievement'])
 def delachievement_command(message):
-    if not has_permission(message.from_user.id, 'all'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'all'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -2142,7 +2208,8 @@ def delachievement_command(message):
 
 @bot.message_handler(commands=['settext'])
 def settext_command(message):
-    if not has_permission(message.from_user.id, 'text_manage'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'text_manage'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -2156,7 +2223,8 @@ def settext_command(message):
 
 @bot.message_handler(commands=['setphoto'])
 def setphoto_command(message):
-    if not has_permission(message.from_user.id, 'image_manage'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'image_manage'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -2171,7 +2239,8 @@ def setphoto_command(message):
 
 @bot.message_handler(commands=['lotterydraw'])
 def lotterydraw_command(message):
-    if not has_permission(message.from_user.id, 'event'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'event'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     success, msg = draw_lottery()
@@ -2179,7 +2248,8 @@ def lotterydraw_command(message):
 
 @bot.message_handler(commands=['finishauction'])
 def finishauction_command(message):
-    if not has_permission(message.from_user.id, 'all'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'all'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     try:
@@ -2191,7 +2261,8 @@ def finishauction_command(message):
 
 @bot.message_handler(commands=['mail'])
 def mail_command(message):
-    if not has_permission(message.from_user.id, 'mailing'):
+    uid = message.from_user.id
+    if not has_permission(uid, 'mailing'):
         bot.reply_to(message, "❌ У вас нет прав.")
         return
     if not message.reply_to_message:
@@ -2199,14 +2270,14 @@ def mail_command(message):
         return
     users = load_json(USERS_FILE)
     sent = 0
-    for uid in users:
-        if int(uid) in MASTER_IDS:
+    for uid_user in users:
+        if int(uid_user) in MASTER_IDS:
             continue
         try:
             if message.reply_to_message.text:
-                bot.send_message(int(uid), message.reply_to_message.text, parse_mode='HTML')
+                bot.send_message(int(uid_user), message.reply_to_message.text, parse_mode='HTML')
             elif message.reply_to_message.photo:
-                bot.send_photo(int(uid), message.reply_to_message.photo[-1].file_id, caption=message.reply_to_message.caption, parse_mode='HTML')
+                bot.send_photo(int(uid_user), message.reply_to_message.photo[-1].file_id, caption=message.reply_to_message.caption, parse_mode='HTML')
             sent += 1
             time.sleep(0.05)
         except:
@@ -2215,7 +2286,8 @@ def mail_command(message):
 
 @bot.message_handler(commands=['backup'])
 def backup_command(message):
-    if not is_master(message.from_user.id):
+    uid = message.from_user.id
+    if not is_master(uid):
         bot.reply_to(message, "❌ Только главный админ.")
         return
     import shutil
@@ -2237,168 +2309,177 @@ def callback_handler(call):
         bot.answer_callback_query(call.id, "🚫 Вы забанены", show_alert=True)
         return
     
+    # ЗАЩИТА ОТ ЧУЖИХ КНОПОК
+    owner_id = get_owner_id(data)
+    if owner_id is not None and owner_id != uid:
+        bot.answer_callback_query(call.id, "⚠️ ЭТО НЕ ТВОЯ КНОПКА!\nНе лезь в чужой интерфейс!", show_alert=True)
+        return
+    
+    # Извлекаем оригинальный callback
+    original_data = extract_callback(data)
+    
     user = get_user(uid)
     if not user:
         user = create_user(uid, call.from_user.username, call.from_user.first_name)
     
-    # Навигация
-    if data == "back_to_main":
+    # ========== НАВИГАЦИЯ ==========
+    if original_data == "back_to_main":
         show_main_menu(call)
         bot.answer_callback_query(call.id)
         return
-    elif data.startswith("main_page_"):
-        page = int(data.replace("main_page_", ""))
+    elif original_data.startswith("main_page_"):
+        page = int(original_data.replace("main_page_", ""))
         show_main_menu(call, page)
         bot.answer_callback_query(call.id)
         return
-    elif data == "shop":
+    elif original_data == "shop":
         show_shop(call)
         bot.answer_callback_query(call.id)
         return
-    elif data == "shop_roles":
+    elif original_data == "shop_roles":
         show_shop_roles(call)
         bot.answer_callback_query(call.id)
         return
-    elif data == "shop_boosts":
+    elif original_data == "shop_boosts":
         show_shop_boosts(call)
         bot.answer_callback_query(call.id)
         return
-    elif data.startswith("roles_page_"):
-        page = int(data.replace("roles_page_", ""))
+    elif original_data.startswith("roles_page_"):
+        page = int(original_data.replace("roles_page_", ""))
         show_shop_roles(call, page)
         bot.answer_callback_query(call.id)
         return
-    elif data.startswith("boosts_page_"):
-        page = int(data.replace("boosts_page_", ""))
+    elif original_data.startswith("boosts_page_"):
+        page = int(original_data.replace("boosts_page_", ""))
         show_shop_boosts(call, page)
         bot.answer_callback_query(call.id)
         return
-    elif data == "myroles":
+    elif original_data == "myroles":
         show_myroles(call)
         bot.answer_callback_query(call.id)
         return
-    elif data.startswith("myroles_page_"):
-        page = int(data.replace("myroles_page_", ""))
+    elif original_data.startswith("myroles_page_"):
+        page = int(original_data.replace("myroles_page_", ""))
         show_myroles(call, page)
         bot.answer_callback_query(call.id)
         return
-    elif data == "profile":
+    elif original_data == "profile":
         show_profile(call)
         bot.answer_callback_query(call.id)
         return
-    elif data == "bonus":
+    elif original_data == "bonus":
         show_bonus(call)
         bot.answer_callback_query(call.id)
         return
-    elif data == "invite":
+    elif original_data == "invite":
         show_invite(call)
         bot.answer_callback_query(call.id)
         return
-    elif data == "treasury":
+    elif original_data == "treasury":
         show_treasury(call)
         bot.answer_callback_query(call.id)
         return
-    elif data == "auction":
+    elif original_data == "auction":
         check_expired_auctions()
         show_auction(call)
         bot.answer_callback_query(call.id)
         return
-    elif data == "steal":
+    elif original_data == "steal":
         show_steal(call)
         bot.answer_callback_query(call.id)
         return
-    elif data == "steal_select":
+    elif original_data == "steal_select":
         show_steal_select(call)
         bot.answer_callback_query(call.id)
         return
-    elif data == "steal_stats":
+    elif original_data == "steal_stats":
         show_steal_stats(call)
         bot.answer_callback_query(call.id)
         return
-    elif data == "achievements":
+    elif original_data == "achievements":
         show_achievements(call)
         bot.answer_callback_query(call.id)
         return
-    elif data.startswith("achievements_page_"):
-        page = int(data.replace("achievements_page_", ""))
+    elif original_data.startswith("achievements_page_"):
+        page = int(original_data.replace("achievements_page_", ""))
         show_achievements(call, page)
         bot.answer_callback_query(call.id)
         return
-    elif data == "lottery":
+    elif original_data == "lottery":
         show_lottery(call)
         bot.answer_callback_query(call.id)
         return
-    elif data == "about":
+    elif original_data == "about":
         show_about(call)
         bot.answer_callback_query(call.id)
         return
-    elif data == "custom":
+    elif original_data == "custom":
         show_custom(call)
         bot.answer_callback_query(call.id)
         return
-    elif data == "leaders":
+    elif original_data == "leaders":
         show_leaders(call)
         bot.answer_callback_query(call.id)
         return
-    elif data.startswith("leaders_"):
-        cat = data.replace("leaders_", "")
+    elif original_data.startswith("leaders_"):
+        cat = original_data.replace("leaders_", "")
         show_leaders(call, cat)
         bot.answer_callback_query(call.id)
         return
-    elif data == "info":
+    elif original_data == "info":
         show_info(call)
         bot.answer_callback_query(call.id)
         return
-    elif data == "help":
+    elif original_data == "help":
         show_help(call)
         bot.answer_callback_query(call.id)
         return
     
-    # Покупка
-    elif data.startswith("perm_"):
-        role = data.replace("perm_", "")
+    # ========== ПОКУПКА ==========
+    elif original_data.startswith("perm_"):
+        role = original_data.replace("perm_", "")
         price = PERMANENT_ROLES[role]
         cashback = get_user_cashback(uid)
         text = f"<b>🎭 {role}</b>\n\n💰 Цена: {price:,}💰\n▸ Твой баланс: {user['coins']:,}💰\n▸ Кешбэк: {cashback}%\n\n{'' if user['coins'] >= price else '❌ Не хватает монет!'}"
         markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton("✅ Купить", callback_data=f"buy_perm_{role}"), types.InlineKeyboardButton("◀️ Назад", callback_data="shop_roles"))
+        markup.add(types.InlineKeyboardButton("✅ Купить", callback_data=make_safe_callback(f"buy_perm_{role}", uid)), types.InlineKeyboardButton("◀️ Назад", callback_data=make_safe_callback("shop_roles", uid)))
         try:
             bot.edit_message_caption(call.message.chat.id, call.message.message_id, caption=text, parse_mode='HTML', reply_markup=markup)
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data.startswith("buy_perm_"):
-        role = data.replace("buy_perm_", "")
+    elif original_data.startswith("buy_perm_"):
+        role = original_data.replace("buy_perm_", "")
         success, msg = buy_role(uid, role)
         bot.answer_callback_query(call.id, msg, show_alert=True)
         if success:
             show_shop_roles(call)
         return
-    elif data.startswith("boost_"):
-        bid = data.replace("boost_", "")
+    elif original_data.startswith("boost_"):
+        bid = original_data.replace("boost_", "")
         b = STEAL_BOOSTS.get(bid)
         if b:
             text = f"<b>⚡️ {b['name']}</b>\n\n💰 Цена: {b['price']}💰\n📈 Эффект: +{b['boost']}%\n\n▸ Твой баланс: {user['coins']:,}💰"
             markup = types.InlineKeyboardMarkup()
-            markup.add(types.InlineKeyboardButton("✅ Купить", callback_data=f"buy_boost_{bid}"), types.InlineKeyboardButton("◀️ Назад", callback_data="shop_boosts"))
+            markup.add(types.InlineKeyboardButton("✅ Купить", callback_data=make_safe_callback(f"buy_boost_{bid}", uid)), types.InlineKeyboardButton("◀️ Назад", callback_data=make_safe_callback("shop_boosts", uid)))
             try:
                 bot.edit_message_caption(call.message.chat.id, call.message.message_id, caption=text, parse_mode='HTML', reply_markup=markup)
             except:
                 pass
         bot.answer_callback_query(call.id)
         return
-    elif data.startswith("buy_boost_"):
-        bid = data.replace("buy_boost_", "")
+    elif original_data.startswith("buy_boost_"):
+        bid = original_data.replace("buy_boost_", "")
         success, msg = buy_boost(uid, bid)
         bot.answer_callback_query(call.id, msg, show_alert=True)
         if success:
             show_shop_boosts(call)
         return
     
-    # Переключение роли
-    elif data.startswith("toggle_"):
-        role = data.replace("toggle_", "")
+    # ========== ПЕРЕКЛЮЧЕНИЕ РОЛИ ==========
+    elif original_data.startswith("toggle_"):
+        role = original_data.replace("toggle_", "")
         active = user.get('active_roles', [])
         if role in active:
             set_active_role(uid, None)
@@ -2410,48 +2491,48 @@ def callback_handler(call):
         show_myroles(call)
         return
     
-    # Донат
-    elif data.startswith("donate_"):
-        amount = int(data.replace("donate_", ""))
+    # ========== ДОНАТ ==========
+    elif original_data.startswith("donate_"):
+        amount = int(original_data.replace("donate_", ""))
         success, msg = donate_to_treasury(uid, amount)
         bot.answer_callback_query(call.id, msg, show_alert=True)
         if success:
             show_treasury(call)
         return
     
-    # Аукцион
-    elif data.startswith("bid_"):
-        lot_id = int(data.replace("bid_", ""))
+    # ========== АУКЦИОН ==========
+    elif original_data.startswith("bid_"):
+        lot_id = int(original_data.replace("bid_", ""))
         msg = bot.send_message(uid, "🔨 Введите сумму ставки:")
         bot.register_next_step_handler(msg, process_bid_amount, lot_id, call.message)
         bot.answer_callback_query(call.id)
         return
     
-    # Кража
-    elif data.startswith("steal_"):
-        target = int(data.replace("steal_", ""))
+    # ========== КРАЖА ==========
+    elif original_data.startswith("steal_"):
+        target = int(original_data.replace("steal_", ""))
         success, msg = steal_from_user(uid, target)
         bot.answer_callback_query(call.id, msg, show_alert=True)
         show_steal(call)
         return
-    elif data == "jail_escape":
+    elif original_data == "jail_escape":
         success, msg = escape_from_jail(uid)
         bot.answer_callback_query(call.id, msg, show_alert=True)
         show_steal(call)
         return
-    elif data == "jail_bribe":
+    elif original_data == "jail_bribe":
         success, msg = bribe_from_jail(uid)
         bot.answer_callback_query(call.id, msg, show_alert=True)
         show_steal(call)
         return
     
-    # Лотерея
-    elif data.startswith("lottery_"):
-        if data == "lottery_custom":
+    # ========== ЛОТЕРЕЯ ==========
+    elif original_data.startswith("lottery_"):
+        if original_data == "lottery_custom":
             msg = bot.send_message(uid, "🎫 Введи количество билетов (1-100):")
             bot.register_next_step_handler(msg, process_lottery_buy, call.message)
         else:
-            count = int(data.replace("lottery_", ""))
+            count = int(original_data.replace("lottery_", ""))
             success, msg = buy_lottery_tickets(uid, count)
             bot.answer_callback_query(call.id, msg, show_alert=True)
             if success:
@@ -2459,23 +2540,23 @@ def callback_handler(call):
         bot.answer_callback_query(call.id)
         return
     
-    # Кастомизация
-    elif data == "custom_status":
+    # ========== КАСТОМИЗАЦИЯ ==========
+    elif original_data == "custom_status":
         msg = bot.send_message(uid, "🏷️ Введи новый статус:")
         bot.register_next_step_handler(msg, process_set_status, call.message)
         bot.answer_callback_query(call.id)
         return
-    elif data == "custom_emoji":
+    elif original_data == "custom_emoji":
         msg = bot.send_message(uid, "✨ Введи новый эмодзи:")
         bot.register_next_step_handler(msg, process_set_emoji, call.message)
         bot.answer_callback_query(call.id)
         return
-    elif data == "custom_nick":
+    elif original_data == "custom_nick":
         msg = bot.send_message(uid, "🎭 Введи новый ник:")
         bot.register_next_step_handler(msg, process_set_nick, call.message)
         bot.answer_callback_query(call.id)
         return
-    elif data == "custom_reset":
+    elif original_data == "custom_reset":
         users = load_json(USERS_FILE)
         users[str(uid)]['status'] = None
         users[str(uid)]['nick_emoji'] = None
@@ -2485,91 +2566,91 @@ def callback_handler(call):
         show_custom(call)
         return
     
-    # Бонус
-    elif data == "daily":
+    # ========== БОНУС ==========
+    elif original_data == "daily":
         bonus, msg = get_daily_bonus(uid)
         bot.answer_callback_query(call.id, msg, show_alert=True)
         if bonus > 0:
             show_bonus(call)
         return
     
-    # Админ-панель
-    elif data == "admin_back":
+    # ========== АДМИН-ПАНЕЛЬ ==========
+    elif original_data == "admin_back":
         text = "<b>🔧 АДМИН-ПАНЕЛЬ</b>\n\nВыберите раздел:"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_main_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_main_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_stats":
+    elif original_data == "admin_stats":
         if not has_permission(uid, 'all'):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         stats = get_stats()
         text = f"<b>📊 СТАТИСТИКА</b>\n\n👥 Пользователей: {stats['total_users']}\n💰 Всего монет: {stats['total_coins']:,}\n📊 Сообщений: {stats['total_messages']:,}\n✅ Активных сегодня: {stats['active_today']}\n🆕 Новых сегодня: {stats['new_today']}"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_users":
+    elif original_data == "admin_users":
         if not has_permission(uid, 'all'):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>👥 ПОЛЬЗОВАТЕЛИ</b>\n\nКоманды:\n/addcoins ID СУММА\n/removecoins ID СУММА\n/giverole ID РОЛЬ\n/removerole ID РОЛЬ\n/ban ID\n/unban ID"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_coins":
+    elif original_data == "admin_coins":
         if not has_permission(uid, 'add_coins'):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>💰 МОНЕТЫ</b>\n\n/addcoins ID СУММА\n/removecoins ID СУММА"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_roles":
+    elif original_data == "admin_roles":
         if not has_permission(uid, 'role_manage'):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>🎭 РОЛИ</b>\n\n/addrole [название] [цена] [множитель] [кешбэк] [бонус]\n/delrole [название]\n/giverole ID РОЛЬ\n/removerole ID РОЛЬ"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_bans":
+    elif original_data == "admin_bans":
         if not has_permission(uid, 'ban'):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>🚫 БАНЫ</b>\n\n/ban ID\n/unban ID"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_promo":
+    elif original_data == "admin_promo":
         if not has_permission(uid, 'create_promo'):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>🎁 ПРОМОКОДЫ</b>\n\n/createpromo КОД МОНЕТЫ ИСП ДНИ"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_economy":
+    elif original_data == "admin_economy":
         if not has_permission(uid, 'setreward'):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
@@ -2578,108 +2659,108 @@ def callback_handler(call):
             eco = {'base_reward': 1, 'base_bonus_min': 50, 'base_bonus_max': 200, 'base_invite': 100}
         text = f"<b>⚙️ ЭКОНОМИКА</b>\n\n📊 За сообщение: {eco.get('base_reward', 1)}💰\n🎁 Бонус: {eco.get('base_bonus_min', 50)}-{eco.get('base_bonus_max', 200)}💰\n👥 Инвайт: {eco.get('base_invite', 100)}💰\n\n/setreward КОЛ-ВО\n/setbonusmin СУММА\n/setbonusmax СУММА\n/setinvite СУММА"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_treasury":
+    elif original_data == "admin_treasury":
         if not has_permission(uid, 'treasury_manage'):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         t = get_treasury_stats()
         text = f"<b>🏦 КАЗНА</b>\n\n📊 Баланс: {t['balance']:,}💰\n🎯 Цель: {t['goal']:,}💰\n👥 Доноров: {t['donors_count']}\n\n/settreasurygoal СУММА [ОПИСАНИЕ]\n/setannouncement ТЕКСТ\n/treasuryadd СУММА\n/treasurywithdraw СУММА\n/treasuryreset"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_auction":
+    elif original_data == "admin_auction":
         if not has_permission(uid, 'all'):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         a = get_auction()
         text = f"<b>🔨 АУКЦИОН</b>\n\nАктивных лотов: {len(a['lots'])}\n\n/finishauction ID — завершить лот"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_steal":
+    elif original_data == "admin_steal":
         if not has_permission(uid, 'all'):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>🔪 КРАЖА</b>\n\n/freejail ID\n/clearjail\n/resetsteal ID\n/stealcooldown ID\n/jailtime ID [часы]"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_achievements":
+    elif original_data == "admin_achievements":
         if not has_permission(uid, 'all'):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>🏆 ДОСТИЖЕНИЯ</b>\n\n/addachievement [название] [тип] [цель] [награда] [описание]\n/delachievement ID"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_lottery":
+    elif original_data == "admin_lottery":
         if not has_permission(uid, 'event'):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>🎲 ЛОТЕРЕЯ</b>\n\n/lotterydraw — провести розыгрыш"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_texts":
+    elif original_data == "admin_texts":
         if not has_permission(uid, 'text_manage'):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>✏️ ТЕКСТЫ</b>\n\n/settext КЛЮЧ\nНовый текст с HTML\n\nКлючи: main, shop, shop_roles, shop_boosts, myroles, profile, bonus, invite, treasury, auction, steal, achievements, lottery, about, custom, leaders, info, help"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_images":
+    elif original_data == "admin_images":
         if not has_permission(uid, 'image_manage'):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>🖼️ ФОТО</b>\n\n/setphoto КЛЮЧ (ответ на фото)\n\nКлючи: main, shop, myroles, profile, bonus, leaders, treasury, auction, steal, achievements, lottery, about, custom"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_mailing":
+    elif original_data == "admin_mailing":
         if not has_permission(uid, 'mailing'):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>📢 РАССЫЛКА</b>\n\nОтветь на сообщение командой /mail"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
         return
-    elif data == "admin_backup":
+    elif original_data == "admin_backup":
         if not is_master(uid):
             bot.answer_callback_query(call.id, "❌ Нет прав", show_alert=True)
             return
         text = "<b>📦 БЭКАП</b>\n\n/backup"
         try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard())
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_back_keyboard(uid))
         except:
             pass
         bot.answer_callback_query(call.id)
@@ -2718,7 +2799,7 @@ def show_auction_by_message(uid, original):
             auctions_text += f"\n<b>🔸 Лот #{lot['id']}</b>\n📦 {lot['item_name']}\n💰 {lot['current_price']}💰\n👤 {lot['seller_name']}\n⏰ {h}ч {m}м\n➖➖➖➖\n"
     text = format_text(get_text('auction'), uid, auctions_text=auctions_text)
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('auction'), caption=text, parse_mode='HTML'), original.chat.id, original.message_id, reply_markup=get_auction_keyboard())
+        bot.edit_message_media(types.InputMediaPhoto(get_image('auction'), caption=text, parse_mode='HTML'), original.chat.id, original.message_id, reply_markup=get_auction_keyboard(uid))
     except:
         pass
 
@@ -2740,7 +2821,7 @@ def show_lottery_by_message(uid, original):
     l = get_lottery()
     text = format_text(get_text('lottery'), uid, jackpot=l['jackpot'], total_tickets=l['total_tickets'])
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('lottery'), caption=text, parse_mode='HTML'), original.chat.id, original.message_id, reply_markup=get_lottery_keyboard())
+        bot.edit_message_media(types.InputMediaPhoto(get_image('lottery'), caption=text, parse_mode='HTML'), original.chat.id, original.message_id, reply_markup=get_lottery_keyboard(uid))
     except:
         pass
 
@@ -2790,7 +2871,7 @@ def show_custom_by_message(uid, original):
     user = get_user(uid)
     text = format_text(get_text('custom'), uid, status=user.get('status', 'Не установлен'), nick_emoji=user.get('nick_emoji', 'Нет'), nickname=user.get('nickname', user.get('first_name', 'User')))
     try:
-        bot.edit_message_media(types.InputMediaPhoto(get_image('custom'), caption=text, parse_mode='HTML'), original.chat.id, original.message_id, reply_markup=get_custom_keyboard())
+        bot.edit_message_media(types.InputMediaPhoto(get_image('custom'), caption=text, parse_mode='HTML'), original.chat.id, original.message_id, reply_markup=get_custom_keyboard(uid))
     except:
         pass
 
@@ -2811,7 +2892,6 @@ def background_tasks():
             now = get_moscow_time()
             today = now.strftime('%Y-%m-%d')
             if last_date != today and now.hour == 0 and now.minute < 5:
-                # сброс ежедневных заданий
                 tasks = load_json(DAILY_TASKS_FILE)
                 for uid in tasks:
                     tasks[uid]['date'] = today
@@ -2821,7 +2901,6 @@ def background_tasks():
                             tasks[uid][t]['completed'] = False
                 save_json(DAILY_TASKS_FILE, tasks)
                 last_date = today
-            # проверка временных ролей
             temp = load_json(TEMP_ROLES_FILE)
             for uid, roles in list(temp.items()):
                 for r in roles[:]:
@@ -2834,12 +2913,9 @@ def background_tasks():
                 if not roles:
                     del temp[uid]
             save_json(TEMP_ROLES_FILE, temp)
-            # проверка аукционов
             check_expired_auctions()
-            # проверка лотереи
             if now.hour == 20 and now.minute < 5:
                 draw_lottery()
-            # проверка бустов
             users = load_json(USERS_FILE)
             for uid, data in users.items():
                 if 'active_boosts' in data:
@@ -2885,7 +2961,8 @@ if __name__ == "__main__":
     print(f"🎭 Ролей: {len(PERMANENT_ROLES)}")
     print(f"🏦 Казна: {get_treasury()['balance']}💰")
     print("=" * 60)
-    print("✅ Бот запущен!")
+    print("✅ Бот запущен! Команда: /menu")
+    print("🛡️ Защита от чужих кнопок активна")
     print("=" * 60)
     
     threading.Thread(target=background_tasks, daemon=True).start()
