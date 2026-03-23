@@ -849,24 +849,21 @@ def format_text(text, user_id=None, **kwargs):
 
 # ========== КЛАВИАТУРЫ С ЗАЩИТОЙ ==========
 def make_safe_callback(callback, user_id):
-    """Добавляет user_id в callback_data для защиты от чужих кнопок"""
-    return f"user_{user_id}_{callback}"
+    return f"u{user_id}_{callback}"
 
 def extract_callback(data):
-    """Извлекает оригинальный callback из защищённого"""
-    if data.startswith("user_"):
-        parts = data.split("_")
-        if len(parts) >= 3:
-            return "_".join(parts[2:])
+    if data.startswith("u"):
+        parts = data.split("_", 1)
+        if len(parts) == 2:
+            return parts[1]
     return data
 
 def get_owner_id(data):
-    """Возвращает owner_id из защищённого callback"""
-    if data.startswith("user_"):
-        parts = data.split("_")
-        if len(parts) >= 2:
+    if data.startswith("u"):
+        parts = data.split("_", 1)
+        if len(parts) == 2:
             try:
-                return int(parts[1])
+                return int(parts[0][1:])
             except:
                 pass
     return None
@@ -1020,7 +1017,7 @@ def get_treasury_keyboard(user_id):
     markup.add(
         types.InlineKeyboardButton("50💰", callback_data=make_safe_callback("donate_50", user_id)),
         types.InlineKeyboardButton("100💰", callback_data=make_safe_callback("donate_100", user_id)),
-        types.InlineKeyboardButton("500💰", callback_data=make_safe_callback("donate_500", user_id))
+        types.InlineKeyboardButton("500??", callback_data=make_safe_callback("donate_500", user_id))
     )
     markup.add(
         types.InlineKeyboardButton("1000💰", callback_data=make_safe_callback("donate_1000", user_id)),
