@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import threading
 
 # ========== ТОКЕН ==========
-TOKEN = "8272462109:AAEtUEtWi6Y8GY7ZtGz6cDldXUk7TSKOkrc"
+TOKEN = "8272462109:AAH243NgYitFbbZum62JLRNKn_m5xnq_9EI"
 bot = telebot.TeleBot(TOKEN)
 
 # ========== АДМИН ==========
@@ -22,7 +22,7 @@ USERS_FILE = f"{DATA_DIR}/users.json"
 PROMO_FILE = f"{DATA_DIR}/promocodes.json"
 SETTINGS_FILE = f"{DATA_DIR}/settings.json"
 
-# ========== РОЛИ (ОРИГИНАЛЬНЫЕ) ==========
+# ========== РОЛИ ==========
 PERMANENT_ROLES = {
     'Vip': 12000,
     'Pro': 15000,
@@ -145,18 +145,15 @@ def add_message(user_id):
     if not user:
         return False
     
-    # Сброс счётчика сообщений в день
     now = get_moscow_time()
     today = now.strftime('%Y-%m-%d')
     if user.get('last_message_reset') != today:
         user['messages_today'] = 0
         user['last_message_reset'] = today
     
-    # Лимит 500 сообщений в день
     if user['messages_today'] >= 500:
         return False
     
-    # Начисление монет за сообщение (1-5 с множителем роли)
     base_reward = random.randint(1, 5)
     multiplier = get_user_multiplier(user_id)
     earned = int(base_reward * multiplier)
@@ -169,13 +166,12 @@ def add_message(user_id):
     users[uid_str]['total_earned'] += earned
     users[uid_str]['last_active'] = now.strftime('%Y-%m-%d %H:%M:%S')
     
-    # Бонус за 100 сообщений
     if users[uid_str]['messages'] % 100 == 0:
         bonus = 500
         users[uid_str]['coins'] += bonus
         users[uid_str]['total_earned'] += bonus
         try:
-            bot.send_message(user_id, f"🎉 БОНУС! Ты отправил {users[uid_str]['messages']} сообщений!\n+{bonus}💰")
+            bot.send_message(user_id, f"🎉 <b>БОНУС!</b>\nТы отправил {users[uid_str]['messages']} сообщений!\n+{bonus}💰", parse_mode='HTML')
         except:
             pass
     
@@ -193,7 +189,6 @@ def get_daily_bonus(user_id):
     if user.get('last_daily') == today:
         return 0, "❌ Ты уже получал бонус сегодня!"
     
-    # Расчёт бонуса по серии
     streak = user.get('daily_streak', 0)
     if streak == 0:
         streak = 1
@@ -213,7 +208,6 @@ def get_daily_bonus(user_id):
         bonus = random.randint(50, 100)
         extra = False
     
-    # Множитель от роли
     multiplier = get_user_multiplier(user_id)
     bonus = int(bonus * multiplier)
     
@@ -225,9 +219,9 @@ def get_daily_bonus(user_id):
     users[uid_str]['total_earned'] += bonus
     save_json(USERS_FILE, users)
     
-    msg = f"🎁 ЕЖЕДНЕВНЫЙ БОНУС!\n🔥 Серия: {streak} дней\n💰 +{bonus} монет"
+    msg = f"🎁 <b>ЕЖЕДНЕВНЫЙ БОНУС!</b>\n🔥 Серия: {streak} дней\n💰 +{bonus} монет"
     if extra:
-        msg += "\n✨ РЕДКИЙ БОНУС! ✨"
+        msg += "\n✨ <b>РЕДКИЙ БОНУС!</b> ✨"
     
     return bonus, msg
 
@@ -250,7 +244,6 @@ def add_invite(inviter_id, invited_id):
     return False
 
 def check_referral_reward(invited_id):
-    """Проверка: если приглашённый написал 50 сообщений, награда пригласившему"""
     invited = get_user(invited_id)
     if not invited:
         return
@@ -272,12 +265,11 @@ def check_referral_reward(invited_id):
             save_json(USERS_FILE, users)
             
             try:
-                bot.send_message(int(inviter_id), f"🎉 БОНУС! Твой друг {invited['first_name']} написал 50 сообщений!\n+200💰")
+                bot.send_message(int(inviter_id), f"🎉 <b>БОНУС!</b>\nТвой друг {invited['first_name']} написал 50 сообщений!\n+200💰", parse_mode='HTML')
             except:
                 pass
 
 def get_activity_bonus(user_id):
-    """Бонус за активность раз в 6 часов"""
     user = get_user(user_id)
     if not user:
         return False, ""
@@ -293,13 +285,12 @@ def get_activity_bonus(user_id):
         except:
             pass
     
-    # Проверка: написал ли 20 сообщений за последние 6 часов
     if user.get('messages_today', 0) >= 20:
         add_coins(user_id, 100)
         users = load_json(USERS_FILE)
         users[str(user_id)]['last_activity_bonus'] = now.isoformat()
         save_json(USERS_FILE, users)
-        return True, "🎯 АКТИВНОСТЬ! Ты написал 20 сообщений\n+100💰"
+        return True, "🎯 <b>АКТИВНОСТЬ!</b>\nТы написал 20 сообщений\n+100💰"
     
     return False, ""
 
@@ -316,66 +307,75 @@ def buy_role(user_id, role_name):
     if user['coins'] < price:
         return False, f"❌ Не хватает монет! Нужно {price}💰\nТвой баланс: {user['coins']}💰"
     
-    # Кешбэк от старой роли
     old_role = user.get('role')
     cashback = 0
     if old_role and old_role in PERMANENT_ROLES:
         old_price = PERMANENT_ROLES[old_role]
-        cashback = int(old_price * 0.1)  # 10% кешбэк
+        cashback = int(old_price * 0.1)
     
-    # Покупка
     remove_coins(user_id, price)
     if cashback > 0:
         add_coins(user_id, cashback)
     
-    # Смена роли
     users = load_json(USERS_FILE)
     users[str(user_id)]['role'] = role_name
     save_json(USERS_FILE, users)
     
-    # Бонус пригласившему (10% от стоимости)
     inviter_id = user.get('invited_by')
     if inviter_id:
         inviter_bonus = int(price * 0.1)
         add_coins(int(inviter_id), inviter_bonus)
         try:
-            bot.send_message(int(inviter_id), f"🎉 БОНУС! Твой друг {user['first_name']} купил роль {role_name}!\n+{inviter_bonus}💰")
+            bot.send_message(int(inviter_id), f"🎉 <b>БОНУС!</b>\nТвой друг {user['first_name']} купил роль {role_name}!\n+{inviter_bonus}💰", parse_mode='HTML')
         except:
             pass
     
-    msg = f"✅ Ты купил роль {role_name}!\n💰 Цена: {price}💰"
+    msg = f"✅ <b>Ты купил роль {role_name}!</b>\n💰 Цена: {price}💰"
     if cashback > 0:
         msg += f"\n💸 Кешбэк: {cashback}💰"
     
     return True, msg
 
-# ========== КЛАВИАТУРЫ ==========
-def get_main_keyboard():
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+# ========== INLINE КНОПКИ ==========
+def get_main_menu():
+    markup = types.InlineKeyboardMarkup(row_width=2)
     buttons = [
-        "🛒 Магазин", "👤 Профиль",
-        "🎁 Бонус", "🔗 Пригласить",
-        "📊 Топ", "ℹ️ Помощь"
+        types.InlineKeyboardButton("🛒 Магазин", callback_data="shop"),
+        types.InlineKeyboardButton("👤 Профиль", callback_data="profile"),
+        types.InlineKeyboardButton("🎁 Бонус", callback_data="bonus"),
+        types.InlineKeyboardButton("🔗 Пригласить", callback_data="invite"),
+        types.InlineKeyboardButton("📊 Топ", callback_data="top"),
+        types.InlineKeyboardButton("ℹ️ Помощь", callback_data="help")
     ]
     markup.add(*buttons)
     return markup
 
-def get_back_keyboard():
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add("◀️ В главное меню")
+def get_back_button():
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data="back"))
     return markup
 
-def get_shop_keyboard():
+def get_shop_menu():
     markup = types.InlineKeyboardMarkup(row_width=1)
     for role_name, price in PERMANENT_ROLES.items():
         multiplier = ROLE_MULTIPLIERS.get(role_name, 1.0)
         markup.add(types.InlineKeyboardButton(f"{role_name} — {price}💰 (x{multiplier})", callback_data=f"buy_{role_name}"))
+    markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data="back"))
+    return markup
+
+def get_leaders_menu():
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    buttons = [
+        types.InlineKeyboardButton("🏆 По монетам", callback_data="top_coins"),
+        types.InlineKeyboardButton("💬 По сообщениям", callback_data="top_messages")
+    ]
+    markup.add(*buttons)
+    markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data="back"))
     return markup
 
 # ========== КОМАНДЫ ==========
 @bot.message_handler(commands=['start'])
 def start_command(message):
-    # Только личные сообщения
     if message.chat.type != 'private':
         return
     
@@ -389,7 +389,6 @@ def start_command(message):
     if not user:
         user = create_user(user_id, message.from_user.username, message.from_user.first_name)
     
-    # Обработка реферальной ссылки
     args = message.text.split()
     if len(args) > 1:
         try:
@@ -405,18 +404,18 @@ def start_command(message):
             pass
     
     text = (
-        f"👋 Добро пожаловать, {message.from_user.first_name}!\n\n"
-        f"💰 Твой стартовый бонус: 100 монет\n\n"
-        f"📌 Как зарабатывать:\n"
-        f"• Сообщения в чате — 1-5💰 x множитель роли\n"
-        f"• Ежедневный бонус — до 800💰 x множитель\n"
+        f"👋 <b>Добро пожаловать, {message.from_user.first_name}!</b>\n\n"
+        f"💰 Твой стартовый бонус: <b>100 монет</b>\n\n"
+        f"<b>📌 Как зарабатывать:</b>\n"
+        f"• Сообщения в чате — 1-5💰 × множитель\n"
+        f"• Ежедневный бонус — до 800💰 × множитель\n"
         f"• Приглашай друзей — 100💰 + бонусы\n"
         f"• Покупай роли — увеличивай множитель\n\n"
-        f"🔗 Твоя реферальная ссылка:\n"
+        f"🔗 <b>Твоя реферальная ссылка:</b>\n"
         f"<code>https://t.me/{bot.get_me().username}?start={user_id}</code>\n\n"
-        f"📋 Используй /menu для начала"
+        f"👇 <b>Выбери действие:</b>"
     )
-    bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_main_keyboard())
+    bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_main_menu())
 
 @bot.message_handler(commands=['menu'])
 def menu_command(message):
@@ -437,176 +436,224 @@ def menu_command(message):
     
     text = (
         f"<b>🏠 ГЛАВНОЕ МЕНЮ</b>\n\n"
-        f"👤 Профиль: {user['first_name']}\n"
-        f"🎭 Роль: {role}\n"
-        f"📈 Множитель: x{multiplier}\n"
-        f"💰 Баланс: {user['coins']} монет\n"
-        f"📊 Сообщений: {user['messages']}\n"
-        f"🔥 Серия: {user.get('daily_streak', 0)} дней\n\n"
-        f"👇 Выбери действие:"
+        f"👤 Профиль: <b>{user['first_name']}</b>\n"
+        f"🎭 Роль: <b>{role}</b>\n"
+        f"📈 Множитель: <b>x{multiplier}</b>\n"
+        f"💰 Баланс: <b>{user['coins']}</b> монет\n"
+        f"📊 Сообщений: <b>{user['messages']}</b>\n"
+        f"🔥 Серия: <b>{user.get('daily_streak', 0)}</b> дней\n\n"
+        f"👇 <b>Выбери действие:</b>"
     )
-    bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_main_keyboard())
+    bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_main_menu())
 
-@bot.message_handler(commands=['profile'])
-def profile_command(message):
-    if message.chat.type != 'private':
-        return
+# ========== INLINE ОБРАБОТЧИК ==========
+@bot.callback_query_handler(func=lambda call: True)
+def callback_handler(call):
+    user_id = call.from_user.id
+    data = call.data
     
-    user_id = message.from_user.id
-    user = get_user(user_id)
-    if not user:
-        user = create_user(user_id, message.from_user.username, message.from_user.first_name)
-    
-    multiplier = get_user_multiplier(user_id)
-    role = user.get('role') or "Нет роли"
-    
-    text = (
-        f"<b>👤 ПРОФИЛЬ</b>\n\n"
-        f"📛 Имя: {user['first_name']}\n"
-        f"🎭 Роль: {role}\n"
-        f"📈 Множитель: x{multiplier}\n\n"
-        f"💰 Монет: {user['coins']}\n"
-        f"📊 Сообщений: {user['messages']}\n"
-        f"📅 Сообщений сегодня: {user.get('messages_today', 0)}\n"
-        f"🔥 Серия дней: {user.get('daily_streak', 0)}\n\n"
-        f"👥 Приглашено: {len(user.get('invites', []))}\n"
-        f"💸 Заработано с рефералов: {user.get('referral_earned', 0)}💰\n\n"
-        f"💵 Всего заработано: {user.get('total_earned', 0)}💰\n"
-        f"💸 Всего потрачено: {user.get('total_spent', 0)}💰\n\n"
-        f"📅 Регистрация: {user.get('registered_at', 'Неизвестно')[:10]}"
-    )
-    bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_back_keyboard())
-
-@bot.message_handler(commands=['daily'])
-def daily_command(message):
-    if message.chat.type != 'private':
-        return
-    
-    user_id = message.from_user.id
     if is_banned(user_id):
-        bot.send_message(user_id, "🚫 Вы забанены")
+        bot.answer_callback_query(call.id, "🚫 Вы забанены", show_alert=True)
         return
-    
-    bonus, msg = get_daily_bonus(user_id)
-    bot.send_message(user_id, msg, parse_mode='HTML')
-    
-    # Проверка активности
-    success, bonus_msg = get_activity_bonus(user_id)
-    if success:
-        bot.send_message(user_id, bonus_msg, parse_mode='HTML')
-
-@bot.message_handler(commands=['invite'])
-def invite_command(message):
-    if message.chat.type != 'private':
-        return
-    
-    user_id = message.from_user.id
-    link = f"https://t.me/{bot.get_me().username}?start={user_id}"
     
     user = get_user(user_id)
     if not user:
-        user = create_user(user_id, message.from_user.username, message.from_user.first_name)
+        user = create_user(user_id, call.from_user.username, call.from_user.first_name)
     
-    text = (
-        f"<b>🔗 ПРИГЛАСИТЕЛЬНАЯ ССЫЛКА</b>\n\n"
-        f"👥 Приглашено: {len(user.get('invites', []))}\n"
-        f"💰 Заработано: {user.get('referral_earned', 0)}💰\n\n"
-        f"<b>За каждого друга:</b>\n"
-        f"• +100💰 сразу\n"
-        f"• +200💰 когда друг напишет 50 сообщений\n"
-        f"• +10% от покупки роли другом\n\n"
-        f"<b>Твоя ссылка:</b>\n"
-        f"<code>{link}</code>"
-    )
-    bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_back_keyboard())
-
-@bot.message_handler(commands=['top'])
-def top_command(message):
-    if message.chat.type != 'private':
+    # Главное меню
+    if data == "back":
+        multiplier = get_user_multiplier(user_id)
+        role = user.get('role') or "Нет роли"
+        text = (
+            f"<b>🏠 ГЛАВНОЕ МЕНЮ</b>\n\n"
+            f"👤 Профиль: <b>{user['first_name']}</b>\n"
+            f"🎭 Роль: <b>{role}</b>\n"
+            f"📈 Множитель: <b>x{multiplier}</b>\n"
+            f"💰 Баланс: <b>{user['coins']}</b> монет\n"
+            f"📊 Сообщений: <b>{user['messages']}</b>\n"
+            f"🔥 Серия: <b>{user.get('daily_streak', 0)}</b> дней\n\n"
+            f"👇 <b>Выбери действие:</b>"
+        )
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_main_menu())
+        bot.answer_callback_query(call.id)
         return
     
-    users = load_json(USERS_FILE)
+    # Магазин
+    elif data == "shop":
+        text = (
+            f"<b>🛒 МАГАЗИН РОЛЕЙ</b>\n\n"
+            f"💰 Твой баланс: <b>{user['coins']}</b> монет\n\n"
+            f"👇 <b>Выбери роль для покупки:</b>"
+        )
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_shop_menu())
+        bot.answer_callback_query(call.id)
+        return
+    
+    # Профиль
+    elif data == "profile":
+        multiplier = get_user_multiplier(user_id)
+        role = user.get('role') or "Нет роли"
+        text = (
+            f"<b>👤 ПРОФИЛЬ</b>\n\n"
+            f"📛 Имя: <b>{user['first_name']}</b>\n"
+            f"🎭 Роль: <b>{role}</b>\n"
+            f"📈 Множитель: <b>x{multiplier}</b>\n\n"
+            f"💰 Монет: <b>{user['coins']}</b>\n"
+            f"📊 Сообщений: <b>{user['messages']}</b>\n"
+            f"📅 Сообщений сегодня: <b>{user.get('messages_today', 0)}</b>\n"
+            f"🔥 Серия дней: <b>{user.get('daily_streak', 0)}</b>\n\n"
+            f"👥 Приглашено: <b>{len(user.get('invites', []))}</b>\n"
+            f"💸 Заработано с рефералов: <b>{user.get('referral_earned', 0)}</b>💰\n\n"
+            f"💵 Всего заработано: <b>{user.get('total_earned', 0)}</b>💰\n"
+            f"💸 Всего потрачено: <b>{user.get('total_spent', 0)}</b>💰\n\n"
+            f"📅 Регистрация: <b>{user.get('registered_at', 'Неизвестно')[:10]}</b>"
+        )
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_back_button())
+        bot.answer_callback_query(call.id)
+        return
+    
+    # Бонус
+    elif data == "bonus":
+        bonus, msg = get_daily_bonus(user_id)
+        bot.answer_callback_query(call.id, msg.split('\n')[0], show_alert=True)
+        if bonus > 0:
+            # Обновляем сообщение
+            multiplier = get_user_multiplier(user_id)
+            role = user.get('role') or "Нет роли"
+            text = (
+                f"<b>🏠 ГЛАВНОЕ МЕНЮ</b>\n\n"
+                f"👤 Профиль: <b>{user['first_name']}</b>\n"
+                f"🎭 Роль: <b>{role}</b>\n"
+                f"📈 Множитель: <b>x{multiplier}</b>\n"
+                f"💰 Баланс: <b>{user['coins']}</b> монет\n"
+                f"📊 Сообщений: <b>{user['messages']}</b>\n"
+                f"🔥 Серия: <b>{user.get('daily_streak', 0)}</b> дней\n\n"
+                f"👇 <b>Выбери действие:</b>"
+            )
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_main_menu())
+            
+            # Проверка активности
+            success, bonus_msg = get_activity_bonus(user_id)
+            if success:
+                bot.send_message(user_id, bonus_msg, parse_mode='HTML')
+        return
+    
+    # Пригласить
+    elif data == "invite":
+        link = f"https://t.me/{bot.get_me().username}?start={user_id}"
+        text = (
+            f"<b>🔗 ПРИГЛАСИТЕЛЬНАЯ ССЫЛКА</b>\n\n"
+            f"👥 Приглашено: <b>{len(user.get('invites', []))}</b>\n"
+            f"💰 Заработано: <b>{user.get('referral_earned', 0)}</b>💰\n\n"
+            f"<b>За каждого друга:</b>\n"
+            f"• +100💰 сразу\n"
+            f"• +200💰 когда друг напишет 50 сообщений\n"
+            f"• +10% от покупки роли другом\n\n"
+            f"<b>Твоя ссылка:</b>\n"
+            f"<code>{link}</code>"
+        )
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_back_button())
+        bot.answer_callback_query(call.id)
+        return
+    
+    # Топ (меню выбора)
+    elif data == "top":
+        text = (
+            f"<b>📊 ТОП ПОЛЬЗОВАТЕЛЕЙ</b>\n\n"
+            f"👇 <b>Выбери категорию:</b>"
+        )
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_leaders_menu())
+        bot.answer_callback_query(call.id)
+        return
     
     # Топ по монетам
-    coins_top = []
-    for uid, data in users.items():
-        if int(uid) not in MASTER_IDS and not data.get('is_banned'):
-            coins_top.append((data.get('first_name', 'User'), data.get('coins', 0)))
-    coins_top.sort(key=lambda x: x[1], reverse=True)
-    coins_top = coins_top[:10]
+    elif data == "top_coins":
+        users = load_json(USERS_FILE)
+        coins_top = []
+        for uid, data in users.items():
+            if int(uid) not in MASTER_IDS and not data.get('is_banned'):
+                name = data.get('first_name', 'User')
+                coins_top.append((name, data.get('coins', 0)))
+        coins_top.sort(key=lambda x: x[1], reverse=True)
+        coins_top = coins_top[:10]
+        
+        text = "<b>🏆 ТОП ПО МОНЕТАМ</b>\n\n"
+        for i, (name, coins) in enumerate(coins_top, 1):
+            medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
+            text += f"{medal} <b>{name}</b> — {coins}💰\n"
+        
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_back_button())
+        bot.answer_callback_query(call.id)
+        return
     
     # Топ по сообщениям
-    msg_top = []
-    for uid, data in users.items():
-        if int(uid) not in MASTER_IDS and not data.get('is_banned'):
-            msg_top.append((data.get('first_name', 'User'), data.get('messages', 0)))
-    msg_top.sort(key=lambda x: x[1], reverse=True)
-    msg_top = msg_top[:10]
-    
-    text = "<b>📊 ТОП ПОЛЬЗОВАТЕЛЕЙ</b>\n\n"
-    text += "<b>🏆 ТОП ПО МОНЕТАМ:</b>\n"
-    for i, (name, coins) in enumerate(coins_top, 1):
-        medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
-        text += f"{medal} {name} — {coins}💰\n"
-    
-    text += "\n<b>💬 ТОП ПО СООБЩЕНИЯМ:</b>\n"
-    for i, (name, msgs) in enumerate(msg_top, 1):
-        medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
-        text += f"{medal} {name} — {msgs} сообщений\n"
-    
-    bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_back_keyboard())
-
-@bot.message_handler(commands=['info'])
-def info_command(message):
-    if message.chat.type != 'private':
+    elif data == "top_messages":
+        users = load_json(USERS_FILE)
+        msg_top = []
+        for uid, data in users.items():
+            if int(uid) not in MASTER_IDS and not data.get('is_banned'):
+                name = data.get('first_name', 'User')
+                msg_top.append((name, data.get('messages', 0)))
+        msg_top.sort(key=lambda x: x[1], reverse=True)
+        msg_top = msg_top[:10]
+        
+        text = "<b>💬 ТОП ПО СООБЩЕНИЯМ</b>\n\n"
+        for i, (name, msgs) in enumerate(msg_top, 1):
+            medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
+            text += f"{medal} <b>{name}</b> — {msgs} сообщений\n"
+        
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_back_button())
+        bot.answer_callback_query(call.id)
         return
     
-    text = (
-        "<b>ℹ️ О БОТЕ</b>\n\n"
-        "Бот для заработка монет и покупки ролей\n\n"
-        "<b>💰 Как заработать:</b>\n"
-        "• 1 сообщение в чате = 1-5💰 x множитель роли\n"
-        "• Ежедневный бонус = до 800💰 x множитель\n"
-        "• Приглашение друга = 100💰 + бонусы\n"
-        "• Бонус за 100 сообщений = 500💰\n"
-        "• Бонус за активность = 100💰 (раз в 6ч)\n\n"
-        "<b>🎭 Роли и множители:</b>\n"
-    )
-    
-    for role_name, price in PERMANENT_ROLES.items():
-        multiplier = ROLE_MULTIPLIERS.get(role_name, 1.0)
-        text += f"• {role_name}: {price}💰 — x{multiplier}\n"
-    
-    text += "\n👨‍💻 Создатель: @HoFiLiOn"
-    
-    bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_back_keyboard())
-
-@bot.message_handler(commands=['help'])
-def help_command(message):
-    if message.chat.type != 'private':
+    # Помощь
+    elif data == "help":
+        text = (
+            f"<b>📚 ПОМОЩЬ</b>\n\n"
+            f"<b>Основные кнопки:</b>\n"
+            f"• 🛒 Магазин — покупка ролей\n"
+            f"• 👤 Профиль — твоя статистика\n"
+            f"• 🎁 Бонус — ежедневная награда\n"
+            f"• 🔗 Пригласить — реферальная ссылка\n"
+            f"• 📊 Топ — лучшие пользователи\n\n"
+            f"<b>💰 Как заработать:</b>\n"
+            f"• Пиши в чат — 1-5💰 × множитель\n"
+            f"• Заходи каждый день — бонус до 800💰\n"
+            f"• Приглашай друзей — 100💰 + бонусы\n"
+            f"• Покупай роли — увеличивай множитель\n\n"
+            f"<b>🎭 Роли и множители:</b>\n"
+        )
+        for role_name, price in PERMANENT_ROLES.items():
+            multiplier = ROLE_MULTIPLIERS.get(role_name, 1.0)
+            text += f"• <b>{role_name}</b>: {price}💰 — x{multiplier}\n"
+        
+        text += f"\n👨‍💻 Создатель: @HoFiLiOn"
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_back_button())
+        bot.answer_callback_query(call.id)
         return
     
-    text = (
-        "<b>📚 ПОМОЩЬ</b>\n\n"
-        "<b>Основные команды:</b>\n"
-        "/menu — Главное меню\n"
-        "/profile — Профиль\n"
-        "/daily — Ежедневный бонус\n"
-        "/invite — Пригласить друга\n"
-        "/top — Топ пользователей\n"
-        "/info — Информация\n"
-        "/help — Помощь\n\n"
-        "<b>Покупка ролей:</b>\n"
-        "1. Нажми /menu\n"
-        "2. Нажми 🛒 Магазин\n"
-        "3. Выбери роль\n\n"
-        "<b>Советы:</b>\n"
-        "• Пиши в чат больше — получай монеты\n"
-        "• Заходи каждый день — увеличивай серию\n"
-        "• Приглашай друзей — получай бонусы\n"
-        "• Покупай роли — увеличивай множитель"
-    )
-    bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_back_keyboard())
+    # Покупка роли
+    elif data.startswith("buy_"):
+        role_name = data.replace("buy_", "")
+        success, msg = buy_role(user_id, role_name)
+        bot.answer_callback_query(call.id, msg, show_alert=True)
+        
+        if success:
+            user = get_user(user_id)
+            multiplier = get_user_multiplier(user_id)
+            role = user.get('role') or "Нет роли"
+            text = (
+                f"<b>🏠 ГЛАВНОЕ МЕНЮ</b>\n\n"
+                f"👤 Профиль: <b>{user['first_name']}</b>\n"
+                f"🎭 Роль: <b>{role}</b>\n"
+                f"📈 Множитель: <b>x{multiplier}</b>\n"
+                f"💰 Баланс: <b>{user['coins']}</b> монет\n"
+                f"📊 Сообщений: <b>{user['messages']}</b>\n"
+                f"🔥 Серия: <b>{user.get('daily_streak', 0)}</b> дней\n\n"
+                f"👇 <b>Выбери действие:</b>"
+            )
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_main_menu())
+        return
 
 # ========== АДМИН-КОМАНДЫ ==========
 @bot.message_handler(commands=['addcoins'])
@@ -667,7 +714,7 @@ def ban_command(message):
         save_json(USERS_FILE, users)
         bot.reply_to(message, f"✅ Пользователь {target} забанен\nПричина: {reason}")
         try:
-            bot.send_message(target, f"🚫 ВЫ ЗАБАНЕНЫ!\nПричина: {reason}")
+            bot.send_message(target, f"🚫 <b>ВЫ ЗАБАНЕНЫ!</b>\nПричина: {reason}", parse_mode='HTML')
         except:
             pass
     except:
@@ -685,7 +732,7 @@ def unban_command(message):
         save_json(USERS_FILE, users)
         bot.reply_to(message, f"✅ Пользователь {target} разбанен")
         try:
-            bot.send_message(target, "✅ ВАС РАЗБАНИЛИ!")
+            bot.send_message(target, "✅ <b>ВАС РАЗБАНИЛИ!</b>", parse_mode='HTML')
         except:
             pass
     except:
@@ -703,94 +750,18 @@ def stats_command(message):
     
     text = (
         f"<b>📊 СТАТИСТИКА БОТА</b>\n\n"
-        f"👥 Пользователей: {total_users}\n"
-        f"💰 Всего монет: {total_coins}\n"
-        f"💬 Всего сообщений: {total_messages}\n"
-        f"🚫 Забанено: {banned}\n"
-        f"🎭 Ролей: {len(PERMANENT_ROLES)}"
+        f"👥 Пользователей: <b>{total_users}</b>\n"
+        f"💰 Всего монет: <b>{total_coins}</b>\n"
+        f"💬 Всего сообщений: <b>{total_messages}</b>\n"
+        f"🚫 Забанено: <b>{banned}</b>\n"
+        f"🎭 Ролей: <b>{len(PERMANENT_ROLES)}</b>"
     )
     bot.reply_to(message, text, parse_mode='HTML')
 
-# ========== ОБРАБОТЧИК КНОПОК ==========
-@bot.message_handler(func=lambda message: message.chat.type == 'private')
-def handle_buttons(message):
-    user_id = message.from_user.id
-    text = message.text
-    
-    if is_banned(user_id):
-        bot.send_message(user_id, "🚫 Вы забанены")
-        return
-    
-    user = get_user(user_id)
-    if not user:
-        user = create_user(user_id, message.from_user.username, message.from_user.first_name)
-    
-    if text == "◀️ В главное меню":
-        menu_command(message)
-    
-    elif text == "🛒 Магазин":
-        text_msg = "<b>🛒 МАГАЗИН РОЛЕЙ</b>\n\n"
-        for role_name, price in PERMANENT_ROLES.items():
-            multiplier = ROLE_MULTIPLIERS.get(role_name, 1.0)
-            text_msg += f"• {role_name}\n  💰 Цена: {price}💰\n  📈 Множитель: x{multiplier}\n\n"
-        text_msg += f"\n💰 Твой баланс: {user['coins']}💰\n\n👇 Нажми на роль для покупки:"
-        bot.send_message(user_id, text_msg, parse_mode='HTML', reply_markup=get_shop_keyboard())
-    
-    elif text == "👤 Профиль":
-        profile_command(message)
-    
-    elif text == "🎁 Бонус":
-        daily_command(message)
-    
-    elif text == "🔗 Пригласить":
-        invite_command(message)
-    
-    elif text == "📊 Топ":
-        top_command(message)
-    
-    elif text == "ℹ️ Помощь":
-        help_command(message)
-    
-    else:
-        menu_command(message)
-
-@bot.callback_query_handler(func=lambda call: True)
-def handle_callback(call):
-    user_id = call.from_user.id
-    
-    if is_banned(user_id):
-        bot.answer_callback_query(call.id, "🚫 Вы забанены", show_alert=True)
-        return
-    
-    if call.data.startswith("buy_"):
-        role_name = call.data.replace("buy_", "")
-        success, msg = buy_role(user_id, role_name)
-        bot.answer_callback_query(call.id, msg, show_alert=True)
-        
-        if success:
-            user = get_user(user_id)
-            multiplier = get_user_multiplier(user_id)
-            role = user.get('role') or "Нет роли"
-            text = (
-                f"<b>🏠 ГЛАВНОЕ МЕНЮ</b>\n\n"
-                f"👤 Профиль: {user['first_name']}\n"
-                f"🎭 Роль: {role}\n"
-                f"📈 Множитель: x{multiplier}\n"
-                f"💰 Баланс: {user['coins']} монет\n"
-                f"📊 Сообщений: {user['messages']}\n"
-                f"🔥 Серия: {user.get('daily_streak', 0)} дней\n\n"
-                f"👇 Выбери действие:"
-            )
-            try:
-                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_main_keyboard())
-            except:
-                pass
-    
-    bot.answer_callback_query(call.id)
-
-# ========== ОБРАБОТЧИК СООБЩЕНИЙ В ЧАТЕ ==========
+# ========== ОБРАБОТЧИК СООБЩЕНИЙ В ЧАТЕ (ТОЛЬКО НАЧИСЛЕНИЕ) ==========
 @bot.message_handler(func=lambda message: message.chat.type != 'private' and not message.from_user.is_bot)
 def handle_chat_message(message):
+    # Только начисляем монеты, НЕ отвечаем в чат
     add_message(message.from_user.id)
     check_referral_reward(message.from_user.id)
 
@@ -805,21 +776,21 @@ if __name__ == "__main__":
     if not os.path.exists(SETTINGS_FILE):
         save_json(SETTINGS_FILE, {})
     
-    print("=" * 50)
+    print("=" * 55)
     print("🚀 ROLE SHOP BOT ЗАПУЩЕН")
-    print("=" * 50)
+    print("=" * 55)
     print(f"👑 Админ: {MASTER_IDS[0]}")
     print(f"🎭 Ролей: {len(PERMANENT_ROLES)}")
-    print("=" * 50)
+    print("=" * 55)
     for role, price in PERMANENT_ROLES.items():
         mult = ROLE_MULTIPLIERS.get(role, 1.0)
         print(f"  {role}: {price}💰 (x{mult})")
-    print("=" * 50)
+    print("=" * 55)
     print("✅ Бот готов к работе!")
     print("📌 Команда: /start")
-    print("=" * 50)
-    
-    threading.Thread(target=lambda: None, daemon=True).start()
+    print("🔘 Все кнопки под сообщениями (inline)")
+    print("🔇 Бот НЕ отвечает на сообщения в чате")
+    print("=" * 55)
     
     while True:
         try:
