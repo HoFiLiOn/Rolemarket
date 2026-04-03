@@ -87,24 +87,6 @@ STEAL_BOOSTS = {
     '7': {'name': '👑 Коронный вор', 'price': 8000, 'boost': 40, 'desc': '+40% к успеху кражи'}
 }
 
-# ========== ИЗОБРАЖЕНИЯ ==========
-IMAGES = {
-    'main': 'https://s10.iimage.su/s/10/gqQbKjix0U9fspWOFuBLeysSgPSrz9ELbtMrrNzvy.jpg',
-    'shop': 'https://s10.iimage.su/s/10/g7lzRVixK34JtvupjlKTmW2PPhCRWkPZbWpP1ItNi.jpg',
-    'myroles': 'https://s10.iimage.su/s/10/gZ04M0Exbq1LgBES3vFw7wrOuepZQSuJQuPzlcNVA.jpg',
-    'leaders': 'https://s10.iimage.su/s/10/gIoalJsxcjlVBBhBhvLRRyAwLiIdRz9Xg5HIcilhm.png',
-    'bonus': 'https://s10.iimage.su/s/10/gZgvLHrxSDHtVmKCmRdModftES14WYWmlIjzd7GXY.jpg',
-    'profile': 'https://s10.iimage.su/s/10/gJbgiK3xrTAlMsKRtcQbcMLyG4HmIf1wKdZAw0Rrh.png',
-    'tasks': 'https://s10.iimage.su/s/10/gZn2uqTx50anL7fsd6109sdqG7kCpjJ6nDXfq52I2.jpg',
-    'treasury': 'https://s10.iimage.su/s/19/gWzYmfwxTbeCN7dKFntWq7tLQBslcL70CfbeoHEja.jpg',
-    'auction': 'https://s10.iimage.su/s/21/gnymrCyxnOiYWHwCZzyyScdnrycooJ1cTMrRLb3us.jpg',
-    'achievements': 'https://s10.iimage.su/s/21/gTS6zsuxzE3vigLOn4DlsPBNiyte0Ptlmrn3cujz0.jpg',
-    'lottery': 'https://s10.iimage.su/s/21/gCv91llxmzfQB6fMK2BsvfmwFnsHt1Q0uh75KGjti.jpg',
-    'steal': 'https://s10.iimage.su/s/21/gI6gjHux7nN4Ifz0gqLtylZgZwVOJNiP3YzY0oikD.png',
-    'about': 'https://s10.iimage.su/s/10/gqQbKjix0U9fspWOFuBLeysSgPSrz9ELbtMrrNzvy.jpg',
-    'custom': 'https://s10.iimage.su/s/10/gqQbKjix0U9fspWOFuBLeysSgPSrz9ELbtMrrNzvy.jpg'
-}
-
 # ========== JSON ФУНКЦИИ ==========
 def load_json(file_path):
     try:
@@ -906,27 +888,6 @@ def get_text(key):
     }
     return s.get('texts', {}).get(key, default_texts.get(key, ''))
 
-def get_image(key):
-    s = get_settings()
-    img = s.get('images', {}).get(key)
-    if img:
-        return img
-    return IMAGES.get(key, '')
-
-def set_text(key, text):
-    s = get_settings()
-    if 'texts' not in s:
-        s['texts'] = {}
-    s['texts'][key] = text
-    save_json(SETTINGS_FILE, s)
-
-def set_image(key, url):
-    s = get_settings()
-    if 'images' not in s:
-        s['images'] = {}
-    s['images'][key] = url
-    save_json(SETTINGS_FILE, s)
-
 def format_text(text, user_id):
     if not text:
         return text
@@ -1294,14 +1255,11 @@ def show_main_menu(message_or_call, page=1):
         else:
             user = create_user(uid, None, "User")
     text = format_text(get_text('main'), uid)
-    img = get_image('main')
     try:
         if hasattr(message_or_call, 'message'):
-            bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                                  message_or_call.message.chat.id, message_or_call.message.message_id, 
-                                  reply_markup=get_main_keyboard(uid, page))
+            bot.edit_message_text(text, message_or_call.message.chat.id, message_or_call.message.message_id, parse_mode='HTML', reply_markup=get_main_keyboard(uid, page))
         else:
-            bot.send_photo(uid, img, caption=text, parse_mode='HTML', reply_markup=get_main_keyboard(uid, page))
+            bot.send_message(uid, text, parse_mode='HTML', reply_markup=get_main_keyboard(uid, page))
     except Exception as e:
         print(f"Ошибка show_main_menu: {e}")
         bot.send_message(uid, text, parse_mode='HTML', reply_markup=get_main_keyboard(uid, page))
@@ -1309,10 +1267,8 @@ def show_main_menu(message_or_call, page=1):
 def show_shop(call):
     uid = call.from_user.id
     text = format_text(get_text('shop'), uid)
-    img = get_image('shop')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, reply_markup=get_shop_keyboard(uid))
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_shop_keyboard(uid))
     except Exception as e:
         print(f"Ошибка show_shop: {e}")
 
@@ -1326,10 +1282,8 @@ def show_shop_roles(call, page=1):
     for name, price in roles[start:start+3]:
         roles_text += f" • {name} | {price}💰\n"
     text = f"<b>🎭 МАГАЗИН РОЛЕЙ</b> (стр. {page}/{total})\n\n📁 Постоянные роли:\n{roles_text}\n\n💰 Твой кешбэк: {get_user_cashback(uid)}%\n💸 Твой баланс: {user['coins']:,}💰\n\n👇 Выбери роль"
-    img = get_image('shop')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, reply_markup=get_roles_keyboard(uid, page))
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_roles_keyboard(uid, page))
     except Exception as e:
         print(f"Ошибка show_shop_roles: {e}")
 
@@ -1343,10 +1297,8 @@ def show_shop_boosts(call, page=1):
     for bid, b in boosts[start:start+3]:
         boosts_text += f" • {b['name']} | {b['price']}💰 | +{b['boost']}%\n"
     text = f"<b>⚡️ БУСТЫ ДЛЯ КРАЖИ</b> (стр. {page}/{total})\n\n{boosts_text}\n💸 Твой баланс: {user['coins']:,}💰\n\n👇 Выбери буст"
-    img = get_image('shop')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, reply_markup=get_boosts_keyboard(uid, page))
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_boosts_keyboard(uid, page))
     except Exception as e:
         print(f"Ошибка show_shop_boosts: {e}")
 
@@ -1364,11 +1316,8 @@ def show_myroles(call, page=1):
         for r in roles[start:start+3]:
             roles_text += f"{'✅' if r in active else '❌'} {r}\n"
     text = f"<b>📋 МОИ РОЛИ</b> (стр. {page}/{total})\n\n{roles_text}\n\n▸ Твой баланс: {user['coins']:,}💰"
-    img = get_image('myroles')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, 
-                              reply_markup=get_myroles_keyboard(uid, roles, active, page) if roles else get_back_keyboard(uid))
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_myroles_keyboard(uid, roles, active, page) if roles else get_back_keyboard(uid))
     except Exception as e:
         print(f"Ошибка show_myroles: {e}")
 
@@ -1376,10 +1325,8 @@ def show_profile(call):
     uid = call.from_user.id
     user = get_user(uid)
     text = format_text(get_text('profile'), uid)
-    img = get_image('profile')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, reply_markup=get_back_keyboard(uid))
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_back_keyboard(uid))
     except Exception as e:
         print(f"Ошибка show_profile: {e}")
 
@@ -1401,10 +1348,8 @@ def show_bonus(call):
     else:
         bonus_min, bonus_max = base_min, base_max
     text = f"<b>🎁 ЕЖЕДНЕВНЫЙ БОНУС</b>\n\n🔥 Твоя серия: {user.get('streak_daily', 0)} дней\n\n💰 Сегодня можно получить: от {bonus_min} до {bonus_max}💰\n\n👇 Забрать"
-    img = get_image('bonus')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, reply_markup=get_bonus_keyboard(uid))
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_bonus_keyboard(uid))
     except Exception as e:
         print(f"Ошибка show_bonus: {e}")
 
@@ -1424,10 +1369,8 @@ def show_treasury(call):
     user = get_user(uid)
     user_donated = user.get('donated', 0) if user else 0
     text = f"<b>🏦 КАЗНА СООБЩЕСТВА</b>\n\n💰 Собрано: {s['balance']:,} / {s['goal']:,} ({s['percent']}%)\n👥 Доноров: {s['donors_count']}\n🔥 Топ донор: {s['top_donor']}\n\n📊 Твой вклад: {user_donated:,}💰\n📢 {s['announcement']}\n📈 {s['progress_bar']}\n\n👇 Пожертвовать:"
-    img = get_image('treasury')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, reply_markup=get_treasury_keyboard(uid))
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_treasury_keyboard(uid))
     except Exception as e:
         print(f"Ошибка show_treasury: {e}")
 
@@ -1446,10 +1389,8 @@ def show_auction(call):
             m = (left.seconds % 3600) // 60
             auctions_text += f"\n<b>🔸 Лот #{lot['id']}</b>\n📦 {lot['item_name']}\n💰 {lot['current_price']}💰\n👤 {lot['seller_name']}\n⏰ {h}ч {m}м\n➖➖➖\n"
     text = f"<b>🔨 АУКЦИОН</b>\n\n{auctions_text}\n\n📋 Инструкция:\n• Выставить: /sell [название] [цена]\n• Ставка: /bid [лот] [сумма]\n\n👇 Выбери лот"
-    img = get_image('auction')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, reply_markup=get_auction_keyboard(uid))
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_auction_keyboard(uid))
     except Exception as e:
         print(f"Ошибка show_auction: {e}")
 
@@ -1463,20 +1404,16 @@ def show_steal(call):
     else:
         jail_text = ""
     text = f"<b>🔪 КРАЖА</b>\n\n{jail_text}\n\n📊 Статистика:\n   • Успешно: {stats.get('success', 0)}\n   • Провалов: {stats.get('failed', 0)}\n   • Украдено: {stats.get('total_stolen', 0):,}💰\n   • Потеряно: {stats.get('total_lost', 0):,}💰\n\n🎯 Раз в час, шанс от уровней\n\n👇 Выбери действие"
-    img = get_image('steal')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, reply_markup=get_steal_keyboard(uid, in_jail))
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_steal_keyboard(uid, in_jail))
     except Exception as e:
         print(f"Ошибка show_steal: {e}")
 
 def show_steal_select(call):
     uid = call.from_user.id
     text = "🔪 <b>ВЫБЕРИ ЖЕРТВУ</b>"
-    img = get_image('steal')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, reply_markup=get_steal_select_keyboard(uid))
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_steal_select_keyboard(uid))
     except Exception as e:
         print(f"Ошибка show_steal_select: {e}")
 
@@ -1491,10 +1428,8 @@ def show_steal_stats(call):
     text = f"<b>📊 СТАТИСТИКА КРАЖ</b>\n\n🔪 Успешно: {s}\n❌ Провалов: {f}\n💰 Украдено: {stats.get('total_stolen', 0):,}💰\n💸 Потеряно: {stats.get('total_lost', 0):,}💰\n\n📈 Процент успеха: {rate:.1f}%"
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data=safe_cb("steal", uid)))
-    img = get_image('steal')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, reply_markup=markup)
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
     except Exception as e:
         print(f"Ошибка show_steal_stats: {e}")
 
@@ -1514,10 +1449,8 @@ def show_achievements(call, page=1):
     for a in ach[start:start+per_page]:
         ach_text += f"{'✅' if a['id'] in completed else '❌'} <b>{a['name']}</b>\n   {a['desc']} — +{a['reward']}💰\n\n"
     text = f"<b>🏆 ДОСТИЖЕНИЯ</b> (стр. {page}/{total})\n\n{ach_text}"
-    img = get_image('achievements')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, reply_markup=get_achievements_keyboard(uid, page))
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_achievements_keyboard(uid, page))
     except Exception as e:
         print(f"Ошибка show_achievements: {e}")
 
@@ -1525,10 +1458,8 @@ def show_lottery(call):
     uid = call.from_user.id
     l = get_lottery()
     text = f"<b>🎲 ЛОТЕРЕЯ</b>\n\n💰 Джекпот: {l['jackpot']:,}💰\n🎫 Билетов продано: {l['total_tickets']}\n⏰ Розыгрыш в 20:00 МСК\n\n🎁 Призы: 1000-35000💰\n\n💸 Цена билета: 100💰\n\n👇 Купить билеты:"
-    img = get_image('lottery')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, reply_markup=get_lottery_keyboard(uid))
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_lottery_keyboard(uid))
     except Exception as e:
         print(f"Ошибка show_lottery: {e}")
 
@@ -1540,10 +1471,8 @@ def show_about(call):
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("📢 Чат", url=about['chat_link']), types.InlineKeyboardButton("📣 Канал", url=about['channel_link']))
     markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data=safe_cb("back", uid)))
-    img = get_image('about')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, reply_markup=markup)
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
     except Exception as e:
         print(f"Ошибка show_about: {e}")
 
@@ -1551,10 +1480,8 @@ def show_custom(call):
     uid = call.from_user.id
     user = get_user(uid)
     text = f"<b>🎨 КАСТОМИЗАЦИЯ</b>\n\n🏷️ Статус: {user.get('status', 'Не установлен')}\n✨ Эмодзи к нику: {user.get('nick_emoji', 'Нет')}\n🎭 Ник: {user.get('nickname', user['first_name'])}\n\n👇 Что меняем?"
-    img = get_image('custom')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, reply_markup=get_custom_keyboard(uid))
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_custom_keyboard(uid))
     except Exception as e:
         print(f"Ошибка show_custom: {e}")
 
@@ -1567,10 +1494,8 @@ def show_leaders(call, cat):
     for i, l in enumerate(leaders, 1):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
         text += f"{medal} {l['name']} — {l['value']:,}\n"
-    img = get_image('leaders')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), 
-                              call.message.chat.id, call.message.message_id, reply_markup=get_leaders_keyboard(uid))
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_leaders_keyboard(uid))
     except Exception as e:
         print(f"Ошибка show_leaders: {e}")
 
@@ -1595,7 +1520,33 @@ def show_help(message_or_call):
     bot.send_message(uid, text, parse_mode='HTML', reply_markup=markup)
 
 # ========== КОМАНДЫ ==========
-@bot.message_handler(commands=['start', 'menu'])
+@bot.message_handler(commands=['start'])
+def start_command(message):
+    # Проверяем, что команда пришла в личку, а не в чат с другими ботами
+    if message.chat.type != 'private':
+        return
+    
+    uid = message.from_user.id
+    if is_banned(uid):
+        bot.reply_to(message, "🚫 Вы забанены")
+        return
+    user = get_user(uid)
+    if not user:
+        user = create_user(uid, message.from_user.username, message.from_user.first_name)
+    
+    args = message.text.split()
+    if len(args) > 1:
+        try:
+            inviter = int(args[1])
+            if inviter != uid and not is_master(inviter):
+                if get_user(inviter):
+                    add_invite(inviter, uid)
+        except:
+            pass
+    
+    show_main_menu(message)
+
+@bot.message_handler(commands=['menu'])
 def menu_command(message):
     uid = message.from_user.id
     if is_banned(uid):
@@ -1604,15 +1555,6 @@ def menu_command(message):
     user = get_user(uid)
     if not user:
         user = create_user(uid, message.from_user.username, message.from_user.first_name)
-    args = message.text.split()
-    if len(args) > 1 and args[0] == '/start':
-        try:
-            inviter = int(args[1])
-            if inviter != uid and not is_master(inviter):
-                if get_user(inviter):
-                    add_invite(inviter, uid)
-        except:
-            pass
     show_main_menu(message)
 
 @bot.message_handler(commands=['profile'])
@@ -1625,8 +1567,7 @@ def profile_command(message):
     if not user:
         user = create_user(uid, message.from_user.username, message.from_user.first_name)
     text = format_text(get_text('profile'), uid)
-    img = get_image('profile')
-    bot.send_photo(uid, img, caption=text, parse_mode='HTML', reply_markup=get_back_keyboard(uid))
+    bot.send_message(uid, text, parse_mode='HTML', reply_markup=get_back_keyboard(uid))
 
 @bot.message_handler(commands=['daily'])
 def daily_command(message):
@@ -1733,8 +1674,7 @@ def donate_command(message):
     user = get_user(uid)
     user_donated = user.get('donated', 0) if user else 0
     text = f"<b>🏦 КАЗНА СООБЩЕСТВА</b>\n\n💰 Собрано: {s['balance']:,} / {s['goal']:,} ({s['percent']}%)\n👥 Доноров: {s['donors_count']}\n🔥 Топ донор: {s['top_donor']}\n\n📊 Твой вклад: {user_donated:,}💰\n📢 {s['announcement']}\n📈 {s['progress_bar']}\n\n👇 Пожертвовать:"
-    img = get_image('treasury')
-    bot.send_photo(uid, img, caption=text, parse_mode='HTML', reply_markup=get_treasury_keyboard(uid))
+    bot.send_message(uid, text, parse_mode='HTML', reply_markup=get_treasury_keyboard(uid))
 
 @bot.message_handler(commands=['auction'])
 def auction_command(message):
@@ -1755,8 +1695,7 @@ def auction_command(message):
             m = (left.seconds % 3600) // 60
             auctions_text += f"\n<b>🔸 Лот #{lot['id']}</b>\n📦 {lot['item_name']}\n💰 {lot['current_price']}💰\n👤 {lot['seller_name']}\n⏰ {h}ч {m}м\n➖➖➖\n"
     text = f"<b>🔨 АУКЦИОН</b>\n\n{auctions_text}\n\n📋 Инструкция:\n• Выставить: /sell [название] [цена]\n• Ставка: /bid [лот] [сумма]\n\n👇 Выбери лот"
-    img = get_image('auction')
-    bot.send_photo(uid, img, caption=text, parse_mode='HTML', reply_markup=get_auction_keyboard(uid))
+    bot.send_message(uid, text, parse_mode='HTML', reply_markup=get_auction_keyboard(uid))
 
 @bot.message_handler(commands=['sell'])
 def sell_command(message):
@@ -1809,8 +1748,7 @@ def lottery_command(message):
         return
     l = get_lottery()
     text = f"<b>🎲 ЛОТЕРЕЯ</b>\n\n💰 Джекпот: {l['jackpot']:,}💰\n🎫 Билетов продано: {l['total_tickets']}\n⏰ Розыгрыш в 20:00 МСК\n\n🎁 Призы: 1000-35000💰\n\n💸 Цена билета: 100💰\n\n👇 Купить билеты:"
-    img = get_image('lottery')
-    bot.send_photo(uid, img, caption=text, parse_mode='HTML', reply_markup=get_lottery_keyboard(uid))
+    bot.send_message(uid, text, parse_mode='HTML', reply_markup=get_lottery_keyboard(uid))
 
 @bot.message_handler(commands=['lotterybuy'])
 def lotterybuy_command(message):
@@ -2689,7 +2627,7 @@ def callback_handler(call):
         price = PERMANENT_ROLES[role]
         text = f"<b>🎭 {role}</b>\n\n💰 Цена: {price}💰\n▸ Баланс: {user['coins']:,}💰\n▸ Кешбэк: {get_user_cashback(uid)}%\n\n{'' if user['coins'] >= price else '❌ Не хватает монет!'}"
         try:
-            bot.edit_message_caption(call.message.chat.id, call.message.message_id, caption=text, parse_mode='HTML', reply_markup=get_role_keyboard(uid, role))
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_role_keyboard(uid, role))
         except:
             pass
         bot.answer_callback_query(call.id)
@@ -2708,7 +2646,7 @@ def callback_handler(call):
         if b:
             text = f"<b>⚡️ {b['name']}</b>\n\n💰 Цена: {b['price']}💰\n📈 Эффект: +{b['boost']}%\n\n▸ Баланс: {user['coins']:,}💰"
             try:
-                bot.edit_message_caption(call.message.chat.id, call.message.message_id, caption=text, parse_mode='HTML', reply_markup=get_boost_keyboard(uid, bid))
+                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_boost_keyboard(uid, bid))
             except:
                 pass
         bot.answer_callback_query(call.id)
@@ -3034,9 +2972,8 @@ def show_auction_by_message(uid, original):
             m = (left.seconds % 3600) // 60
             auctions_text += f"\n<b>🔸 Лот #{lot['id']}</b>\n📦 {lot['item_name']}\n💰 {lot['current_price']}💰\n👤 {lot['seller_name']}\n⏰ {h}ч {m}м\n➖➖➖\n"
     text = f"<b>🔨 АУКЦИОН</b>\n\n{auctions_text}\n\n📋 Инструкция:\n• Выставить: /sell [название] [цена]\n• Ставка: /bid [лот] [сумма]\n\n👇 Выбери лот"
-    img = get_image('auction')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), original.chat.id, original.message_id, reply_markup=get_auction_keyboard(uid))
+        bot.edit_message_text(text, original.chat.id, original.message_id, parse_mode='HTML', reply_markup=get_auction_keyboard(uid))
     except:
         pass
 
@@ -3057,9 +2994,8 @@ def process_lottery_buy(message, original):
 def show_lottery_by_message(uid, original):
     l = get_lottery()
     text = f"<b>🎲 ЛОТЕРЕЯ</b>\n\n💰 Джекпот: {l['jackpot']:,}💰\n🎫 Билетов продано: {l['total_tickets']}\n⏰ Розыгрыш в 20:00 МСК\n\n🎁 Призы: 1000-35000💰\n\n💸 Цена билета: 100💰\n\n👇 Купить билеты:"
-    img = get_image('lottery')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), original.chat.id, original.message_id, reply_markup=get_lottery_keyboard(uid))
+        bot.edit_message_text(text, original.chat.id, original.message_id, parse_mode='HTML', reply_markup=get_lottery_keyboard(uid))
     except:
         pass
 
@@ -3108,9 +3044,8 @@ def process_set_nick(message, original):
 def show_custom_by_message(uid, original):
     user = get_user(uid)
     text = f"<b>🎨 КАСТОМИЗАЦИЯ</b>\n\n🏷️ Статус: {user.get('status', 'Не установлен')}\n✨ Эмодзи к нику: {user.get('nick_emoji', 'Нет')}\n🎭 Ник: {user.get('nickname', user['first_name'])}\n\n👇 Что меняем?"
-    img = get_image('custom')
     try:
-        bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), original.chat.id, original.message_id, reply_markup=get_custom_keyboard(uid))
+        bot.edit_message_text(text, original.chat.id, original.message_id, parse_mode='HTML', reply_markup=get_custom_keyboard(uid))
     except:
         pass
 
@@ -3220,12 +3155,12 @@ if __name__ == "__main__":
     if not os.path.exists(TASKS_FILE): save_json(TASKS_FILE, {'daily': [], 'permanent': [], 'event': [], 'progress': {}})
     if not os.path.exists(LOGS_FILE): save_json(LOGS_FILE, {'logs': []})
     if not os.path.exists(ABOUT_FILE): get_about()
-    if not os.path.exists(SETTINGS_FILE): save_json(SETTINGS_FILE, {'texts': {}, 'images': IMAGES})
+    if not os.path.exists(SETTINGS_FILE): save_json(SETTINGS_FILE, {'texts': {}, 'images': {}})
     if not os.path.exists(ADMINS_FILE): save_json(ADMINS_FILE, {'admin_list': {str(mid): {'level': 'owner', 'added_by': 0, 'added_at': get_moscow_time().strftime('%Y-%m-%d %H:%M:%S')} for mid in MASTER_IDS}})
     if not os.path.exists(EVENTS_FILE): save_json(EVENTS_FILE, {})
     
     print("=" * 60)
-    print("🚀 ROLE SHOP BOT V8.0 (ИСПРАВЛЕННЫЙ)")
+    print("🚀 ROLE SHOP BOT V8.0 (БЕЗ ФОТО)")
     print("=" * 60)
     print(f"👑 Главный админ: {MASTER_IDS[0]}")
     print(f"📢 Чат ID: {CHAT_ID}")
@@ -3234,8 +3169,9 @@ if __name__ == "__main__":
     t = get_treasury()
     print(f"🏦 Казна: {t['balance']} / {t['goal']}💰")
     print("=" * 60)
-    print("✅ Бот успешно запущен! Команда: /menu")
+    print("✅ Бот успешно запущен! Команда: /start или /menu")
     print("🛡️ Защита от чужих кнопок активна")
+    print("📌 /start работает только в личных сообщениях")
     print("=" * 60)
     
     threading.Thread(target=background_tasks, daemon=True).start()
