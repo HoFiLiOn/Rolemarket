@@ -8,12 +8,12 @@ from datetime import datetime, timedelta
 import threading
 import shutil
 
-# ========== ТОКЕН (НОВЫЙ) ==========
+# ========== ТОКЕН ==========
 TOKEN = "8272462109:AAEtUEtWi6Y8GY7ZtGz6cDldXUk7TSKOkrc"
 bot = telebot.TeleBot(TOKEN)
 
 # ========== АДМИНЫ ==========
-MASTER_IDS = [8388843828]  # Полный доступ (владелец)
+MASTER_IDS = [8388843828]
 ADMINS_FILE = "data/admins.json"
 
 # ========== ЧАТ ДЛЯ НАЧИСЛЕНИЯ ==========
@@ -28,22 +28,30 @@ os.makedirs(DATA_DIR, exist_ok=True)
 
 USERS_FILE = f"{DATA_DIR}/users.json"
 PROMO_FILE = f"{DATA_DIR}/promocodes.json"
-SETTINGS_FILE = f"{DATA_DIR}/settings.json"
-STATS_FILE = f"{DATA_DIR}/stats.json"
+ROLES_FILE = f"{DATA_DIR}/roles.json"
 
-# ========== РОЛИ ==========
-ROLES = {
-    'Vip': {'price': 12000, 'mult': 1.1},
-    'Pro': {'price': 15000, 'mult': 1.2},
-    'Phoenix': {'price': 25000, 'mult': 1.3},
-    'Dragon': {'price': 40000, 'mult': 1.4},
-    'Elite': {'price': 45000, 'mult': 1.5},
-    'Phantom': {'price': 50000, 'mult': 1.6},
-    'Hydra': {'price': 60000, 'mult': 1.7},
-    'Overlord': {'price': 75000, 'mult': 1.8},
-    'Apex': {'price': 90000, 'mult': 1.9},
-    'Quantum': {'price': 100000, 'mult': 2.0}
-}
+# ========== РОЛИ (ЗАГРУЗКА ИЗ ФАЙЛА) ==========
+def load_roles():
+    roles = load_json(ROLES_FILE)
+    if not roles:
+        # Стандартные роли
+        roles = {
+            'Vip': {'price': 12000, 'mult': 1.1},
+            'Pro': {'price': 15000, 'mult': 1.2},
+            'Phoenix': {'price': 25000, 'mult': 1.3},
+            'Dragon': {'price': 40000, 'mult': 1.4},
+            'Elite': {'price': 45000, 'mult': 1.5},
+            'Phantom': {'price': 50000, 'mult': 1.6},
+            'Hydra': {'price': 60000, 'mult': 1.7},
+            'Overlord': {'price': 75000, 'mult': 1.8},
+            'Apex': {'price': 90000, 'mult': 1.9},
+            'Quantum': {'price': 100000, 'mult': 2.0}
+        }
+        save_json(ROLES_FILE, roles)
+    return roles
+
+def save_roles(roles):
+    save_json(ROLES_FILE, roles)
 
 # ========== ФУНКЦИИ ==========
 def get_moscow_time():
@@ -131,8 +139,9 @@ def get_multiplier(user_id):
     if not user:
         return 1.0
     role = user.get('role')
-    if role and role in ROLES:
-        return ROLES[role]['mult']
+    roles = load_roles()
+    if role and role in roles:
+        return roles[role]['mult']
     return 1.0
 
 def is_banned(user_id):
@@ -227,10 +236,11 @@ def buy_role(user_id, role_name):
     if not user:
         return False, "❌ Ошибка"
     
-    if role_name not in ROLES:
+    roles = load_roles()
+    if role_name not in roles:
         return False, "❌ Роль не найдена"
     
-    price = ROLES[role_name]['price']
+    price = roles[role_name]['price']
     
     if user['coins'] < price:
         return False, f"❌ Нужно {price}💰\n💰 У тебя: {user['coins']}💰"
@@ -238,8 +248,8 @@ def buy_role(user_id, role_name):
     # Кешбэк за старую роль
     old_role = user.get('role')
     cashback = 0
-    if old_role and old_role in ROLES:
-        cashback = int(ROLES[old_role]['price'] * 0.1)
+    if old_role and old_role in roles:
+        cashback = int(roles[old_role]['price'] * 0.1)
     
     remove_coins(user_id, price)
     if cashback > 0:
@@ -259,7 +269,7 @@ def buy_role(user_id, role_name):
         except:
             pass
     
-    msg = f"✅ <b>ПОЗДРАВЛЯЮ!</b>\n\n🎭 Роль: {role_name}\n💰 Цена: {price}💰\n📈 Множитель: x{ROLES[role_name]['mult']}"
+    msg = f"✅ <b>ПОЗДРАВЛЯЮ!</b>\n\n🎭 Роль: {role_name}\n💰 Цена: {price}💰\n📈 Множитель: x{roles[role_name]['mult']}"
     if cashback > 0:
         msg += f"\n💸 Кешбэк: {cashback}💰"
     
@@ -350,12 +360,38 @@ def back_button():
     markup.add(types.InlineKeyboardButton("◀️ НАЗАД", callback_data="back"))
     return markup
 
-def shop_menu():
+def shop_menu(page=1):
+    roles = load_roles()
+    roles_list = list(roles.items())
+    items_per_page = 3
+    total_pages = (len(roles_list) + items_per_page - 1) // items_per_page
+    
+    if page < 1:
+        page = 1
+    if page > total_pages:
+        page = total_pages
+    
+    start = (page - 1) * items_per_page
+    end = start + items_per_page
+    
     markup = types.InlineKeyboardMarkup(row_width=1)
-    for name, data in ROLES.items():
+    
+    for name, data in roles_list[start:end]:
         markup.add(types.InlineKeyboardButton(f"{name} — {data['price']}💰 (x{data['mult']})", callback_data=f"buy_{name}"))
+    
+    # Навигация по страницам
+    nav_buttons = []
+    if page > 1:
+        nav_buttons.append(types.InlineKeyboardButton("◀️", callback_data=f"shop_page_{page-1}"))
+    if page < total_pages:
+        nav_buttons.append(types.InlineKeyboardButton("▶️", callback_data=f"shop_page_{page+1}"))
+    
+    if nav_buttons:
+        markup.row(*nav_buttons)
+    
     markup.add(types.InlineKeyboardButton("◀️ НАЗАД", callback_data="back"))
-    return markup
+    
+    return markup, page, total_pages
 
 def admin_panel():
     markup = types.InlineKeyboardMarkup(row_width=2)
@@ -364,6 +400,10 @@ def admin_panel():
         types.InlineKeyboardButton("💰 ВЫДАТЬ МОНЕТЫ", callback_data="admin_add_coins"),
         types.InlineKeyboardButton("💸 ЗАБРАТЬ МОНЕТЫ", callback_data="admin_remove_coins"),
         types.InlineKeyboardButton("🎭 ВЫДАТЬ РОЛЬ", callback_data="admin_give_role"),
+        types.InlineKeyboardButton("➕ ДОБАВИТЬ РОЛЬ", callback_data="admin_add_role"),
+        types.InlineKeyboardButton("✏️ РЕДАКТ. РОЛЬ", callback_data="admin_edit_role"),
+        types.InlineKeyboardButton("🗑 УДАЛИТЬ РОЛЬ", callback_data="admin_del_role"),
+        types.InlineKeyboardButton("📋 СПИСОК РОЛЕЙ", callback_data="admin_list_roles"),
         types.InlineKeyboardButton("🚫 ЗАБАНИТЬ", callback_data="admin_ban"),
         types.InlineKeyboardButton("✅ РАЗБАНИТЬ", callback_data="admin_unban"),
         types.InlineKeyboardButton("👑 ДОБАВИТЬ АДМИНА", callback_data="admin_add_admin"),
@@ -456,8 +496,18 @@ def callback(call):
     
     # ========== МАГАЗИН ==========
     if data == "shop":
-        text = f"🛒 <b>МАГАЗИН РОЛЕЙ</b>\n\n💰 Баланс: {user['coins']}💰\n\n👇 <b>ВЫБЕРИ РОЛЬ:</b>"
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=shop_menu())
+        markup, page, total = shop_menu(1)
+        text = f"🛒 <b>МАГАЗИН РОЛЕЙ</b>\n\n💰 Баланс: {user['coins']}💰\n📄 Страница {page}/{total}\n\n👇 <b>ВЫБЕРИ РОЛЬ:</b>"
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
+        bot.answer_callback_query(call.id)
+        return
+    
+    # Пагинация магазина
+    if data.startswith("shop_page_"):
+        page = int(data.replace("shop_page_", ""))
+        markup, page, total = shop_menu(page)
+        text = f"🛒 <b>МАГАЗИН РОЛЕЙ</b>\n\n💰 Баланс: {user['coins']}💰\n📄 Страница {page}/{total}\n\n👇 <b>ВЫБЕРИ РОЛЬ:</b>"
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         bot.answer_callback_query(call.id)
         return
     
@@ -550,6 +600,7 @@ def callback(call):
     
     # ========== ПОМОЩЬ ==========
     if data == "help":
+        roles = load_roles()
         text = (
             f"📚 <b>ПОМОЩЬ</b>\n\n"
             f"<b>💰 КАК ЗАРАБОТАТЬ?</b>\n"
@@ -559,7 +610,7 @@ def callback(call):
             f"└ 🛒 Покупать роли — увеличивать множитель\n\n"
             f"<b>🎭 ВСЕ РОЛИ:</b>\n"
         )
-        for name, data in ROLES.items():
+        for name, data in roles.items():
             text += f"└ {name}: {data['price']}💰 → x{data['mult']}\n"
         
         text += f"\n<b>📋 КОМАНДЫ:</b>\n"
@@ -625,7 +676,7 @@ def callback(call):
             f"├ 🎭 <b>С ролью:</b> {s['with_role']}\n"
             f"├ 🚫 <b>Забанено:</b> {s['banned']}\n"
             f"├ ✅ <b>Активных сегодня:</b> {s['active']}\n"
-            f"└ 🎯 <b>Доступно ролей:</b> {len(ROLES)}\n"
+            f"└ 🎯 <b>Доступно ролей:</b> {len(load_roles())}\n"
         )
         bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=admin_panel())
         bot.answer_callback_query(call.id)
@@ -659,9 +710,64 @@ def callback(call):
             bot.answer_callback_query(call.id, "❌ НЕТ ДОСТУПА", show_alert=True)
             return
         
-        roles_list = "\n".join([f"• {r}" for r in ROLES.keys()])
+        roles = load_roles()
+        roles_list = "\n".join([f"• {r}" for r in roles.keys()])
         msg = bot.send_message(user_id, f"🎭 <b>ВЫДАТЬ РОЛЬ</b>\n\nФормат: <code>ID РОЛЬ</code>\n\nДоступные роли:\n{roles_list}\n\nПример: <code>123456789 Vip</code>", parse_mode='HTML')
         bot.register_next_step_handler(msg, process_give_role, call.message)
+        bot.answer_callback_query(call.id)
+        return
+    
+    # ========== АДМИН: ДОБАВИТЬ РОЛЬ ==========
+    if data == "admin_add_role":
+        if not is_admin(user_id):
+            bot.answer_callback_query(call.id, "❌ НЕТ ДОСТУПА", show_alert=True)
+            return
+        
+        msg = bot.send_message(user_id, "➕ <b>ДОБАВИТЬ РОЛЬ</b>\n\nФормат: <code>НАЗВАНИЕ ЦЕНА МНОЖИТЕЛЬ</code>\n\nПример: <code>Legend 50000 2.0</code>\n\n💡 Множитель: 1.0, 1.5, 2.0 и т.д.", parse_mode='HTML')
+        bot.register_next_step_handler(msg, process_add_role, call.message)
+        bot.answer_callback_query(call.id)
+        return
+    
+    # ========== АДМИН: РЕДАКТИРОВАТЬ РОЛЬ ==========
+    if data == "admin_edit_role":
+        if not is_admin(user_id):
+            bot.answer_callback_query(call.id, "❌ НЕТ ДОСТУПА", show_alert=True)
+            return
+        
+        msg = bot.send_message(user_id, "✏️ <b>РЕДАКТИРОВАТЬ РОЛЬ</b>\n\nФормат: <code>НАЗВАНИЕ ЦЕНА МНОЖИТЕЛЬ</code>\n\nПример: <code>Vip 15000 1.2</code>\n\n💡 Оставь поле пустым, чтобы не менять", parse_mode='HTML')
+        bot.register_next_step_handler(msg, process_edit_role, call.message)
+        bot.answer_callback_query(call.id)
+        return
+    
+    # ========== АДМИН: УДАЛИТЬ РОЛЬ ==========
+    if data == "admin_del_role":
+        if not is_admin(user_id):
+            bot.answer_callback_query(call.id, "❌ НЕТ ДОСТУПА", show_alert=True)
+            return
+        
+        roles = load_roles()
+        roles_list = "\n".join([f"• {r}" for r in roles.keys()])
+        msg = bot.send_message(user_id, f"🗑 <b>УДАЛИТЬ РОЛЬ</b>\n\nФормат: <code>НАЗВАНИЕ</code>\n\nДоступные роли:\n{roles_list}\n\nПример: <code>Legend</code>\n\n⚠️ ВНИМАНИЕ! У пользователей с этой ролью она пропадёт!", parse_mode='HTML')
+        bot.register_next_step_handler(msg, process_del_role, call.message)
+        bot.answer_callback_query(call.id)
+        return
+    
+    # ========== АДМИН: СПИСОК РОЛЕЙ ==========
+    if data == "admin_list_roles":
+        if not is_admin(user_id):
+            bot.answer_callback_query(call.id, "❌ НЕТ ДОСТУПА", show_alert=True)
+            return
+        
+        roles = load_roles()
+        text = "📋 <b>СПИСОК РОЛЕЙ</b>\n\n"
+        for name, data in roles.items():
+            text += f"┌ <b>{name}</b>\n"
+            text += f"├ 💰 Цена: {data['price']}💰\n"
+            text += f"└ 📈 Множитель: x{data['mult']}\n\n"
+        
+        text += f"📊 <b>Всего ролей:</b> {len(roles)}"
+        
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=admin_panel())
         bot.answer_callback_query(call.id)
         return
     
@@ -751,7 +857,7 @@ def callback(call):
         
         text = (
             f"🎁 <b>ПРОМОКОДЫ</b>\n\n"
-            f"<b>СОЗДАТЬ ПРОМОКОД:</b>\n"
+            f"<b>СОЗДАТЬ ПРОМОКОД НА МОНЕТЫ:</b>\n"
             f"<code>/createpromo КОД СУММА ЛИМИТ ДНИ</code>\n\n"
             f"<b>СОЗДАТЬ ПРОМОКОД НА РОЛЬ:</b>\n"
             f"<code>/createrole КОД РОЛЬ ДНИ ЛИМИТ</code>\n\n"
@@ -772,7 +878,7 @@ def callback(call):
         backup_dir = f"backup_{get_moscow_time().strftime('%Y%m%d_%H%M%S')}"
         os.makedirs(backup_dir, exist_ok=True)
         
-        for file in [USERS_FILE, ADMINS_FILE, PROMO_FILE, SETTINGS_FILE]:
+        for file in [USERS_FILE, ADMINS_FILE, PROMO_FILE, ROLES_FILE]:
             if os.path.exists(file):
                 shutil.copy(file, os.path.join(backup_dir, os.path.basename(file)))
         
@@ -816,7 +922,8 @@ def process_give_role(message, original):
         target = int(parts[0])
         role = parts[1].capitalize()
         
-        if role not in ROLES:
+        roles = load_roles()
+        if role not in roles:
             bot.send_message(user_id, f"❌ <b>ОШИБКА!</b>\n\nРоль {role} не найдена", parse_mode='HTML')
         else:
             users = load_json(USERS_FILE)
@@ -825,6 +932,101 @@ def process_give_role(message, original):
             bot.send_message(user_id, f"✅ <b>ГОТОВО!</b>\n\nРоль {role} выдана пользователю {target}", parse_mode='HTML')
     except:
         bot.send_message(user_id, "❌ <b>ОШИБКА!</b>\n\nФормат: ID РОЛЬ", parse_mode='HTML')
+    
+    text = f"🔧 <b>АДМИН ПАНЕЛЬ</b>\n\n👇 <b>ВЫБЕРИ ДЕЙСТВИЕ:</b>"
+    bot.send_message(user_id, text, parse_mode='HTML', reply_markup=admin_panel())
+
+def process_add_role(message, original):
+    user_id = message.from_user.id
+    if not is_admin(user_id):
+        bot.send_message(user_id, "❌ НЕТ ДОСТУПА", parse_mode='HTML')
+        return
+    
+    try:
+        parts = message.text.split()
+        name = parts[0].capitalize()
+        price = int(parts[1])
+        mult = float(parts[2])
+        
+        roles = load_roles()
+        if name in roles:
+            bot.send_message(user_id, f"❌ <b>ОШИБКА!</b>\n\nРоль {name} уже существует!", parse_mode='HTML')
+        else:
+            roles[name] = {'price': price, 'mult': mult}
+            save_roles(roles)
+            bot.send_message(user_id, f"✅ <b>РОЛЬ ДОБАВЛЕНА!</b>\n\n🎭 {name}\n💰 Цена: {price}💰\n📈 Множитель: x{mult}", parse_mode='HTML')
+    except:
+        bot.send_message(user_id, "❌ <b>ОШИБКА!</b>\n\nФормат: НАЗВАНИЕ ЦЕНА МНОЖИТЕЛЬ", parse_mode='HTML')
+    
+    text = f"🔧 <b>АДМИН ПАНЕЛЬ</b>\n\n👇 <b>ВЫБЕРИ ДЕЙСТВИЕ:</b>"
+    bot.send_message(user_id, text, parse_mode='HTML', reply_markup=admin_panel())
+
+def process_edit_role(message, original):
+    user_id = message.from_user.id
+    if not is_admin(user_id):
+        bot.send_message(user_id, "❌ НЕТ ДОСТУПА", parse_mode='HTML')
+        return
+    
+    try:
+        parts = message.text.split()
+        name = parts[0].capitalize()
+        
+        roles = load_roles()
+        if name not in roles:
+            bot.send_message(user_id, f"❌ <b>ОШИБКА!</b>\n\nРоль {name} не найдена!", parse_mode='HTML')
+        else:
+            old_price = roles[name]['price']
+            old_mult = roles[name]['mult']
+            
+            # Обновляем только если указаны новые значения
+            if len(parts) > 1:
+                price = int(parts[1]) if parts[1] != '-' else old_price
+            else:
+                price = old_price
+            
+            if len(parts) > 2:
+                mult = float(parts[2]) if parts[2] != '-' else old_mult
+            else:
+                mult = old_mult
+            
+            roles[name] = {'price': price, 'mult': mult}
+            save_roles(roles)
+            bot.send_message(user_id, f"✅ <b>РОЛЬ ОБНОВЛЕНА!</b>\n\n🎭 {name}\n💰 Цена: {price}💰 (было {old_price})\n📈 Множитель: x{mult} (было x{old_mult})", parse_mode='HTML')
+    except:
+        bot.send_message(user_id, "❌ <b>ОШИБКА!</b>\n\nФормат: НАЗВАНИЕ [ЦЕНА] [МНОЖИТЕЛЬ]\nИспользуй - чтобы не менять\nПример: Vip 15000 -", parse_mode='HTML')
+    
+    text = f"🔧 <b>АДМИН ПАНЕЛЬ</b>\n\n👇 <b>ВЫБЕРИ ДЕЙСТВИЕ:</b>"
+    bot.send_message(user_id, text, parse_mode='HTML', reply_markup=admin_panel())
+
+def process_del_role(message, original):
+    user_id = message.from_user.id
+    if not is_admin(user_id):
+        bot.send_message(user_id, "❌ НЕТ ДОСТУПА", parse_mode='HTML')
+        return
+    
+    try:
+        name = message.text.strip().capitalize()
+        
+        roles = load_roles()
+        if name not in roles:
+            bot.send_message(user_id, f"❌ <b>ОШИБКА!</b>\n\nРоль {name} не найдена!", parse_mode='HTML')
+        else:
+            # Удаляем роль у всех пользователей
+            users = load_json(USERS_FILE)
+            removed_count = 0
+            for uid, u_data in users.items():
+                if u_data.get('role') == name:
+                    u_data['role'] = None
+                    removed_count += 1
+            
+            # Удаляем роль из списка
+            del roles[name]
+            save_roles(roles)
+            save_json(USERS_FILE, users)
+            
+            bot.send_message(user_id, f"✅ <b>РОЛЬ УДАЛЕНА!</b>\n\n🎭 {name}\n👥 У {removed_count} пользователей роль сброшена", parse_mode='HTML')
+    except:
+        bot.send_message(user_id, "❌ <b>ОШИБКА!</b>\n\nФормат: НАЗВАНИЕ", parse_mode='HTML')
     
     text = f"🔧 <b>АДМИН ПАНЕЛЬ</b>\n\n👇 <b>ВЫБЕРИ ДЕЙСТВИЕ:</b>"
     bot.send_message(user_id, text, parse_mode='HTML', reply_markup=admin_panel())
@@ -1006,7 +1208,8 @@ def create_role_promo(message):
         days = int(parts[3])
         max_uses = int(parts[4])
         
-        if role not in ROLES:
+        roles = load_roles()
+        if role not in roles:
             bot.reply_to(message, f"❌ Роль {role} не найдена")
             return
         
@@ -1073,6 +1276,19 @@ def use_promo(message):
     except IndexError:
         bot.reply_to(message, "❌ /use КОД")
 
+@bot.message_handler(commands=['daily'])
+def daily_command(message):
+    if message.chat.type != 'private':
+        return
+    
+    user_id = message.from_user.id
+    if is_banned(user_id):
+        bot.send_message(user_id, "🚫 ВЫ ЗАБАНЕНЫ", parse_mode='HTML')
+        return
+    
+    bonus, msg = get_daily(user_id)
+    bot.send_message(user_id, msg, parse_mode='HTML')
+
 # ========== НАЧИСЛЕНИЕ ЗА СООБЩЕНИЯ ==========
 @bot.message_handler(func=lambda m: m.chat.id == ALLOWED_CHAT_ID and not m.from_user.is_bot)
 def handle_chat(m):
@@ -1087,26 +1303,27 @@ if __name__ == "__main__":
         save_json(USERS_FILE, {})
     if not os.path.exists(PROMO_FILE):
         save_json(PROMO_FILE, {})
-    if not os.path.exists(SETTINGS_FILE):
-        save_json(SETTINGS_FILE, {})
     if not os.path.exists(ADMINS_FILE):
         save_json(ADMINS_FILE, {'admin_list': {}})
     
+    # Загружаем роли при запуске
+    roles = load_roles()
+    
     print("=" * 60)
-    print("🌟 ROLE SHOP BOT V4.0 ЗАПУЩЕН 🌟")
+    print("🌟 ROLE SHOP BOT V5.0 ЗАПУЩЕН 🌟")
     print("=" * 60)
     print(f"👑 Владелец: {MASTER_IDS[0]}")
     print(f"👨‍💻 Создатель: {CREATOR}")
     print(f"📢 Чат для начисления: {ALLOWED_CHAT_ID}")
-    print(f"🎭 Доступно ролей: {len(ROLES)}")
+    print(f"🎭 Доступно ролей: {len(roles)}")
     print("=" * 60)
-    for name, data in ROLES.items():
+    for name, data in roles.items():
         print(f"  {name}: {data['price']}💰 (x{data['mult']})")
     print("=" * 60)
     print("✅ БОТ ГОТОВ К РАБОТЕ!")
     print("📌 Команда: /startrole")
-    print("🔘 Все кнопки под сообщениями")
-    print("🔇 Бот НЕ отвечает в чат")
+    print("🔘 Магазин с пагинацией (по 3 роли)")
+    print("🔧 Админ-панель: добавление/удаление ролей")
     print("=" * 60)
     
     while True:
