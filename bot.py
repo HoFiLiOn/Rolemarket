@@ -16,14 +16,6 @@ bot = telebot.TeleBot(TOKEN)
 MASTER_IDS = [8388843828]
 ADMINS_FILE = "data/admins.json"
 
-# ========== ЧАТЫ ==========
-TEST_CHAT_ID = -5170027216
-TEST_CHAT_LINK = "https://t.me/+pV5D6rykuJhlNTcy"
-
-# ========== СОЗДАТЕЛЬ ==========
-CREATOR = "@HoFiLiOnclkc"
-CREATOR_LINK = "https://t.me/HoFiLiOnclkc"
-
 # ========== НАСТРОЙКИ ОБТ ==========
 OBT_DURATION_HOURS = 48
 
@@ -43,17 +35,17 @@ def load_roles():
     roles = load_json(ROLES_FILE)
     if not roles:
         roles = {
-            'Vip': {'price': 12000, 'mult': 1.1, 'permissions': ['can_invite_users']},
-            'Pro': {'price': 15000, 'mult': 1.2, 'permissions': ['can_invite_users', 'can_pin_messages']},
-            'Phoenix': {'price': 25000, 'mult': 1.3, 'permissions': ['can_invite_users', 'can_pin_messages', 'can_delete_messages']},
-            'Dragon': {'price': 40000, 'mult': 1.4, 'permissions': ['can_invite_users', 'can_pin_messages', 'can_delete_messages', 'can_restrict_members']},
-            'Elite': {'price': 45000, 'mult': 1.5, 'permissions': ['can_invite_users', 'can_pin_messages', 'can_delete_messages', 'can_restrict_members']},
-            'Phantom': {'price': 50000, 'mult': 1.6, 'permissions': ['can_invite_users', 'can_pin_messages', 'can_delete_messages', 'can_restrict_members', 'can_change_info']},
-            'Hydra': {'price': 60000, 'mult': 1.7, 'permissions': ['can_invite_users', 'can_pin_messages', 'can_delete_messages', 'can_restrict_members', 'can_change_info']},
-            'Overlord': {'price': 75000, 'mult': 1.8, 'permissions': ['can_invite_users', 'can_pin_messages', 'can_delete_messages', 'can_restrict_members', 'can_change_info', 'can_manage_video_chats']},
-            'Apex': {'price': 90000, 'mult': 1.9, 'permissions': ['can_invite_users', 'can_pin_messages', 'can_delete_messages', 'can_restrict_members', 'can_change_info', 'can_manage_video_chats']},
-            'Quantum': {'price': 100000, 'mult': 2.0, 'permissions': ['can_invite_users', 'can_pin_messages', 'can_delete_messages', 'can_restrict_members', 'can_change_info', 'can_manage_video_chats', 'can_post_stories', 'can_edit_stories', 'can_delete_stories']},
-            'Тестер': {'price': 0, 'mult': 1.5, 'permissions': ['can_invite_users']}
+            'Vip': {'price': 12000, 'mult': 1.1},
+            'Pro': {'price': 15000, 'mult': 1.2},
+            'Phoenix': {'price': 25000, 'mult': 1.3},
+            'Dragon': {'price': 40000, 'mult': 1.4},
+            'Elite': {'price': 45000, 'mult': 1.5},
+            'Phantom': {'price': 50000, 'mult': 1.6},
+            'Hydra': {'price': 60000, 'mult': 1.7},
+            'Overlord': {'price': 75000, 'mult': 1.8},
+            'Apex': {'price': 90000, 'mult': 1.9},
+            'Quantum': {'price': 100000, 'mult': 2.0},
+            'Тестер': {'price': 0, 'mult': 1.5}
         }
         save_json(ROLES_FILE, roles)
     return roles
@@ -197,7 +189,7 @@ def add_message(user_id):
     
     save_json(USERS_FILE, users)
     
-    # ЗАПИСЬ УЧАСТНИКА ОБТ (ИСПРАВЛЕНО)
+    # Запись участника ОБТ
     user_data = get_user(user_id)
     if user_data:
         record_obt_participant(user_id, username=user_data.get('username'), first_name=user_data.get('first_name'))
@@ -271,23 +263,6 @@ def buy_role(user_id, role_name):
     users = load_json(USERS_FILE)
     users[str(user_id)]['role'] = role_name
     save_json(USERS_FILE, users)
-    
-    # Выдача прав в чате
-    try:
-        permissions = roles[role_name].get('permissions', [])
-        base_perms = {
-            'can_change_info': False, 'can_delete_messages': False, 'can_restrict_members': False,
-            'can_invite_users': False, 'can_pin_messages': False, 'can_promote_members': False,
-            'can_manage_chat': False, 'can_manage_video_chats': False, 'can_post_messages': False,
-            'can_edit_messages': False, 'can_post_stories': False, 'can_edit_stories': False, 'can_delete_stories': False
-        }
-        for perm in permissions:
-            if perm in base_perms:
-                base_perms[perm] = True
-        bot.set_chat_administrator_custom_title(TEST_CHAT_ID, user_id, role_name[:16])
-        bot.promote_chat_member(TEST_CHAT_ID, user_id, **base_perms)
-    except:
-        pass
     
     # Бонус пригласившему
     inviter = user.get('invited_by')
@@ -400,10 +375,8 @@ def finish_obt():
         if len(participants_list) > 50:
             text += f"\n...и ещё {len(participants_list) - 50} участников"
         
-        text += f"\n\n👨‍💻 <b>Создатель:</b> <a href=\"{CREATOR_LINK}\">{CREATOR}</a>"
-        
         try:
-            bot.send_message(TEST_CHAT_ID, text, parse_mode='HTML')
+            bot.send_message(MASTER_IDS[0], text, parse_mode='HTML')
         except:
             pass
     
@@ -802,8 +775,6 @@ def menu_command(message):
 📝 <b>Если нашёл ошибку или хочешь предложить идею:</b>
 Нажми кнопку 📝 в меню и отправь сообщение.
 
-🔗 <a href="{TEST_CHAT_LINK}">ЧАТ ТЕСТИРОВАНИЯ</a>
-
 ┌ 👤 <b>{user['first_name']}</b>
 ├ 🎭 Роль: {role}
 ├ 📈 Множитель: x{mult}
@@ -907,9 +878,7 @@ def callback(call):
 ├ 💸 С рефералов: {user.get('referral_earned', 0)}💰
 ├ 💵 Заработано: {user.get('total_earned', 0)}💰
 ├ 💸 Потрачено: {user.get('total_spent', 0)}💰
-└ 📅 Регистрация: {user.get('registered_at', '-')[:10]}
-
-👨‍💻 <b>Создатель:</b> <a href="{CREATOR_LINK}">{CREATOR}</a>"""
+└ 📅 Регистрация: {user.get('registered_at', '-')[:10]}"""
         bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=back_button())
         bot.answer_callback_query(call.id)
         return
@@ -999,9 +968,7 @@ def callback(call):
 <b>📋 КОМАНДЫ:</b>
 • /startrole — запуск бота
 • /menu — главное меню
-• /daily — бонус
-
-👨‍💻 <b>Создатель:</b> <a href="{CREATOR_LINK}">{CREATOR}</a>"""
+• /daily — бонус"""
         
         bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=back_button())
         bot.answer_callback_query(call.id)
@@ -1131,7 +1098,6 @@ def callback(call):
         
         target_id = int(data.replace("user_make_tester_", ""))
         
-        # Записываем в участники ОБТ
         obt_data = load_json(OBT_FILE)
         if 'participants' not in obt_data:
             obt_data['participants'] = {}
@@ -1145,14 +1111,12 @@ def callback(call):
             }
             save_json(OBT_FILE, obt_data)
             
-            # Выдаём роль Тестер
             users = load_json(USERS_FILE)
             users[str(target_id)]['role'] = 'Тестер'
             save_json(USERS_FILE, users)
             
             bot.answer_callback_query(call.id, f"✅ Пользователю выдана роль Тестер", show_alert=True)
             
-            # Обновляем сообщение
             target_user = get_user(target_id)
             name = target_user.get('first_name', 'User')
             text = f"👤 <b>{name}</b>\n\n💰 Баланс: {target_user['coins']}💰\n🎭 Роль: {target_user.get('role') or 'Нет'}\n📊 Сообщений: {target_user.get('messages', 0)}\n🚫 Бан: {'Да' if target_user.get('is_banned') else 'Нет'}"
@@ -1555,7 +1519,6 @@ def process_report(message, user_id):
     save_report(user_id, username, first_name, report_text, file_id, file_type)
     bot.send_message(user_id, "✅ <b>Отчёт отправлен!</b> Спасибо за помощь в тестировании.", parse_mode='HTML')
     
-    # Возвращаем в главное меню
     user = get_user(user_id)
     role = user.get('role') or "❌ Нет роли"
     mult = get_multiplier(user_id)
@@ -1581,7 +1544,6 @@ def process_idea(message, user_id):
     save_idea(user_id, username, first_name, idea_text)
     bot.send_message(user_id, "✅ <b>Идея отправлена!</b> Спасибо за вклад в развитие бота.", parse_mode='HTML')
     
-    # Возвращаем в главное меню
     user = get_user(user_id)
     role = user.get('role') or "❌ Нет роли"
     mult = get_multiplier(user_id)
@@ -1633,24 +1595,6 @@ def process_give_role(message):
             users = load_json(USERS_FILE)
             users[str(target)]['role'] = role
             save_json(USERS_FILE, users)
-            
-            # Выдача прав в чате
-            try:
-                permissions = roles[role].get('permissions', [])
-                base_perms = {
-                    'can_change_info': False, 'can_delete_messages': False, 'can_restrict_members': False,
-                    'can_invite_users': False, 'can_pin_messages': False, 'can_promote_members': False,
-                    'can_manage_chat': False, 'can_manage_video_chats': False, 'can_post_messages': False,
-                    'can_edit_messages': False, 'can_post_stories': False, 'can_edit_stories': False, 'can_delete_stories': False
-                }
-                for perm in permissions:
-                    if perm in base_perms:
-                        base_perms[perm] = True
-                bot.set_chat_administrator_custom_title(TEST_CHAT_ID, target, role[:16])
-                bot.promote_chat_member(TEST_CHAT_ID, target, **base_perms)
-            except:
-                pass
-            
             bot.send_message(user_id, f"✅ <b>ГОТОВО!</b>\n\nРоль {role} выдана пользователю {target}", parse_mode='HTML')
     except:
         bot.send_message(user_id, "❌ <b>ОШИБКА!</b>\n\nФормат: ID РОЛЬ", parse_mode='HTML')
@@ -1803,24 +1747,6 @@ def process_user_give_role(message, target_id):
             users = load_json(USERS_FILE)
             users[str(target_id)]['role'] = role
             save_json(USERS_FILE, users)
-            
-            # Выдача прав в чате
-            try:
-                permissions = roles[role].get('permissions', [])
-                base_perms = {
-                    'can_change_info': False, 'can_delete_messages': False, 'can_restrict_members': False,
-                    'can_invite_users': False, 'can_pin_messages': False, 'can_promote_members': False,
-                    'can_manage_chat': False, 'can_manage_video_chats': False, 'can_post_messages': False,
-                    'can_edit_messages': False, 'can_post_stories': False, 'can_edit_stories': False, 'can_delete_stories': False
-                }
-                for perm in permissions:
-                    if perm in base_perms:
-                        base_perms[perm] = True
-                bot.set_chat_administrator_custom_title(TEST_CHAT_ID, target_id, role[:16])
-                bot.promote_chat_member(TEST_CHAT_ID, target_id, **base_perms)
-            except:
-                pass
-            
             bot.send_message(user_id, f"✅ <b>ГОТОВО!</b>\n\nРоль {role} выдана пользователю {target_id}", parse_mode='HTML')
     except:
         bot.send_message(user_id, "❌ <b>ОШИБКА!</b>\n\nВведите название роли", parse_mode='HTML')
@@ -1945,26 +1871,6 @@ def use_promo(message):
             users = load_json(USERS_FILE)
             users[str(user_id)]['role'] = promo['role']
             save_json(USERS_FILE, users)
-            
-            # Выдача прав в чате
-            roles = load_roles()
-            if promo['role'] in roles:
-                try:
-                    permissions = roles[promo['role']].get('permissions', [])
-                    base_perms = {
-                        'can_change_info': False, 'can_delete_messages': False, 'can_restrict_members': False,
-                        'can_invite_users': False, 'can_pin_messages': False, 'can_promote_members': False,
-                        'can_manage_chat': False, 'can_manage_video_chats': False, 'can_post_messages': False,
-                        'can_edit_messages': False, 'can_post_stories': False, 'can_edit_stories': False, 'can_delete_stories': False
-                    }
-                    for perm in permissions:
-                        if perm in base_perms:
-                            base_perms[perm] = True
-                    bot.set_chat_administrator_custom_title(TEST_CHAT_ID, user_id, promo['role'][:16])
-                    bot.promote_chat_member(TEST_CHAT_ID, user_id, **base_perms)
-                except:
-                    pass
-            
             promo['used'] += 1
             promo['used_by'].append(str(user_id))
             save_json(PROMO_FILE, promos)
@@ -1973,8 +1879,8 @@ def use_promo(message):
     except IndexError:
         bot.reply_to(message, "❌ /use КОД")
 
-# ========== НАЧИСЛЕНИЕ ЗА СООБЩЕНИЯ ==========
-@bot.message_handler(func=lambda m: m.chat.id == TEST_CHAT_ID and not m.from_user.is_bot)
+# ========== НАЧИСЛЕНИЕ ЗА СООБЩЕНИЯ (ДЛЯ ВСЕХ ЧАТОВ) ==========
+@bot.message_handler(func=lambda m: m.chat.type != 'private' and not m.from_user.is_bot)
 def handle_chat(m):
     add_message(m.from_user.id)
 
@@ -2005,12 +1911,12 @@ if __name__ == "__main__":
     print("🌟 ROLE SHOP BOT — БЕТА-ТЕСТИРОВАНИЕ 🌟")
     print("=" * 60)
     print(f"👑 Владелец: {MASTER_IDS[0]}")
-    print(f"🧪 Чат для ОБТ: {TEST_CHAT_ID}")
     print(f"📅 Длительность ОБТ: {OBT_DURATION_HOURS} часа")
     print(f"🎭 Доступно ролей: {len(roles) - 1}")
     print("=" * 60)
     print("✅ БОТ ГОТОВ К БЕТА-ТЕСТИРОВАНИЮ!")
     print("📌 Команда: /startrole")
+    print("📝 Монеты начисляются во всех чатах")
     print("=" * 60)
     
     threading.Thread(target=obt_checker, daemon=True).start()
