@@ -30,7 +30,6 @@ SETTINGS_FILE = f"{DATA_DIR}/settings.json"
 
 # ========== НАСТРОЙКИ ПО УМОЛЧАНИЮ ==========
 DEFAULT_SETTINGS = {
-    'market_commission_base': 10,
     'market_commission_tiers': [
         {'max_price': 10000, 'commission': 30},
         {'max_price': 30000, 'commission': 15},
@@ -54,18 +53,6 @@ DEFAULT_SETTINGS = {
         9: {'price': 150000, 'bonus': 40, 'max_lots': 5},
         10: {'price': 200000, 'bonus': 50, 'max_lots': 5}
     }
-}
-
-# ========== ФОТОГРАФИИ ==========
-IMAGES = {
-    'main': 'https://s10.iimage.su/s/19/gRFZSeMxdaqNHNZYeqDEWNQDnnz80Ja8c63deATA7.jpg',
-    'shop': 'https://s10.iimage.su/s/19/gRnaU7sxEU6XWHYbGw78EkVSp5IPw1ddodaUu9mlo.jpg',
-    'profile': 'https://s10.iimage.su/s/19/gxUPlX8xJjv31lGZGcI9hvs8AQK0mVHRbfSsnzfpH.jpg',
-    'market': 'https://s10.iimage.su/s/19/gdUzQDuxLH6sZWEhDz1uHiXRazGT4HzqG8m54neT9.jpg',
-    'workshop': 'https://s10.iimage.su/s/19/gZ6zIWexrV0rmJBQ9FUWeUWvpys7JH6cufMBzMn3h.jpg',
-    'bonus': 'https://s10.iimage.su/s/19/gBREkUaxGPGX9MdKMhfjI4pVgCoiBUa15gMSR18DS.jpg',
-    'leaders': 'https://s10.iimage.su/s/19/gEYbByAxi9iVwc3cqwidzzARo6yeh6pvlZEcFZy9G.jpg',
-    'help': 'https://s10.iimage.su/s/19/gX0g4pSxDRr1P8bhaHjT0KOjsGod9MpHXH0us0gRZ.jpg'
 }
 
 # ========== ОСНОВНЫЕ ФУНКЦИИ ==========
@@ -95,9 +82,6 @@ def get_settings():
         settings = DEFAULT_SETTINGS.copy()
         save_json(SETTINGS_FILE, settings)
     return settings
-
-def save_settings(settings):
-    save_json(SETTINGS_FILE, settings)
 
 def is_admin(user_id):
     if user_id in MASTER_IDS:
@@ -383,7 +367,7 @@ def get_market_commission(price):
     for tier in tiers:
         if price <= tier['max_price']:
             return tier['commission']
-    return settings.get('market_commission_base', 10)
+    return 10
 
 def get_market_min_price(role_name):
     settings = get_settings()
@@ -419,7 +403,6 @@ def add_market_lot(user_id, role_name, price):
     market['lots'].append(lot)
     market['next_id'] += 1
     save_market(market)
-    # Снимаем роль у продавца
     users = load_json(USERS_FILE)
     users[str(user_id)]['role'] = None
     save_json(USERS_FILE, users)
@@ -512,8 +495,6 @@ def save_report(user_id, username, first_name, message_text, file_id=None, file_
         'username': username,
         'first_name': first_name,
         'text': message_text,
-        'file_id': file_id,
-        'file_type': file_type,
         'status': 'new',
         'created_at': get_moscow_time().isoformat()
     })
@@ -712,8 +693,7 @@ def get_admin_panel():
         types.InlineKeyboardButton("🗑 Удалить админа", callback_data="admin_remove_admin"),
         types.InlineKeyboardButton("📢 Рассылка", callback_data="admin_mail"),
         types.InlineKeyboardButton("🎁 Промокоды", callback_data="admin_promo"),
-        types.InlineKeyboardButton("📦 Бэкап", callback_data="admin_backup"),
-        types.InlineKeyboardButton("🖼️ Сменить фото", callback_data="admin_images")
+        types.InlineKeyboardButton("📦 Бэкап", callback_data="admin_backup")
     ]
     markup.add(*buttons)
     markup.add(types.InlineKeyboardButton("◀️ Назад", callback_data="back"))
@@ -889,10 +869,7 @@ def menu_command(message):
 └ 🔥 Серия: {user.get('daily_streak', 0)} дн.
 
 👇 <b>Выбери действие:</b>"""
-    try:
-        bot.send_photo(user_id, IMAGES['main'], caption=text, parse_mode='HTML', reply_markup=get_main_menu(user_id))
-    except:
-        bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_main_menu(user_id))
+    bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_main_menu(user_id))
 
 @bot.message_handler(commands=['daily'])
 def daily_command(message):
@@ -903,10 +880,7 @@ def daily_command(message):
         bot.send_message(user_id, "🚫 Вы забанены", parse_mode='HTML')
         return
     bonus, msg = get_daily(user_id)
-    try:
-        bot.send_photo(user_id, IMAGES['bonus'], caption=msg, parse_mode='HTML')
-    except:
-        bot.send_message(user_id, msg, parse_mode='HTML')
+    bot.send_message(user_id, msg, parse_mode='HTML')
 
 @bot.message_handler(commands=['admin'])
 def admin_command(message):
@@ -944,10 +918,7 @@ def callback_handler(call):
 └ 🔥 Серия: {user.get('daily_streak', 0)} дн.
 
 👇 <b>Выбери действие:</b>"""
-        try:
-            bot.edit_message_media(types.InputMediaPhoto(IMAGES['main'], caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_main_menu(user_id))
-        except:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_main_menu(user_id))
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_main_menu(user_id))
         bot.answer_callback_query(call.id)
         return
 
@@ -955,20 +926,14 @@ def callback_handler(call):
     if data == "shop":
         markup, page, total = get_shop_menu(1)
         text = f"🛍️ <b>Магазин ролей</b>\n\n💰 Баланс: {user['coins']}💰\n📄 Страница {page}/{total}\n\n👇 <b>Выбери роль:</b>"
-        try:
-            bot.edit_message_media(types.InputMediaPhoto(IMAGES['shop'], caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
-        except:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         bot.answer_callback_query(call.id)
         return
     if data.startswith("shop_page_"):
         page = int(data.split("_")[-1])
         markup, page, total = get_shop_menu(page)
         text = f"🛍️ <b>Магазин ролей</b>\n\n💰 Баланс: {user['coins']}💰\n📄 Страница {page}/{total}\n\n👇 <b>Выбери роль:</b>"
-        try:
-            bot.edit_message_media(types.InputMediaPhoto(IMAGES['shop'], caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
-        except:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         bot.answer_callback_query(call.id)
         return
     if data.startswith("buy_"):
@@ -991,10 +956,7 @@ def callback_handler(call):
 └ 🔥 Серия: {user.get('daily_streak', 0)} дн.
 
 👇 <b>Выбери действие:</b>"""
-            try:
-                bot.edit_message_media(types.InputMediaPhoto(IMAGES['main'], caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_main_menu(user_id))
-            except:
-                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_main_menu(user_id))
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_main_menu(user_id))
         return
 
     # ПРОФИЛЬ
@@ -1020,10 +982,7 @@ def callback_handler(call):
 ├ 💸 Потрачено: {user.get('total_spent', 0)}💰
 ├ 📦 Лотов на рынке: {len(get_user_lots(user_id))}/{max_lots}
 └ 📅 Регистрация: {user.get('registered_at', '-')[:10]}"""
-        try:
-            bot.edit_message_media(types.InputMediaPhoto(IMAGES['profile'], caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_back_button())
-        except:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_back_button())
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_back_button())
         bot.answer_callback_query(call.id)
         return
 
@@ -1047,10 +1006,7 @@ def callback_handler(call):
 └ 🔥 Серия: {user.get('daily_streak', 0)} дн.
 
 👇 <b>Выбери действие:</b>"""
-            try:
-                bot.edit_message_media(types.InputMediaPhoto(IMAGES['main'], caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_main_menu(user_id))
-            except:
-                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_main_menu(user_id))
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_main_menu(user_id))
         return
 
     # ТОП
@@ -1072,10 +1028,7 @@ def callback_handler(call):
                 text += f"🥉 <b>{name}</b> — {coins}💰\n"
             else:
                 text += f"{i}. {name} — {coins}💰\n"
-        try:
-            bot.edit_message_media(types.InputMediaPhoto(IMAGES['leaders'], caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_back_button())
-        except:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_back_button())
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_back_button())
         bot.answer_callback_query(call.id)
         return
 
@@ -1086,10 +1039,7 @@ def callback_handler(call):
         for name, data in roles.items():
             text += f"• {name}: {data['price']}💰 → x{data['mult']}\n"
         text += "\n<b>🔧 Мастерская</b>\nУлучшай мастерскую за монеты. Каждый уровень даёт +% к доходу и больше слотов на рынке.\n\n<b>💰 Рынок</b>\nПродавай свои роли другим игрокам. Комиссия зависит от цены.\n\n<b>📋 Команды:</b>\n• /startrole — запуск бота\n• /menu — главное меню\n• /daily — бонус"
-        try:
-            bot.edit_message_media(types.InputMediaPhoto(IMAGES['help'], caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_back_button())
-        except:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_back_button())
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_back_button())
         bot.answer_callback_query(call.id)
         return
 
@@ -1101,10 +1051,7 @@ def callback_handler(call):
             text += f"💰 Стоимость улучшения до {level+1} уровня: {next_price}💰\n\n🎁 <b>Что даст улучшение:</b>\n• +{get_workshop_bonus(level+1)}% к доходу\n• {get_workshop_max_lots(level+1)} слотов на рынке"
         else:
             text += "✨ <b>Максимальный уровень достигнут!</b>"
-        try:
-            bot.edit_message_media(types.InputMediaPhoto(IMAGES['workshop'], caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
-        except:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         bot.answer_callback_query(call.id)
         return
     if data == "workshop_upgrade":
@@ -1117,10 +1064,7 @@ def callback_handler(call):
                 text += f"💰 Стоимость улучшения до {level+1} уровня: {next_price}💰\n\n🎁 <b>Что даст улучшение:</b>\n• +{get_workshop_bonus(level+1)}% к доходу\n• {get_workshop_max_lots(level+1)} слотов на рынке"
             else:
                 text += "✨ <b>Максимальный уровень достигнут!</b>"
-            try:
-                bot.edit_message_media(types.InputMediaPhoto(IMAGES['workshop'], caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
-            except:
-                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         return
 
     # РЫНОК
@@ -1128,20 +1072,14 @@ def callback_handler(call):
         cleanup_expired_lots()
         markup, page, total = get_market_menu(1)
         text = f"💰 <b>Рынок ролей</b>\n\n📄 Страница {page}/{total}\n\n👇 <b>Выбери лот:</b>"
-        try:
-            bot.edit_message_media(types.InputMediaPhoto(IMAGES['market'], caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
-        except:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         bot.answer_callback_query(call.id)
         return
     if data.startswith("market_page_"):
         page = int(data.split("_")[-1])
         markup, page, total = get_market_menu(page)
         text = f"💰 <b>Рынок ролей</b>\n\n📄 Страница {page}/{total}\n\n👇 <b>Выбери лот:</b>"
-        try:
-            bot.edit_message_media(types.InputMediaPhoto(IMAGES['market'], caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
-        except:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         bot.answer_callback_query(call.id)
         return
     if data.startswith("lot_"):
@@ -1186,10 +1124,7 @@ def callback_handler(call):
 └ 🔥 Серия: {user.get('daily_streak', 0)} дн.
 
 👇 <b>Выбери действие:</b>"""
-            try:
-                bot.edit_message_media(types.InputMediaPhoto(IMAGES['main'], caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=get_main_menu(user_id))
-            except:
-                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_main_menu(user_id))
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_main_menu(user_id))
         return
     if data == "market_sell":
         user_role = user.get('role')
@@ -1222,10 +1157,7 @@ def callback_handler(call):
         cleanup_expired_lots()
         markup, page, total = get_market_menu(1)
         text = f"💰 <b>Рынок ролей</b>\n\n📄 Страница {page}/{total}\n\n👇 <b>Выбери лот:</b>"
-        try:
-            bot.edit_message_media(types.InputMediaPhoto(IMAGES['market'], caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
-        except:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         return
 
     # ОБРАТНАЯ СВЯЗЬ
@@ -1335,7 +1267,7 @@ def callback_handler(call):
                 bot.answer_callback_query(call.id, f"Лот #{lot_id} удалён, роль возвращена", show_alert=True)
                 break
         markup, page, total = get_market_admin_menu(1)
-        text = f"🛒 <b>Управление рынком</b>\n\n?? Страница {page}/{total}\n\n👇 <b>Выбери лот для управления:</b>"
+        text = f"🛒 <b>Управление рынком</b>\n\n📄 Страница {page}/{total}\n\n👇 <b>Выбери лот для управления:</b>"
         bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         return
 
@@ -1570,13 +1502,6 @@ def callback_handler(call):
         bot.send_message(user_id, f"✅ <b>Бэкап создан</b>\n\n📁 Папка: {backup_dir}\n📅 {get_moscow_time().strftime('%Y-%m-%d %H:%M:%S')}", parse_mode='HTML')
         bot.answer_callback_query(call.id)
         return
-    if data == "admin_images":
-        if not is_admin(user_id):
-            return
-        text = "🖼️ <b>Смена фото</b>\n\nОтправьте новое фото с командой:\n\n/setphoto main - главное меню\n/setphoto shop - магазин\n/setphoto profile - профиль\n/setphoto market - рынок\n/setphoto workshop - мастерская\n/setphoto bonus - бонус\n/setphoto leaders - топ\n/setphoto help - помощь\n\nПример: /setphoto main (ответом на фото)"
-        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=get_admin_panel())
-        bot.answer_callback_query(call.id)
-        return
 
     # ДЕЙСТВИЯ НАД ПОЛЬЗОВАТЕЛЯМИ
     if data.startswith("user_add_coins_"):
@@ -1657,10 +1582,7 @@ def process_sell_role(message, role_name, original_message):
 └ 🔥 Серия: {user.get('daily_streak', 0)} дн.
 
 👇 <b>Выбери действие:</b>"""
-            try:
-                bot.send_photo(user_id, IMAGES['main'], caption=text, parse_mode='HTML', reply_markup=get_main_menu(user_id))
-            except:
-                bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_main_menu(user_id))
+            bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_main_menu(user_id))
     except ValueError:
         bot.send_message(user_id, "❌ Введите число", parse_mode='HTML')
 
@@ -1689,10 +1611,7 @@ def process_report(message, user_id):
 └ 🔥 Серия: {user.get('daily_streak', 0)} дн.
 
 👇 <b>Выбери действие:</b>"""
-    try:
-        bot.send_photo(user_id, IMAGES['main'], caption=text, parse_mode='HTML', reply_markup=get_main_menu(user_id))
-    except:
-        bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_main_menu(user_id))
+    bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_main_menu(user_id))
 
 def process_idea(message, user_id):
     text = message.text or "Без текста"
@@ -1715,10 +1634,7 @@ def process_idea(message, user_id):
 └ 🔥 Серия: {user.get('daily_streak', 0)} дн.
 
 👇 <b>Выбери действие:</b>"""
-    try:
-        bot.send_photo(user_id, IMAGES['main'], caption=text, parse_mode='HTML', reply_markup=get_main_menu(user_id))
-    except:
-        bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_main_menu(user_id))
+    bot.send_message(user_id, text, parse_mode='HTML', reply_markup=get_main_menu(user_id))
 
 def process_add_coins(message):
     user_id = message.from_user.id
@@ -2054,25 +1970,6 @@ def use_promo(message):
             bot.reply_to(message, f"✅ <b>Промокод активирован!</b>\n\nВы получили роль {promo['role']} на {promo['days']} дней", parse_mode='HTML')
     except IndexError:
         bot.reply_to(message, "❌ /use КОД")
-
-@bot.message_handler(commands=['setphoto'])
-def set_photo_command(message):
-    if not is_admin(message.from_user.id):
-        bot.reply_to(message, "Нет доступа")
-        return
-    try:
-        parts = message.text.split()
-        key = parts[1]
-        if key not in IMAGES:
-            bot.reply_to(message, f"❌ Неверный ключ. Доступные: {', '.join(IMAGES.keys())}")
-            return
-        if message.reply_to_message and message.reply_to_message.photo:
-            # Здесь можно было бы сохранить file_id, но для простоты просто уведомляем
-            bot.reply_to(message, f"✅ Фото для {key} обновлено (временно, для постоянного нужно менять код)", parse_mode='HTML')
-        else:
-            bot.reply_to(message, "❌ Ответьте на фото командой /setphoto КЛЮЧ", parse_mode='HTML')
-    except:
-        bot.reply_to(message, "❌ /setphoto КЛЮЧ (ответ на фото)\n\nДоступные ключи: main, shop, profile, market, workshop, bonus, leaders, help", parse_mode='HTML')
 
 # ========== НАЧИСЛЕНИЕ ЗА СООБЩЕНИЯ ==========
 @bot.message_handler(func=lambda m: m.chat.type != 'private' and not m.from_user.is_bot)
