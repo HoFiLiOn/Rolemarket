@@ -217,14 +217,52 @@ def save_roles(roles):
     save_json(ROLES_FILE, roles)
 
 def get_workshop_bonus(level):
-    return {1:0,2:5,3:10,4:15,5:20,6:25,7:30,8:35,9:40,10:50}.get(level,0)
+    settings = load_json(SETTINGS_FILE, {})
+    levels = settings.get('workshop_levels', {
+        1: {'price': 0, 'bonus': 0, 'max_lots': 1},
+        2: {'price': 5000, 'bonus': 5, 'max_lots': 1},
+        3: {'price': 10000, 'bonus': 10, 'max_lots': 2},
+        4: {'price': 20000, 'bonus': 15, 'max_lots': 2},
+        5: {'price': 35000, 'bonus': 20, 'max_lots': 3},
+        6: {'price': 55000, 'bonus': 25, 'max_lots': 3},
+        7: {'price': 80000, 'bonus': 30, 'max_lots': 4},
+        8: {'price': 110000, 'bonus': 35, 'max_lots': 4},
+        9: {'price': 150000, 'bonus': 40, 'max_lots': 5},
+        10: {'price': 200000, 'bonus': 50, 'max_lots': 5}
+    })
+    return levels.get(level, {}).get('bonus', 0)
 
 def get_workshop_max_lots(level):
-    return {1:1,2:1,3:2,4:2,5:3,6:3,7:4,8:4,9:5,10:5}.get(level,1)
+    settings = load_json(SETTINGS_FILE, {})
+    levels = settings.get('workshop_levels', {
+        1: {'price': 0, 'bonus': 0, 'max_lots': 1},
+        2: {'price': 5000, 'bonus': 5, 'max_lots': 1},
+        3: {'price': 10000, 'bonus': 10, 'max_lots': 2},
+        4: {'price': 20000, 'bonus': 15, 'max_lots': 2},
+        5: {'price': 35000, 'bonus': 20, 'max_lots': 3},
+        6: {'price': 55000, 'bonus': 25, 'max_lots': 3},
+        7: {'price': 80000, 'bonus': 30, 'max_lots': 4},
+        8: {'price': 110000, 'bonus': 35, 'max_lots': 4},
+        9: {'price': 150000, 'bonus': 40, 'max_lots': 5},
+        10: {'price': 200000, 'bonus': 50, 'max_lots': 5}
+    })
+    return levels.get(level, {}).get('max_lots', 1)
 
 def get_workshop_next_price(level):
-    prices = {1:0,2:5000,3:10000,4:20000,5:35000,6:55000,7:80000,8:110000,9:150000,10:200000}
-    return prices.get(level+1)
+    settings = load_json(SETTINGS_FILE, {})
+    levels = settings.get('workshop_levels', {
+        1: {'price': 0, 'bonus': 0, 'max_lots': 1},
+        2: {'price': 5000, 'bonus': 5, 'max_lots': 1},
+        3: {'price': 10000, 'bonus': 10, 'max_lots': 2},
+        4: {'price': 20000, 'bonus': 15, 'max_lots': 2},
+        5: {'price': 35000, 'bonus': 20, 'max_lots': 3},
+        6: {'price': 55000, 'bonus': 25, 'max_lots': 3},
+        7: {'price': 80000, 'bonus': 30, 'max_lots': 4},
+        8: {'price': 110000, 'bonus': 35, 'max_lots': 4},
+        9: {'price': 150000, 'bonus': 40, 'max_lots': 5},
+        10: {'price': 200000, 'bonus': 50, 'max_lots': 5}
+    })
+    return levels.get(level+1, {}).get('price')
 
 def upgrade_workshop(user_id):
     user = get_user(user_id)
@@ -1204,20 +1242,35 @@ def callback_handler(call):
     # АДМИН: НАСТРОЙКИ МАСТЕРСКОЙ
     if data == "admin_workshop":
         if not is_admin(uid): return
+        settings = load_json(SETTINGS_FILE, {})
+        levels = settings.get('workshop_levels', {
+            1: {'price': 0, 'bonus': 0, 'max_lots': 1},
+            2: {'price': 5000, 'bonus': 5, 'max_lots': 1},
+            3: {'price': 10000, 'bonus': 10, 'max_lots': 2},
+            4: {'price': 20000, 'bonus': 15, 'max_lots': 2},
+            5: {'price': 35000, 'bonus': 20, 'max_lots': 3},
+            6: {'price': 55000, 'bonus': 25, 'max_lots': 3},
+            7: {'price': 80000, 'bonus': 30, 'max_lots': 4},
+            8: {'price': 110000, 'bonus': 35, 'max_lots': 4},
+            9: {'price': 150000, 'bonus': 40, 'max_lots': 5},
+            10: {'price': 200000, 'bonus': 50, 'max_lots': 5}
+        })
         text = "🔧 <b>Настройки мастерской</b>\n\n"
         for lvl in range(1,11):
-            bonus = get_workshop_bonus(lvl)
-            max_lots = get_workshop_max_lots(lvl)
-            price = get_workshop_next_price(lvl) if lvl<10 else 0
-            text += f"Уровень {lvl}: +{bonus}%, {max_lots} слотов"
-            if lvl<10: text += f", цена улучшения: {price}💰"
+            info = levels.get(lvl, {})
+            price = info.get('price', 0)
+            bonus = info.get('bonus', 0)
+            lots = info.get('max_lots', 1)
+            text += f"Уровень {lvl}: +{bonus}%, {lots} слотов"
+            if lvl < 10:
+                text += f", цена улучшения: {price}💰"
             text += "\n"
-        text += "\n(изменение через редактирование кода)"
+        text += "\nЧтобы изменить, отправьте команду:\n/setworkshop УРОВЕНЬ ЦЕНА БОНУС СЛОТЫ\nПример: /setworkshop 5 35000 20 3"
         bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=back_button("admin_panel"))
         bot.answer_callback_query(call.id)
         return
 
-    # АДМИН: СООБЩЕНИЯ (ОБРАТНАЯ СВЯЗЬ)
+    # АДМИН: СООБЩЕНИЯ
     if data == "admin_feedback":
         if not is_admin(uid): return
         markup, page, total = feedback_admin_menu(1)
@@ -1482,7 +1535,7 @@ def process_feedback(message, uid):
     user = get_user(uid)
     save_feedback(uid, user.get('username'), user.get('first_name'), text, file_id, file_type)
     bot.send_message(uid, "✅ <b>Сообщение отправлено!</b> Спасибо за обратную связь.", parse_mode='HTML')
-    # Возвращаем в раздел обратной связи (остаёмся в нём)
+    # Возвращаем в раздел обратной связи
     bot.send_message(uid, "💬 <b>Обратная связь</b>\n\nНапишите ваше сообщение. Можно прикрепить фото, видео, файл или голосовое.\n\nЯ прочитаю и отвечу.", parse_mode='HTML', reply_markup=back_button("back_to_main"))
     bot.register_next_step_handler_by_chat_id(message.chat.id, process_feedback, uid)
 
@@ -1759,6 +1812,30 @@ def process_user_ban(message, target):
     except:
         bot.send_message(uid, "❌ Ошибка", parse_mode='HTML')
     bot.send_message(uid, "🔧 Админ панель", reply_markup=admin_panel())
+
+# ========== КОМАНДА ДЛЯ ИЗМЕНЕНИЯ МАСТЕРСКОЙ ==========
+@bot.message_handler(commands=['setworkshop'])
+def set_workshop_command(message):
+    if not is_admin(message.from_user.id):
+        bot.reply_to(message, "Нет доступа")
+        return
+    try:
+        parts = message.text.split()
+        level = int(parts[1])
+        price = int(parts[2])
+        bonus = int(parts[3])
+        max_lots = int(parts[4])
+        if level < 1 or level > 10:
+            bot.reply_to(message, "Уровень от 1 до 10")
+            return
+        settings = load_json(SETTINGS_FILE, {})
+        levels = settings.get('workshop_levels', {})
+        levels[level] = {'price': price, 'bonus': bonus, 'max_lots': max_lots}
+        settings['workshop_levels'] = levels
+        save_json(SETTINGS_FILE, settings)
+        bot.reply_to(message, f"✅ Уровень {level} обновлён: цена {price}💰, +{bonus}%, {max_lots} слотов")
+    except:
+        bot.reply_to(message, "❌ /setworkshop УРОВЕНЬ ЦЕНА БОНУС СЛОТЫ\nПример: /setworkshop 5 35000 20 3")
 
 # ========== ПРОМОКОДЫ ==========
 @bot.message_handler(commands=['createpromo'])
