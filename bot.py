@@ -406,7 +406,6 @@ def add_market_lot(user_id, role_name, price):
     market['lots'].append(lot)
     market['next_id'] += 1
     save_market(market)
-    # Снимаем роль у продавца
     users = load_json(USERS_FILE)
     users[str(user_id)]['role'] = None
     save_json(USERS_FILE, users)
@@ -1314,7 +1313,7 @@ def callback_handler(call):
         report = next((r for r in reports if r['id'] == report_id), None)
         if report:
             status_text = "🔴 Новый" if report['status'] == 'new' else "🟢 Решён"
-            text = f"📋 <b>Отчёт #{report['id']}</b>\n\n👤 От: {report.get('first_name', f'User_{report['user_id']}')}\n🆔 ID: {report['user_id']}\n📅 Дата: {report['created_at'][:16].replace('T', ' ')}\n📊 Статус: {status_text}\n\n📝 Сообщение:\n{report['text']}"
+            text = f"📋 <b>Отчёт #{report['id']}</b>\n\n👤 От: {report.get('first_name', 'User')}\n🆔 ID: {report['user_id']}\n📅 Дата: {report['created_at'][:16].replace('T', ' ')}\n📊 Статус: {status_text}\n\n📝 Сообщение:\n{report['text']}"
             markup = types.InlineKeyboardMarkup(row_width=2)
             if report['status'] == 'new':
                 markup.add(types.InlineKeyboardButton("✅ Отметить решённым", callback_data=f"report_resolve_{report_id}"))
@@ -1366,7 +1365,7 @@ def callback_handler(call):
         idea = next((i for i in ideas if i['id'] == idea_id), None)
         if idea:
             status_text = "🔴 Новая" if idea['status'] == 'new' else "🟢 Рассмотрена"
-            text = f"💡 <b>Идея #{idea['id']}</b>\n\n👤 От: {idea.get('first_name', f'User_{idea['user_id']}')}\n🆔 ID: {idea['user_id']}\n📅 Дата: {idea['created_at'][:16].replace('T', ' ')}\n📊 Статус: {status_text}\n\n📝 Идея:\n{idea['text']}"
+            text = f"💡 <b>Идея #{idea['id']}</b>\n\n👤 От: {idea.get('first_name', 'User')}\n🆔 ID: {idea['user_id']}\n📅 Дата: {idea['created_at'][:16].replace('T', ' ')}\n📊 Статус: {status_text}\n\n📝 Идея:\n{idea['text']}"
             markup = types.InlineKeyboardMarkup(row_width=2)
             if idea['status'] == 'new':
                 markup.add(types.InlineKeyboardButton("✅ Отметить рассмотренной", callback_data=f"idea_consider_{idea_id}"))
