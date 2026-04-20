@@ -22,22 +22,21 @@ MARKET_FILE = f"{DATA_DIR}/market.json"
 FEEDBACK_FILE = f"{DATA_DIR}/feedback.json"
 SETTINGS_FILE = f"{DATA_DIR}/settings.json"
 ADMINS_FILE = f"{DATA_DIR}/admins.json"
-TEXTS_FILE = f"{DATA_DIR}/texts.json"
 IMAGES_FILE = f"{DATA_DIR}/images.json"
+TEXTS_FILE = f"{DATA_DIR}/texts.json"
 
-# ========== ИЗОБРАЖЕНИЯ ==========
+# ========== НАСТРОЙКИ ПО УМОЛЧАНИЮ ==========
 DEFAULT_IMAGES = {
-    'main': 'https://s10.iimage.su/s/19/gRFZSeMxdaqNHNZYeqDEWNQDnnz80Ja8c63deATA7.jpg',
-    'shop': 'https://s10.iimage.su/s/19/gRnaU7sxEU6XWHYbGw78EkVSp5IPw1ddodaUu9mlo.jpg',
-    'profile': 'https://s10.iimage.su/s/19/gxUPlX8xJjv31lGZGcI9hvs8AQK0mVHRbfSsnzfpH.jpg',
-    'market': 'https://s10.iimage.su/s/19/gdUzQDuxLH6sZWEhDz1uHiXRazGT4HzqG8m54neT9.jpg',
-    'workshop': 'https://s10.iimage.su/s/19/gZ6zIWexrV0rmJBQ9FUWeUWvpys7JH6cufMBzMn3h.jpg',
-    'bonus': 'https://s10.iimage.su/s/19/gBREkUaxGPGX9MdKMhfjI4pVgCoiBUa15gMSR18DS.jpg',
-    'leaders': 'https://s10.iimage.su/s/19/gEYbByAxi9iVwc3cqwidzzARo6yeh6pvlZEcFZy9G.jpg',
-    'help': 'https://s10.iimage.su/s/19/gX0g4pSxDRr1P8bhaHjT0KOjsGod9MpHXH0us0gRZ.jpg'
+    'main': '',
+    'shop': '',
+    'profile': '',
+    'market': '',
+    'workshop': '',
+    'bonus': '',
+    'leaders': '',
+    'help': ''
 }
 
-# ========== ТЕКСТЫ ==========
 DEFAULT_TEXTS = {
     'main': "🌟 <b>Role Shop Bot</b>\n\nПривет, {first_name}!\n\n┌ 👤 <b>Роль:</b> {role}\n├ 📈 <b>Множитель:</b> x{mult}\n├ 🔧 <b>Мастерская:</b> {workshop} ур. (+{workshop_bonus}%)\n├ 💰 <b>Баланс:</b> {coins}💰\n├ 📊 <b>Сообщений:</b> {messages}\n└ 🔥 <b>Серия:</b> {streak} дн.\n\n👇 <b>Выбери действие:</b>",
     'profile': "👤 <b>Профиль</b>\n\n┌ 📛 <b>Имя:</b> {first_name}\n├ 🎭 <b>Роль:</b> {role}\n├ 📈 <b>Множитель:</b> x{mult}\n├ 🔧 <b>Мастерская:</b> {workshop} ур. (+{workshop_bonus}%)\n├ 💰 <b>Монет:</b> {coins}💰\n├ 📊 <b>Сообщений:</b> {messages}\n├ 📅 <b>Сегодня:</b> {today} сообщ.\n├ 🔥 <b>Серия:</b> {streak} дн.\n├ 👥 <b>Пригласил:</b> {invites} чел.\n├ 💸 <b>С рефералов:</b> {ref_earned}💰\n├ 💵 <b>Заработано:</b> {total_earned}💰\n├ 💸 <b>Потрачено:</b> {total_spent}💰\n├ 📦 <b>Лотов на рынке:</b> {lots}/{max_lots}\n└ 📅 <b>Регистрация:</b> {reg_date}",
@@ -71,11 +70,11 @@ def save_json(file, data):
 
 def get_image(key):
     images = load_json(IMAGES_FILE, DEFAULT_IMAGES)
-    return images.get(key, DEFAULT_IMAGES.get(key, ''))
+    return images.get(key, '')
 
-def set_image(key, url):
+def set_image(key, file_id):
     images = load_json(IMAGES_FILE, DEFAULT_IMAGES)
-    images[key] = url
+    images[key] = file_id
     save_json(IMAGES_FILE, images)
 
 def get_text(key):
@@ -824,10 +823,14 @@ def start_command(message):
             except:
                 pass
     text = format_text(get_text('main'), uid)
+    # Пробуем отправить с фото, если есть
     img = get_image('main')
-    try:
-        bot.send_photo(uid, img, caption=text, parse_mode='HTML', reply_markup=main_menu(uid))
-    except:
+    if img:
+        try:
+            bot.send_photo(uid, img, caption=text, parse_mode='HTML', reply_markup=main_menu(uid))
+        except:
+            bot.send_message(uid, text, parse_mode='HTML', reply_markup=main_menu(uid))
+    else:
         bot.send_message(uid, text, parse_mode='HTML', reply_markup=main_menu(uid))
 
 @bot.message_handler(commands=['daily'])
@@ -841,9 +844,12 @@ def daily_command(message):
     bonus, msg = get_daily(uid)
     text = format_text(get_text('bonus'), uid, result=msg)
     img = get_image('bonus')
-    try:
-        bot.send_photo(uid, img, caption=text, parse_mode='HTML')
-    except:
+    if img:
+        try:
+            bot.send_photo(uid, img, caption=text, parse_mode='HTML')
+        except:
+            bot.send_message(uid, text, parse_mode='HTML')
+    else:
         bot.send_message(uid, text, parse_mode='HTML')
 
 @bot.message_handler(commands=['admin'])
@@ -860,6 +866,7 @@ def admin_command(message):
 def callback_handler(call):
     uid = call.from_user.id
     data = call.data
+    print(f"[DEBUG] Колбэк получен: {data}")  # Отладка
     if is_banned(uid):
         bot.answer_callback_query(call.id, "Вы забанены", show_alert=True)
         return
@@ -870,8 +877,12 @@ def callback_handler(call):
         text = format_text(get_text('main'), uid)
         img = get_image('main')
         try:
-            bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=main_menu(uid))
-        except:
+            if img:
+                bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=main_menu(uid))
+            else:
+                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=main_menu(uid))
+        except Exception as e:
+            print(f"[ERROR] back_to_main: {e}")
             bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=main_menu(uid))
         bot.answer_callback_query(call.id)
         return
@@ -882,8 +893,12 @@ def callback_handler(call):
         text = format_text(get_text('shop'), uid, page=page, total=total)
         img = get_image('shop')
         try:
-            bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
-        except:
+            if img:
+                bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
+            else:
+                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
+        except Exception as e:
+            print(f"[ERROR] shop: {e}")
             bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         bot.answer_callback_query(call.id)
         return
@@ -893,8 +908,12 @@ def callback_handler(call):
         text = format_text(get_text('shop'), uid, page=page, total=total)
         img = get_image('shop')
         try:
-            bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
-        except:
+            if img:
+                bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
+            else:
+                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
+        except Exception as e:
+            print(f"[ERROR] shop_page: {e}")
             bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         bot.answer_callback_query(call.id)
         return
@@ -906,8 +925,12 @@ def callback_handler(call):
             text = format_text(get_text('main'), uid)
             img = get_image('main')
             try:
-                bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=main_menu(uid))
-            except:
+                if img:
+                    bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=main_menu(uid))
+                else:
+                    bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=main_menu(uid))
+            except Exception as e:
+                print(f"[ERROR] buy: {e}")
                 bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=main_menu(uid))
         return
 
@@ -916,8 +939,12 @@ def callback_handler(call):
         text = format_text(get_text('profile'), uid)
         img = get_image('profile')
         try:
-            bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=back_button("back_to_main"))
-        except:
+            if img:
+                bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=back_button("back_to_main"))
+            else:
+                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=back_button("back_to_main"))
+        except Exception as e:
+            print(f"[ERROR] profile: {e}")
             bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=back_button("back_to_main"))
         bot.answer_callback_query(call.id)
         return
@@ -928,8 +955,12 @@ def callback_handler(call):
         text = format_text(get_text('bonus'), uid, result=msg)
         img = get_image('bonus')
         try:
-            bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=back_button("back_to_main"))
-        except:
+            if img:
+                bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=back_button("back_to_main"))
+            else:
+                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=back_button("back_to_main"))
+        except Exception as e:
+            print(f"[ERROR] bonus: {e}")
             bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=back_button("back_to_main"))
         bot.answer_callback_query(call.id)
         return
@@ -1013,8 +1044,12 @@ def callback_handler(call):
         text = format_text(get_text('help'), uid)
         img = get_image('help')
         try:
-            bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=back_button("back_to_main"))
-        except:
+            if img:
+                bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=back_button("back_to_main"))
+            else:
+                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=back_button("back_to_main"))
+        except Exception as e:
+            print(f"[ERROR] help: {e}")
             bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=back_button("back_to_main"))
         bot.answer_callback_query(call.id)
         return
@@ -1030,8 +1065,12 @@ def callback_handler(call):
         text = format_text(get_text('workshop'), uid, level=level, bonus=bonus, max_lots=max_lots, next_info=next_info)
         img = get_image('workshop')
         try:
-            bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
-        except:
+            if img:
+                bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
+            else:
+                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
+        except Exception as e:
+            print(f"[ERROR] workshop: {e}")
             bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         bot.answer_callback_query(call.id)
         return
@@ -1048,8 +1087,12 @@ def callback_handler(call):
             text = format_text(get_text('workshop'), uid, level=level, bonus=bonus, max_lots=max_lots, next_info=next_info)
             img = get_image('workshop')
             try:
-                bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
-            except:
+                if img:
+                    bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
+                else:
+                    bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
+            except Exception as e:
+                print(f"[ERROR] workshop_upgrade: {e}")
                 bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         return
 
@@ -1060,8 +1103,12 @@ def callback_handler(call):
         text = format_text(get_text('market'), uid, page=page, total=total)
         img = get_image('market')
         try:
-            bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
-        except:
+            if img:
+                bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
+            else:
+                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
+        except Exception as e:
+            print(f"[ERROR] market: {e}")
             bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         bot.answer_callback_query(call.id)
         return
@@ -1071,8 +1118,12 @@ def callback_handler(call):
         text = format_text(get_text('market'), uid, page=page, total=total)
         img = get_image('market')
         try:
-            bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
-        except:
+            if img:
+                bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
+            else:
+                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
+        except Exception as e:
+            print(f"[ERROR] market_page: {e}")
             bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         bot.answer_callback_query(call.id)
         return
@@ -1098,8 +1149,12 @@ def callback_handler(call):
             text = format_text(get_text('main'), uid)
             img = get_image('main')
             try:
-                bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=main_menu(uid))
-            except:
+                if img:
+                    bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=main_menu(uid))
+                else:
+                    bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=main_menu(uid))
+            except Exception as e:
+                print(f"[ERROR] buy_lot: {e}")
                 bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=main_menu(uid))
         return
     if data == "market_sell":
@@ -1135,8 +1190,12 @@ def callback_handler(call):
         text = format_text(get_text('market'), uid, page=page, total=total)
         img = get_image('market')
         try:
-            bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
-        except:
+            if img:
+                bot.edit_message_media(types.InputMediaPhoto(img, caption=text, parse_mode='HTML'), call.message.chat.id, call.message.message_id, reply_markup=markup)
+            else:
+                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
+        except Exception as e:
+            print(f"[ERROR] remove_lot: {e}")
             bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode='HTML', reply_markup=markup)
         return
 
@@ -1505,9 +1564,12 @@ def process_sell_role(message, role_name, original_message):
         if success:
             text = format_text(get_text('main'), uid)
             img = get_image('main')
-            try:
-                bot.send_photo(uid, img, caption=text, parse_mode='HTML', reply_markup=main_menu(uid))
-            except:
+            if img:
+                try:
+                    bot.send_photo(uid, img, caption=text, parse_mode='HTML', reply_markup=main_menu(uid))
+                except:
+                    bot.send_message(uid, text, parse_mode='HTML', reply_markup=main_menu(uid))
+            else:
                 bot.send_message(uid, text, parse_mode='HTML', reply_markup=main_menu(uid))
     except:
         bot.send_message(uid, "❌ Введите число", parse_mode='HTML')
